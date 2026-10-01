@@ -1,34 +1,31 @@
 import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
 
-// M4 shoes only (socks slot removed). Shoes are chunky boxes over the base
-// feet plus a sole plate and an ankle cuff.
-// Feet: 0.32 x 0.18 x 0.44 box at (±0.19, 0.09, 0.08) so top y=0.18.
-// Legs: y 0.06..0.62, z half 0.17 -> every shoe part must strictly enclose
-// that envelope (no coplanar faces, no poked-through walls).
+// M4 shoes only (socks slot removed). Shoes are compact boxes over the base
+// feet plus a sole plate and a slim ankle cuff.
+// Feet: 0.20 x 0.13 x 0.32 box at (±0.19, 0.065, 0.06) so top y=0.13.
+// Legs: y 0.06..0.62, z half 0.17 -> shoe walls must strictly enclose that
+// envelope (no coplanar back faces).
 
 const SHOE_BUILDER = {
   shoe_sneaker(g, m) {
     for (const side of [-1, 1]) {
-      // body: z back -0.18 strictly covers the leg's back face (-0.17);
-      // compact footprint so wide pant hems (outer ~0.395) fall straight
-      // over the shoe (wide-leg silhouette)
+      // body: z back -0.14 strictly inside the leg's back face (-0.17),
+      // front 0.26 just past the foot toe (0.22)
       const body = new THREE.Mesh(
-        new THREE.BoxGeometry(0.38, 0.2, 0.52).toNonIndexed(), m
+        new THREE.BoxGeometry(0.26, 0.16, 0.4).toNonIndexed(), m
       );
-      body.position.set(side * 0.19, 0.13, 0.08);
-      // sole also encloses the leg bottom (z -0.18 < -0.17)
+      body.position.set(side * 0.19, 0.09, 0.06);
       const sole = new THREE.Mesh(
-        new THREE.BoxGeometry(0.36, 0.07, 0.52).toNonIndexed(), m
+        new THREE.BoxGeometry(0.24, 0.07, 0.4).toNonIndexed(), m
       );
-      sole.position.set(side * 0.19, 0.035, 0.08);
-      // cuff: slim ankle collar (z half 0.19 just inside the pant hem's z
-      // half ~0.2, so nothing peeks through the tube slit); top 0.29 stays
-      // under the hem 0.3 so pants read straight to the shoe front
+      sole.position.set(side * 0.19, 0.045, 0.06);
+      // slim ankle cuff: x half 0.16 covers the leg (<=0.158 at this height),
+      // z half 0.18 covers the leg depth (0.17), top 0.25 under the pant hem
       const cuff = new THREE.Mesh(
-        new THREE.BoxGeometry(0.4, 0.09, 0.38).toNonIndexed(), m
+        new THREE.BoxGeometry(0.32, 0.08, 0.36).toNonIndexed(), m
       );
-      cuff.position.set(side * 0.19, 0.245, 0);
+      cuff.position.set(side * 0.19, 0.21, 0);
       g.add(body, sole, cuff);
     }
   },

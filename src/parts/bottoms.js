@@ -67,6 +67,14 @@ function waistbandMesh(mat, bandY) {
   return new THREE.Mesh(g, mat);
 }
 
+function box(w, h, d, x, y, z, mat) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(w, h, d).toNonIndexed(), mat
+  );
+  mesh.position.set(x, y, z);
+  return mesh;
+}
+
 const BOTTOM_BUILDER = {
   bot_long_pants(g, m, f) {
     const waist = f.lowRise ? HIP : WAIST;
@@ -76,16 +84,18 @@ const BOTTOM_BUILDER = {
     tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.3, taper: 0.05, splay: 0.03 });
   },
   bot_shorts(g, m, f) {
+    // dungaree/overall shorts: bib + shoulder straps over the tee
     const waist = f.lowRise ? HIP : HIGH;
     g.add(hipsMesh(m, waist, 0.36));
-    // slim belt: bridges hips block and hem without reading as cargo overalls
-    const belt = new THREE.Mesh(
-      new THREE.BoxGeometry(0.58, 0.08, 0.38).toNonIndexed(), m
-    );
-    belt.position.y = waist + 0.02;
-    g.add(belt);
-    // straight (taper 0) tubes: r 0.4 stays 0.02 clear of the leg (z half
-    // 0.17) and the tubes overlap at the centre (no slit)
+    g.add(box(0.58, 0.08, 0.38, 0, waist + 0.03, 0, m)); // belt band
+    g.add(box(0.26, 0.34, 0.05, 0, waist + 0.03, 0.19, m)); // front bib
+    for (const side of [-1, 1]) {
+      g.add(box(0.08, 0.08, 0.05, side * 0.11, waist + 0.13, 0.19, m));
+      g.add(box(0.08, 0.05, 0.42, side * 0.11, 1.18, 0, m)); // shoulder bridge
+      g.add(box(0.08, 0.08, 0.05, side * 0.11, waist + 0.13, -0.19, m));
+    }
+    // straight tubes: r 0.4 stays 0.02 clear of the leg (z half 0.17), and
+    // the tubes overlap at the centre (no slit)
     tubeMeshes(g, m, { r: 0.4, top: 0.56, bottom: 0.38, taper: 0, splay: 0.03 });
   },
   bot_short_skirt(g, m, f) {

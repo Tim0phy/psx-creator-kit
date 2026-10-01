@@ -81,10 +81,10 @@ export function createCharacter() {
     const leg = new THREE.Mesh(legGeo, skinMat);
     leg.position.set(side * 0.19, 0.34, 0);
     const foot = new THREE.Mesh(
-      new THREE.BoxGeometry(0.32, 0.18, 0.44).toNonIndexed(),
+      new THREE.BoxGeometry(0.2, 0.13, 0.32).toNonIndexed(),
       footMat
     );
-    foot.position.set(side * 0.19, 0.09, 0.08);
+    foot.position.set(side * 0.19, 0.065, 0.06);
     root.add(leg, foot);
   }
 
