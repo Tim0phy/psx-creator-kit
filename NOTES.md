@@ -67,3 +67,11 @@
 - Decisions (see M4 notes above): socks included despite no "base" tag
   (user asked for socks); only the stripes PatternTexture implemented; torso
   stays the white M1 "shirt" under tops on the base body for now.
+
+## M4 fix: top/outer interpenetration
+- Reported: top tee (1.06 envelope) and outer jacket (1.08) sat only ~2% apart
+  -> clipping / z-fighting (flicker) when both slots worn.
+- Fix: outer envelope widened to 1.14, outer sleeves 1.2 -> 1.26 (tops.js) so
+  there is a clear gap around the top.
+- Verified with 5 yaw angles (tests/m4zf.mjs, shots/m4_zf_*.png): open front
+  shows the tee cleanly, no flicker/clipping from front/side/back.

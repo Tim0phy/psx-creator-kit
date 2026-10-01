@@ -85,12 +85,13 @@ const TOP_BUILDER = {
   },
 };
 
-// outerwear (slot "outer"): must sit over the top -> bigger envelope (1.08).
+// outerwear (slot "outer"): must sit over the top -> bigger envelope (1.14)
+// to keep a clear gap and stop z-fighting with tights tops (1.06-1.08).
 const OUTER_BUILDER = {
   top_jacket(g, m, flags) {
-    const shell = shellGeo(1.08, flags.cropped ? 0.82 : 1, true);
+    const shell = shellGeo(1.14, flags.cropped ? 0.82 : 1, true);
     g.add(new THREE.Mesh(shell, m));
-    addSleeves(g, m, 1.0, 1.2);
+    addSleeves(g, m, 1.0, 1.26);
     const collar = new THREE.Mesh(
       new THREE.BoxGeometry(0.62, 0.08, 0.4).toNonIndexed(), m
     );
