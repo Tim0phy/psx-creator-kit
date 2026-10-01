@@ -1,5 +1,10 @@
 import * as THREE from "three";
 
+// Work in raw sRGB values everywhere: custom ShaderMaterials get no automatic
+// colour-space conversion, so hex colours must keep their original values or
+// body parts render darker than the face canvas texture.
+THREE.ColorManagement.enabled = false;
+
 // Low-res render target + nearest upscale + PSX shader material factory.
 
 const RES_W = 480;
@@ -85,6 +90,7 @@ export function createPSXRenderer(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
   renderer.setPixelRatio(1);
   renderer.setSize(RES_W, RES_H, false);
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
   renderer.setClearColor(0x000000, 0);
 
   const rt = new THREE.WebGLRenderTarget(RES_W, RES_H, {

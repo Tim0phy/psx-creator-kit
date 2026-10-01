@@ -38,7 +38,7 @@ const faceMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(0.56, 0.46),
   makePSXMaterial("#ffffff", { map: faceTex, gradient: 0.1 })
 );
-faceMesh.position.set(0, -0.02, 0.42);
+faceMesh.position.set(0, -0.02, 0.372);
 character.root.children.find((c) => c.position.y === 1.48).add(faceMesh);
 
 scene.add(ground, character.root);
@@ -46,6 +46,7 @@ scene.add(ground, character.root);
 function applyFace() {
   renderFace(small, big, state); // redraw canvas only
   faceTex.needsUpdate = true;
+  character.setSkin(state.skin); // whole-model skin follows the picker
 }
 
 createFaceUI(state, { onChange: applyFace });

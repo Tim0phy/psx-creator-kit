@@ -23,12 +23,16 @@ function roundedHead() {
   for (let i = 0; i < p.count; i++) {
     v.set(p.getX(i), p.getY(i), p.getZ(i));
     const r = 0.44;
+    // keep the centre of the front/back faces flat so the face plate sits
+    // flush on the head; round only edges and corners
+    const flat = Math.abs(v.x) < 0.2 && Math.abs(v.y) < 0.2;
+    const s = flat ? 0.1 : 0.38;
     v.normalize().multiplyScalar(r);
     p.setXYZ(
       i,
-      p.getX(i) * 0.62 + v.x * 0.38,
-      p.getY(i) * 0.62 + v.y * 0.38,
-      p.getZ(i) * 0.62 + v.z * 0.38
+      p.getX(i) * (1 - s) + v.x * s,
+      p.getY(i) * (1 - s) + v.y * s,
+      p.getZ(i) * (1 - s) + v.z * s
     );
   }
   g.computeVertexNormals();
