@@ -189,10 +189,10 @@ function mTongue(ctx) {
 
 const MOUTHS = [mSmile, mCat, mFlat, mOpen, mSmallO, mTongue];
 
-// ---- composed draw --------------------------------------------------------
-export function drawFace32(ctx, state) {
-  ctx.clearRect(0, 0, S, S);
-  px(ctx, 0, 0, S, S, state.skin);
+// ---- draw layers ----------------------------------------------------------
+// Eyes layer: blush + eyes on a transparent background. Mouth layer: mouth
+// only. drawFace32 composes both over a skin fill (UI thumbnails only).
+export function drawEyes(ctx, state) {
   if (state.blush) {
     px(ctx, 4, 17, 3, 2, P.blush);
     px(ctx, 25, 17, 3, 2, P.blush);
@@ -202,8 +202,18 @@ export function drawFace32(ctx, state) {
     EYES[ei % 12](ctx, 10, -1);
     EYES[ei % 12](ctx, 22, 1);
   }
+}
+
+export function drawMouth(ctx, state) {
   const mi = (state.mouth ?? 1) - 1;
   if (mi >= 0) MOUTHS[mi % 6](ctx);
+}
+
+export function drawFace32(ctx, state) {
+  ctx.clearRect(0, 0, S, S);
+  px(ctx, 0, 0, S, S, state.skin);
+  drawEyes(ctx, state);
+  drawMouth(ctx, state);
 }
 
 const bigCache = new Map();
@@ -216,12 +226,23 @@ export function bigFor(small) {
   return bigCache.get(small);
 }
 
-export function renderFace(small, big, state) {
-  drawFace32(small.getContext("2d"), state);
+// 32x32 -> 128x128 nearest upscale for a decal layer (transparent background)
+function renderDecal(small, big, draw, state) {
+  const sctx = small.getContext("2d");
+  sctx.clearRect(0, 0, S, S);
+  draw(sctx, state);
   const bctx = big.getContext("2d");
   bctx.imageSmoothingEnabled = false;
   bctx.clearRect(0, 0, 128, 128);
   bctx.drawImage(small, 0, 0, 128, 128);
+}
+
+export function renderEyes(small, big, state) {
+  renderDecal(small, big, drawEyes, state);
+}
+
+export function renderMouth(small, big, state) {
+  renderDecal(small, big, drawMouth, state);
 }
 
 export function renderThumb(canvas, state, part) {

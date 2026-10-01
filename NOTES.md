@@ -98,9 +98,29 @@
 - 兩塊 decal z 0.368 / 0.371 微錯開，避免 vertex snap 造成 coplanar 閃爍。
 - 腮紅歸入 eyes 層（佢喺嘴層範圍外，UI 縮圖用 drawFace32 組合不受影響）。
 
+## 面部 1.5 倍放大（用戶要求：眼嘴太細）
+- 做法：唔改貼圖代碼，兩塊 decal plane 幾何由 0.5x0.44 放大至 0.75x0.66
+  （同一張 texture 拉大 = 像素變大 1.5 倍，PSX 風格更 chunky）。
+- 錨點計算：eyes plane 以眼行中心（texture row 12.5, v 0.6094）為錨，
+  plane y = 0.0281 - (0.6094-0.5)*0.66 = -0.0441；mouth plane 以嘴中心
+  （row 19.5, v 0.3906）為錨，plane y = -0.0681 + 0.0722 = +0.0041。
+- 修正：放大後眉毛升入 hair_01 劉海區，eyes plane 額外下移 0.05
+  （y -0.0941）令眉毛同劉海分開，眼略降變標準 chibi 位置。
+- 驗證：正面/0.9rad 側面無浮板、眉毛可見、腮紅＋happy arc＋cat mouth
+  無相互碰撞（shots/face_15x_*.png）。
+- 嘴位再修（用戶第二輪）：眼放大下沉後嘴貼得太近眼；mouth plane y
+  0.0041 -> -0.16（嘴中心由原位拉低 ~0.16，位於眼同下巴之間中段，
+  shots/face_mouth_low.png 確認眼嘴有清晰空隙，嘴底仍在平面 flat 區內）。
+
 ## M3 第六輪修訂（女仔髮型清理）
 - hair_01 / hair_09 後方懸浮紙板：刪走兩個 addStrip（z -0.45 嘅背板）,
   剩返 cap + tail / 裝飾。
 - 女性 cap 底部穿模：capGeo 底面平板切割改為無條件執行（唔再綁 shortY），
   所有髮型 cap 都無底板，唔會插穿頭/身體。DoubleSide 裹面睇入去正常。
 - hair_01: 44 tris / hair_09: 96 tris（上限 150內）。
+
+### 2026-10-02 leg/shoe clipping + socks removed
+- Socks slot removed entirely per user: catalog items/presets/slot, ui sections, main.js slot lists, socks builders in shoes.js.
+- Leg-vs-shoe clipping root cause: leg box back face z=-0.17 coplanar with shoe body back face -> z-fighting (skin patches seen from back). Shoe body deepened 0.5->0.56, sole 0.46->0.52, cuff 0.34x0.38->0.4x0.44 with lip top 0.32 above pant hem 0.3 (hem tucks into cuff); cuffs overlap at centre.
+- Pant hem slit Fix: taper 0.1 opened a centre slit between tubes (splay spreads them outward); r 0.42 + taper 0.05 + splay 0.03 keeps tubes overlapping -> no nub/zel line.
+- Verified tests/m4fix4.mjs (front/side/backfoot x pants/shorts/bare). Committed as M4 fix.

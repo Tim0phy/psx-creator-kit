@@ -59,7 +59,7 @@ export function makePSXMaterial(colorHex, opts = {}) {
       )
         .replace(
           "void main() {",
-          "void main() {\n  vec3 base = texture2D(map, vUv).rgb;"
+          "void main() {\n  vec4 texel = texture2D(map, vUv);\n  if (texel.a < 0.5) discard;\n  vec3 base = texel.rgb;"
         )
         .replace(
           "  vec3 c = color * (ambient + diffuse * d);",

@@ -3,15 +3,15 @@ import "./style.css";
 import { createPSXRenderer, makePSXMaterial } from "./psxRenderer.js";
 import { createCharacter, DEFAULT_SKIN } from "./character.js";
 import { createControls } from "./controls.js";
-import { makeFaceTexture, renderFace } from "./faceTexture.js";
+import { makeFaceTexture, renderEyes, renderMouth } from "./faceTexture.js";
 import { createHair } from "./parts/hair.js";
 import { createTop } from "./parts/tops.js";
 import { createBottom } from "./parts/bottoms.js";
-import { createSocks, createShoes } from "./parts/shoes.js";
+import { createShoes } from "./parts/shoes.js";
 import catalog from "./catalog.js";
 import { createUI } from "./ui.js";
 
-// M4: face system + hair + base clothes (top/outer/bottom/socks/shoes).
+// M4: face system + hair + base clothes (top/outer/bottom/shoes).
 
 const state = {
   skin: DEFAULT_SKIN, eyes: 3, mouth: 1, blush: false,
@@ -19,13 +19,12 @@ const state = {
   top: { id: "top_tee", colors: { main: "#e06060" } },
   outer: null,
   bottom: { id: "bot_long_pants", colors: { main: "#3a5ca8" } },
-  socks: null,
   shoes: { id: "shoe_sneaker", colors: { main: "#e8913a" } },
 };
 
 // debug: ?hair=hair_XX etc. lets the shot scripts capture specific items
 const params = new URLSearchParams(location.search);
-for (const slot of ["hair", "top", "outer", "bottom", "socks", "shoes"]) {
+for (const slot of ["hair", "top", "outer", "bottom", "shoes"]) {
   const v = params.get(slot);
   if (v) {
     if (v === "none") state[slot] = null;
@@ -51,25 +50,44 @@ ground.rotation.x = -Math.PI / 2;
 
 const character = createCharacter();
 
-// face plane on the front of the head; only this texture is redrawn
-const small = document.createElement("canvas");
-small.width = small.height = 32;
-const big = document.createElement("canvas");
-big.width = big.height = 128;
-renderFace(small, big, state);
-const faceTex = makeFaceTexture(big);
-const faceMesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.5, 0.44),
-  makePSXMaterial("#ffffff", { map: faceTex, gradient: 0.05 })
+// face decals: eyes and mouth are two separate transparent textures laid on
+// top of the head mesh; the head itself keeps its own skin material so the
+// skin colour/lighting can never mismatch the decal
+function facePair() {
+  const small = document.createElement("canvas");
+  small.width = small.height = 32;
+  const big = document.createElement("canvas");
+  big.width = big.height = 128;
+  return { small, big };
+}
+const eyesPair = facePair();
+const mouthPair = facePair();
+renderEyes(eyesPair.small, eyesPair.big, state);
+renderMouth(mouthPair.small, mouthPair.big, state);
+const eyesTex = makeFaceTexture(eyesPair.big);
+const mouthTex = makeFaceTexture(mouthPair.big);
+const headAnchor = character.root.children.find((c) => c.position.y === 1.48);
+// 1.5x face feature scale: planes enlarged about each feature's centre so
+// eyes/mouth grow without drifting (anchor = eye-row centre / mouth centre)
+const eyesMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(0.75, 0.66),
+  makePSXMaterial("#ffffff", { map: eyesTex, gradient: 0.05 })
 );
-faceMesh.position.set(0, -0.02, 0.368);
-character.root.children.find((c) => c.position.y === 1.48).add(faceMesh);
+eyesMesh.position.set(0, -0.0941, 0.368); // extra -0.05: keeps brows clear of the fringe
+const mouthMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(0.75, 0.66),
+  makePSXMaterial("#ffffff", { map: mouthTex, gradient: 0.05 })
+);
+mouthMesh.position.set(0, -0.16, 0.371); // tiny offset: avoids vertex-snap shimmer
+headAnchor.add(eyesMesh, mouthMesh);
 
 scene.add(ground, character.root);
 
 function applyFace() {
-  renderFace(small, big, state); // redraw canvas only
-  faceTex.needsUpdate = true;
+  renderEyes(eyesPair.small, eyesPair.big, state);
+  eyesTex.needsUpdate = true;
+  renderMouth(mouthPair.small, mouthPair.big, state);
+  mouthTex.needsUpdate = true;
   character.setSkin(state.skin); // whole-model skin follows the picker
 }
 
@@ -112,8 +130,8 @@ function mount(slot, built) {
   CLOTH[slot] = built ?? null;
   if (built) {
     character.root.add(built.group);
-    // layering: draw order top -> outer -> bottom -> socks -> shoes
-    const order = ["top", "outer", "bottom", "socks", "shoes"];
+    // layering: draw order top -> outer -> bottom -> shoes
+    const order = ["top", "outer", "bottom", "shoes"];
     for (let i = order.indexOf(slot) + 1; i < order.length; i++) {
       if (CLOTH[order[i]]) character.root.add(CLOTH[order[i]].group);
     }
@@ -138,11 +156,6 @@ function applyCloth(slot) {
     built = createBottom(item.id, colors.main, flags);
   } else if (item.slot === "shoes") {
     built = createShoes(item.id, colors.main);
-  } else {
-    built = createSocks(item.id, {
-      main: colors.main ?? "#ffffff",
-      secondary: colors.secondary ?? "#e8913a",
-    });
   }
   mount(slot, built);
 }
@@ -163,7 +176,7 @@ createUI(state, { onChange: applyAll });
 function applyAll() {
   applyFace();
   applyHair();
-  for (const slot of ["top", "outer", "bottom", "socks", "shoes"]) {
+  for (const slot of ["top", "outer", "bottom", "shoes"]) {
     applyCloth(slot);
     recolor(slot);
   }

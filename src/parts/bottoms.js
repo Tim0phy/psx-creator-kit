@@ -7,14 +7,17 @@ import { makePSXMaterial } from "../psxRenderer.js";
 // Torso bottom y=0.58, legs y 0.06..0.62 at x ±0.19 (half-w ~0.17->0.135),
 // feet top y=0.18.
 
-const WAIST = 0.74; // normal waistband top
-const HIP = 0.6;    // low-rise waistband top (on the hips)
+const WAIST = 0.74;   // normal waistband top (long pants)
+const HIGH = 1.02;    // shorts/skirt waistband top (navel height)
+const HIP = 0.6;      // low-rise waistband top (on the hips)
 
 // hips/pelvis block from y=0.5 up to waistY. Narrower than any top shell
 // (tee 1.06 -> half-w 0.297) so the two never intersect and z-fight.
-function hipsMesh(mat, waistY) {
+// depth defaults inside the tee shell (half 0.15); shorts use 0.4 so the
+// front face sits in front of the tee hem and the waist reads continuously.
+function hipsMesh(mat, waistY, depth = 0.3) {
   const h = waistY - 0.5;
-  const g = new THREE.BoxGeometry(0.56, h, 0.3).toNonIndexed();
+  const g = new THREE.BoxGeometry(0.56, h, depth).toNonIndexed();
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const t = (p.getY(i) + h / 2) / h; // 0 bottom -> 1 top
@@ -56,10 +59,10 @@ function skirtMesh(mat, rTop, rBottom, topY, botY) {
 
 // waistband + skirt mouths r 0.32 (half-w ~0.296) stay inside the tee shell
 // (0.297) -> no clipping with tops; skirts flare wider below the tee hem.
-function waistbandMesh(mat, waistY) {
+function waistbandMesh(mat, bandY) {
   const g = new THREE.CylinderGeometry(0.32, 0.32, 0.07, 8, 1, true)
     .toNonIndexed();
-  g.translate(0, waistY + 0.3, 0);
+  g.translate(0, bandY, 0);
   g.computeVertexNormals();
   return new THREE.Mesh(g, mat);
 }
@@ -68,21 +71,30 @@ const BOTTOM_BUILDER = {
   bot_long_pants(g, m, f) {
     const waist = f.lowRise ? HIP : WAIST;
     g.add(hipsMesh(m, waist));
-    tubeMeshes(g, m, { r: 0.4, top: 0.64, bottom: 0.1, taper: 0.15, splay: 0.03 });
+    // hem 0.3 tucks into the shoe cuff (cuff lip 0.22..0.32 wraps the hem);
+    // taper 0.05 keeps the two tubes overlapping at the centre (no slit)
+    tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.3, taper: 0.05, splay: 0.03 });
   },
   bot_shorts(g, m, f) {
-    const waist = f.lowRise ? HIP : WAIST;
-    g.add(hipsMesh(m, waist));
+    const waist = f.lowRise ? HIP : HIGH;
+    g.add(hipsMesh(m, waist, 0.4));
+    // boxy high-waist belt: slightly proud of the hips block so waistband
+    // and hem read as one continuous piece over the top hem
+    const belt = new THREE.Mesh(
+      new THREE.BoxGeometry(0.62, 0.09, 0.42).toNonIndexed(), m
+    );
+    belt.position.y = waist + 0.02;
+    g.add(belt);
     tubeMeshes(g, m, { r: 0.4, top: 0.56, bottom: 0.38, taper: -0.05, splay: 0.03 });
   },
   bot_short_skirt(g, m, f) {
     const waist = f.lowRise ? HIP : WAIST;
-    g.add(waistbandMesh(m, waist));
+    g.add(waistbandMesh(m, waist + 0.3));
     g.add(skirtMesh(m, 0.32, 0.5, waist + 0.3, waist - 0.28));
   },
   bot_long_skirt(g, m, f) {
     const waist = f.lowRise ? HIP : WAIST;
-    g.add(waistbandMesh(m, waist));
+    g.add(waistbandMesh(m, waist + 0.3));
     g.add(skirtMesh(m, 0.34, 0.62, waist + 0.28, 0.14));
   },
 };

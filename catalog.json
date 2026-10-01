@@ -8,9 +8,8 @@
   "eyewear",
   "top",
   "outer",
-  "bottom",
-  "socks",
-  "shoes",
+   "bottom",
+   "shoes",
   "neck",
   "waist",
   "wrist",
@@ -481,32 +480,6 @@
    "pattern": "metallic"
   },
   {
-   "id": "socks_white_long",
-   "slot": "socks",
-   "label": "White long socks",
-   "tags": [
-    "preppy"
-   ],
-   "colorSlots": [
-    "main"
-   ],
-   "maxTris": 150
-  },
-  {
-   "id": "socks_knee_stripe",
-   "slot": "socks",
-   "label": "Knee socks with stripes",
-   "tags": [
-    "sport"
-   ],
-   "colorSlots": [
-    "main",
-    "secondary"
-   ],
-   "maxTris": 150,
-   "pattern": "stripes"
-  },
-  {
    "id": "shoe_sneaker",
    "slot": "shoes",
    "label": "Sneakers",
@@ -787,8 +760,7 @@
    "items": {
     "bottom": "bot_plaid_pleated",
     "top": "top_knit_vest",
-    "socks": "socks_white_long",
-    "shoes": "shoe_white_sneaker",
+     "shoes": "shoe_white_sneaker",
     "neck": "acc_choker"
    }
   },
@@ -820,8 +792,7 @@
    "items": {
     "top": "top_jersey_crop",
     "bottom": "bot_tennis_skirt",
-    "socks": "socks_knee_stripe",
-    "shoes": "shoe_sneaker"
+     "shoes": "shoe_sneaker"
    }
   },
   {

@@ -21,13 +21,12 @@ const CLOTH_SWATCHES = [
 const CLOTH_SECTIONS = {
   top: [["top", "TOP"], ["outer", "OUTER"]],
   bottom: [["bottom", "BOTTOM"]],
-  shoes: [["shoes", "SHOES"], ["socks", "SOCKS"]],
+  shoes: [["shoes", "SHOES"]],
 };
 
 function itemsFor(slot) {
   return catalog.items.filter(
-    (i) => i.slot === slot &&
-      (i.tags.includes("base") || slot === "socks")
+    (i) => i.slot === slot && i.tags.includes("base")
   );
 }
 
@@ -236,7 +235,7 @@ export function createUI(state, { onChange }) {
     t2.fillRect(0, 0, 56, 56);
   }
 
-  // ---- cloth panels (top/outer, bottom, shoes/socks) ------------------------
+  // ---- cloth panels (top/outer, bottom, shoes) ------------------------------
   function buildCloth(cat) {
     const sections = CLOTH_SECTIONS[cat];
     const thumbs = leftThumbs(sections.length + 1);
