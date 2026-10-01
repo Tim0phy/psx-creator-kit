@@ -14,6 +14,10 @@ const state = {
   hair: { id: "hair_01", color: "#ffffff" },
 };
 
+// debug: ?hair=hair_XX lets the shot scripts capture a specific style
+const qHair = new URLSearchParams(location.search).get("hair");
+if (qHair) state.hair.id = qHair;
+
 const canvas = document.getElementById("view");
 const { render } = createPSXRenderer(canvas);
 

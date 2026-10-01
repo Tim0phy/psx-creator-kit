@@ -109,7 +109,7 @@
   {
    "id": "hair_06",
    "slot": "hair",
-   "label": "spiked short (m)",
+   "label": "spiky (m)",
    "tags": [
     "base"
    ],
@@ -131,9 +131,9 @@
    "maxTris": 150
   },
   {
-   "id": "hair_08",
-   "slot": "hair",
-   "label": "short pixie",
+    "id": "hair_08",
+    "slot": "hair",
+    "label": "buzz cut (m)",
    "tags": [
     "base"
    ],
@@ -157,7 +157,7 @@
   {
    "id": "hair_10",
    "slot": "hair",
-   "label": "middle part (m)",
+   "label": "side fringe (m)",
    "tags": [
     "base"
    ],

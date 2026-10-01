@@ -29,6 +29,18 @@ for (const id of HAIRS) {
   }
 }
 // hair panel UI
+for (const id of ["hair_04", "hair_06", "hair_08", "hair_10"]) {
+  await page.evaluate(([i]) => {
+    PSXCC.state.hair.id = i;
+    PSXCC.controls.yaw = Math.PI;
+    PSXCC.applyAll();
+  }, [id]);
+  await page.waitForTimeout(200);
+  await page.screenshot({
+    path: `shots/${id}_back.png`,
+    clip: { x: 460, y: 0, width: 640, height: 768 },
+  });
+}
 await page.evaluate(() => PSXCC.controls.yaw = 0);
 await page.click('[data-cat="head"]');
 await page.waitForTimeout(200);
