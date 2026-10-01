@@ -2,8 +2,8 @@ import catalog, { SLOT_LABELS } from "./catalog.js";
 import { renderThumb } from "./faceTexture.js";
 import { HAIR_IDS } from "./parts/hair.js";
 
-// UI: category bar switching panels (Face / Head for M3), pink left column.
-// All item lists are data-driven.
+// UI: category bar switching panels (Face/Head/Top/Bottom/Shoes), pink left
+// column. All item lists are data-driven from catalog.json.
 
 const EYE_COUNT = catalog.eyes;
 const MOUTH_COUNT = catalog.mouths;
@@ -12,6 +12,24 @@ const HAIR_SWATCHES = [
   "#ffffff", "#222222", "#c0c0c0", "#8a5a3a", "#5a3a24",
   "#ffb3c7", "#c8f56b", "#9fd6ff", "#fff3a6", "#d9c2ff",
 ];
+const CLOTH_SWATCHES = [
+  "#ffffff", "#222222", "#e06060", "#3a5ca8", "#e8913a",
+  "#ffb3c7", "#c8f56b", "#9fd6ff", "#fff3a6", "#d9c2ff",
+];
+
+// sections per cloth category: [slot, title]
+const CLOTH_SECTIONS = {
+  top: [["top", "TOP"], ["outer", "OUTER"]],
+  bottom: [["bottom", "BOTTOM"]],
+  shoes: [["shoes", "SHOES"], ["socks", "SOCKS"]],
+};
+
+function itemsFor(slot) {
+  return catalog.items.filter(
+    (i) => i.slot === slot &&
+      (i.tags.includes("base") || slot === "socks")
+  );
+}
 
 export function createUI(state, { onChange }) {
   const panel = document.getElementById("panel");
@@ -57,12 +75,12 @@ export function createUI(state, { onChange }) {
     return thumbs;
   }
 
-  function setSkinPicker(state, swatches, key) {
-    sectionLabel(key === "hair" ? "COLOUR" : "SKIN");
-    const swatchBtns = swatches.map((hex) => {
+  function swatchRow(sourceObj, key, swatches, label = null) {
+    if (label) sectionLabel(label);
+    const btns = swatches.map((hex) => {
       const b = document.createElement("button");
       b.className = "panelBtn swatchBtn";
-      b.dataset.hex = hex.toLowerCase();
+      b.dataset.sw = `${key}:${hex.toLowerCase()}`;
       b.style.background = hex;
       b.title = hex;
       b.addEventListener("click", () => setColor(hex));
@@ -71,18 +89,39 @@ export function createUI(state, { onChange }) {
     });
     const custom = document.createElement("input");
     custom.type = "color";
-    custom.value = state[key];
-    custom.className = "customSkin";
+    custom.value = sourceObj[key];
+    custom.classList.add("customSkin");
+    custom.dataset.swKey = key;
     custom.title = "custom colour";
     custom.addEventListener("input", () => setColor(custom.value));
     panelBody.appendChild(custom);
     function setColor(hex) {
-      state[key] = hex;
+      sourceObj[key] = hex;
       custom.value = hex;
       refresh();
       onChange();
     }
-    return { swatchBtns, custom };
+    return {
+      sync: () => {
+        btns.forEach((b) =>
+          b.classList.toggle(
+            "active",
+            b.dataset.sw === `${key}:${sourceObj[key].toLowerCase()}`
+          )
+        );
+        custom.value = sourceObj[key];
+      },
+    };
+  }
+
+  function drawLabel(t, text) {
+    const ctx = t.getContext("2d");
+    ctx.clearRect(0, 0, 56, 56);
+    ctx.fillStyle = "#fff";
+    ctx.font = '15px "Press Start 2P", monospace';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, 28, 30);
   }
 
   // ---- face panel ----------------------------------------------------------
@@ -132,61 +171,130 @@ export function createUI(state, { onChange }) {
     };
   }
 
+  function setSkinPicker(stateObj, swatches, key) {
+    sectionLabel(key === "hair" ? "COLOUR" : "SKIN");
+    const swatchBtns = swatches.map((hex) => {
+      const b = document.createElement("button");
+      b.className = "panelBtn swatchBtn";
+      b.dataset.hex = hex.toLowerCase();
+      b.style.background = hex;
+      b.title = hex;
+      b.addEventListener("click", () => setColor(hex));
+      panelBody.appendChild(b);
+      return b;
+    });
+    const custom = document.createElement("input");
+    custom.type = "color";
+    custom.value = stateObj[key];
+    custom.className = "customSkin";
+    custom.title = "custom colour";
+    custom.addEventListener("input", () => setColor(custom.value));
+    panelBody.appendChild(custom);
+    function setColor(hex) {
+      stateObj[key] = hex;
+      custom.value = hex;
+      refresh();
+      onChange();
+    }
+    return { swatchBtns, custom };
+  }
+
   // ---- hair panel ----------------------------------------------------------
   function buildHead() {
     const thumbs = leftThumbs(3);
-    hairButtons();
-    setSkinPicker(state.hair, HAIR_SWATCHES, "color");
-
-    function hairButtons() {
-      sectionLabel("STYLE");
-      // option 0 = none, then hair_01.. (data-driven, phase-limited)
-      circleBtn("\u00d8", () => {
-        state.hair.id = null; refresh(); onChange();
-      });
-      HAIR_IDS.forEach((id) => {
-        circleBtn(id.slice(5), () => {
-          state.hair.id = id; refresh(); onChange();
-        });
-      });
-    }
+    sectionLabel("STYLE");
+    const styleBtns = [circleBtn("\u00d8", () => {
+      state.hair.id = null; refresh(); onChange();
+    })];
+    HAIR_IDS.forEach((id) => {
+      styleBtns.push(circleBtn(id.slice(5), () => {
+        state.hair.id = id; refresh(); onChange();
+      }));
+    });
+    const hairSw = setSkinPicker(state.hair, HAIR_SWATCHES, "color");
 
     refresh = () => {
-      [...panelBody.querySelectorAll(".panelBtn")].forEach((b, i) => {
-        if (i === 0) b.classList.toggle("active", state.hair.id === null);
-        else b.classList.toggle("active", state.hair.id === HAIR_IDS[i - 1]);
-      });
-      swatchButtonsRefresh();
-      thumbsRefresh();
-    };
-
-    function swatchButtonsRefresh() {
-      const btns = [...panelBody.querySelectorAll(".swatchBtn")];
-      btns.forEach((b) =>
+      styleBtns.forEach((b, i) =>
+        b.classList.toggle("active", state.hair.id === (i ? HAIR_IDS[i - 1] : null))
+      );
+      hairSw.sync?.();
+      [...panelBody.querySelectorAll(".swatchBtn")].forEach((b) =>
         b.classList.toggle("active", b.dataset.hex === state.hair.color.toLowerCase())
       );
-      const custom = panelBody.querySelector(".customSkin");
-      if (custom) custom.value = state.hair.color;
-    }
-
-    function thumbsRefresh() {
-      // left column: style number, blank, colour swatch
-      const t0 = thumbs[0].getContext("2d");
-      t0.clearRect(0, 0, 56, 56);
-      t0.fillStyle = "#fff";
-      t0.font = '16px "Press Start 2P", monospace';
-      t0.textAlign = "center";
-      t0.textBaseline = "middle";
-      t0.fillText(state.hair.id ? state.hair.id.slice(5) : "\u00d8", 28, 30);
-      const t2 = thumbs[2].getContext("2d");
-      t2.clearRect(0, 0, 56, 56);
-      t2.fillStyle = state.hair.color;
-      t2.fillRect(0, 0, 56, 56);
-    }
+      panelBody.querySelectorAll(".customSkin").forEach(
+        (c) => (c.value = state.hair.color)
+      );
+      drawSlotted(thumbs, state.hair.id, state.hair.color);
+    };
   }
 
-  const BUILDERS = { face: buildFace, head: buildHead };
-  const CAT_LABEL = { face: SLOT_LABELS.face, head: SLOT_LABELS.head };
+  function drawSlotted(thumbs, id, color) {
+    drawLabel(thumbs[0], id ? String(HAIR_IDS.indexOf(id) + 1) : "\u00d8");
+    const t2 = thumbs[thumbs.length - 1].getContext("2d");
+    t2.clearRect(0, 0, 56, 56);
+    t2.fillStyle = color;
+    t2.fillRect(0, 0, 56, 56);
+  }
+
+  // ---- cloth panels (top/outer, bottom, shoes/socks) ------------------------
+  function buildCloth(cat) {
+    const sections = CLOTH_SECTIONS[cat];
+    const thumbs = leftThumbs(sections.length + 1);
+
+    function reRender() {
+      panelBody.replaceChildren();
+      sections.forEach(([slot, title], sIdx) => {
+        sectionLabel(title);
+        const items = itemsFor(slot);
+        const none = circleBtn("\u00d8", () => {
+          state[slot] = null; refresh(); onChange();
+        });
+        none.classList.toggle("active", !state[slot]);
+        items.forEach((item, i) => {
+          const b = circleBtn(String(i + 1), () => {
+            state[slot] = { id: item.id, colors: {} };
+            for (const cs of item.colorSlots) {
+              state[slot].colors[cs] = cs === "main" ? "#ffffff" : "#222222";
+            }
+            refresh(); onChange();
+          });
+          b.classList.toggle("active", state[slot]?.id === item.id);
+        });
+        const idx = items.findIndex((it) => it.id === state[slot]?.id);
+        drawLabel(thumbs[sIdx], state[slot] ? String(idx + 1) : "\u00d8");
+        const colors = state[slot]?.colors;
+        if (colors) {
+          const slots = catalog.items.find(
+            (i) => i.id === state[slot].id
+          )?.colorSlots ?? ["main"];
+          slots.forEach((cs) => {
+            sectionLabel(cs === "main" ? "COLOUR" : cs.toUpperCase());
+            swatchRow(colors, cs, CLOTH_SWATCHES);
+          });
+          const t = thumbs[thumbs.length - 1].getContext("2d");
+          t.clearRect(0, 0, 56, 56);
+          t.fillStyle = colors.main;
+          t.fillRect(0, 0, 56, 56);
+        }
+      });
+    }
+
+    refresh = reRender; // re-render everything on each change
+    refresh();
+  }
+
+  const BUILDERS = {
+    face: buildFace,
+    head: buildHead,
+    top: () => buildCloth("top"),
+    bottom: () => buildCloth("bottom"),
+    shoes: () => buildCloth("shoes"),
+  };
+  const CAT_LABEL = {
+    face: SLOT_LABELS.face, head: SLOT_LABELS.head,
+    top: SLOT_LABELS.top, bottom: SLOT_LABELS.bottom,
+    shoes: SLOT_LABELS.shoes,
+  };
   let current = null;
 
   function switchCat(cat) {

@@ -52,3 +52,18 @@
   唔再有面窗 boundary step（紅圈 wedge 成因）。
 - capGeo 加 capSegY 選項（hair_10 用 6）：fringe 切線階梯細咗。
 - 無 addStrip / 無額外零件，全部由 cap 本身切出。66 tris。
+
+## M4 final round
+- Fixed `?hair=none` crash in applyHair (main.js): empty hair slot now removes
+  the anchor child and returns instead of destructuring null.
+- top_jacket: added two front lapel panels (0.16x0.52x0.06 at x +/-0.16 over
+  the tee) so the open-front outer reads as a jacket instead of a sweater;
+  46 -> 70 tris (max 150).
+- Verified by isolating slots (?top=none / ?bottom=none&socks=none&shoes=none):
+  the earlier red sliver between legs above the shoes is gone with current
+  layering (top -> outer -> bottom -> socks -> shoes remount order).
+- Tris screen-logged for every item (all under catalog maxTris); default outfit
+  PSXCC.tris() ~397, pants+socks ~457. Body-only budget <=800 kept.
+- Decisions (see M4 notes above): socks included despite no "base" tag
+  (user asked for socks); only the stripes PatternTexture implemented; torso
+  stays the white M1 "shirt" under tops on the base body for now.

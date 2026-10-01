@@ -4,7 +4,7 @@ import { makePSXMaterial, SHARED_GRAD } from "./psxRenderer.js";
 // Chibi base body (M1): all parts simple tapered boxes / rounded low-poly box.
 // No face texture, hair, or clothes yet (M2/M3/M4).
 
-function taperBox(w, h, d, topW, botW) {
+export function taperBox(w, h, d, topW, botW) {
   const g = new THREE.BoxGeometry(w, h, d, 1, 1, 1).toNonIndexed();
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {

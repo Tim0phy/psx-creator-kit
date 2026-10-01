@@ -5,18 +5,34 @@ import { createCharacter, DEFAULT_SKIN } from "./character.js";
 import { createControls } from "./controls.js";
 import { makeFaceTexture, renderFace } from "./faceTexture.js";
 import { createHair } from "./parts/hair.js";
+import { createTop } from "./parts/tops.js";
+import { createBottom } from "./parts/bottoms.js";
+import { createSocks, createShoes } from "./parts/shoes.js";
+import catalog from "./catalog.js";
 import { createUI } from "./ui.js";
 
-// M3: face system + hair (paper strips) on a head anchor.
+// M4: face system + hair + base clothes (top/outer/bottom/socks/shoes).
 
 const state = {
   skin: DEFAULT_SKIN, eyes: 3, mouth: 1, blush: false,
   hair: { id: "hair_01", color: "#ffffff" },
+  top: { id: "top_tee", colors: { main: "#e06060" } },
+  outer: null,
+  bottom: { id: "bot_long_pants", colors: { main: "#3a5ca8" } },
+  socks: null,
+  shoes: { id: "shoe_sneaker", colors: { main: "#e8913a" } },
 };
 
-// debug: ?hair=hair_XX lets the shot scripts capture a specific style
-const qHair = new URLSearchParams(location.search).get("hair");
-if (qHair) state.hair.id = qHair;
+// debug: ?hair=hair_XX etc. lets the shot scripts capture specific items
+const params = new URLSearchParams(location.search);
+for (const slot of ["hair", "top", "outer", "bottom", "socks", "shoes"]) {
+  const v = params.get(slot);
+  if (v) {
+    if (v === "none") state[slot] = null;
+    else if (slot === "hair") state.hair.id = v;
+    else state[slot] = { id: v, colors: state[slot]?.colors ?? {} };
+  }
+}
 
 const canvas = document.getElementById("view");
 const { render } = createPSXRenderer(canvas);
@@ -57,10 +73,20 @@ function applyFace() {
   character.setSkin(state.skin); // whole-model skin follows the picker
 }
 
-// hair (M3): rebuild only when the style changed; recolour otherwise
+// generic slot machinery: rebuild on id change, recolour otherwise
+const CLOTH = {};
 let hairCurrent = null;
 let hairMat = null;
+
 function applyHair() {
+  if (!state.hair) {
+    if (hairMat) {
+      character.hairAnchor.remove(character.hairAnchor.children[0]);
+      hairMat = null;
+      hairCurrent = null;
+    }
+    return;
+  }
   const { id, color } = state.hair;
   if (id !== hairCurrent) {
     if (hairMat) character.hairAnchor.remove(character.hairAnchor.children[0]);
@@ -76,11 +102,71 @@ function applyHair() {
   if (hairMat) hairMat.uniforms.color.value.set(color);
 }
 
+function catalogItem(slot) {
+  if (!state[slot]) return null;
+  return catalog.items.find((i) => i.id === state[slot].id) ?? null;
+}
+
+function mount(slot, built) {
+  if (CLOTH[slot]?.group) character.root.remove(CLOTH[slot].group);
+  CLOTH[slot] = built ?? null;
+  if (built) {
+    character.root.add(built.group);
+    // layering: draw order top -> outer -> bottom -> socks -> shoes
+    const order = ["top", "outer", "bottom", "socks", "shoes"];
+    for (let i = order.indexOf(slot) + 1; i < order.length; i++) {
+      if (CLOTH[order[i]]) character.root.add(CLOTH[order[i]].group);
+    }
+  }
+}
+
+function applyCloth(slot) {
+  const item = catalogItem(slot);
+  if (!item) return mount(slot, null);
+  const colors = state[slot].colors;
+  let built;
+  const flags = {
+    cropped: !!item.cropped,
+    lowRise: !!item.lowRise,
+    wide: !!item.wide,
+  };
+  if (item.slot === "top" || item.slot === "outer") {
+    built = createTop(item.id, colors.main, flags);
+    // top geometry is built around the torso centre (world y 0.88)
+    built.group.position.y = 0.88;
+  } else if (item.slot === "bottom") {
+    built = createBottom(item.id, colors.main, flags);
+  } else if (item.slot === "shoes") {
+    built = createShoes(item.id, colors.main);
+  } else {
+    built = createSocks(item.id, {
+      main: colors.main ?? "#ffffff",
+      secondary: colors.secondary ?? "#e8913a",
+    });
+  }
+  mount(slot, built);
+}
+
+function recolor(slot) {
+  const item = catalogItem(slot);
+  if (!item || !CLOTH[slot]) return;
+  const colors = state[slot].colors;
+  if (CLOTH[slot].pattern) {
+    CLOTH[slot].pattern.set("stripes", colors.main, colors.secondary);
+    return;
+  }
+  if (CLOTH[slot].mat) CLOTH[slot].mat.uniforms.color.value.set(colors.main);
+}
+
 createUI(state, { onChange: applyAll });
 
 function applyAll() {
   applyFace();
   applyHair();
+  for (const slot of ["top", "outer", "bottom", "socks", "shoes"]) {
+    applyCloth(slot);
+    recolor(slot);
+  }
 }
 applyAll();
 
@@ -101,4 +187,18 @@ function tick() {
 tick();
 
 // debug hook for screenshots/tests (M0+/M2): stable yaw for deterministic shots
-window.PSXCC = { controls, state, setAuto: (v) => (auto = v), applyAll };
+window.PSXCC = {
+  controls, state, setAuto: (v) => (auto = v), applyAll,
+  scene, camera,
+  character,
+  tris() {
+    let t = 0;
+    scene.traverse((o) => {
+      if (o.isMesh && o.material.isShaderMaterial) {
+        t += o.geometry.attributes.position.count / 3;
+      }
+    });
+    console.log(`[psxcc] TOTAL clothed tris: ${t}`);
+    return t;
+  },
+};
