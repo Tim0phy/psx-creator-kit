@@ -80,10 +80,11 @@ function capGeo(w, h, d, o = {}) {
     const nz = n.getZ(t), nx = n.getX(t);
     let opening = nz > 0.4 && cy < cutHeight(cx);
     // short male styles: trim both sides and the back independently
-    if (!opening && o.shortY != null) {
+    const underside = n.getY(t) < -0.5; // no plate poking through the head
+    if (!opening && underside) opening = true;
+    else if (!opening && o.shortY != null) {
       if (Math.abs(nx) > 0.5) opening = cy < o.shortY;
       else if (nz < -0.5) opening = cy < (o.backY ?? o.shortY);
-      else if (n.getY(t) < -0.5) opening = true; // no underside plate
     }
     if (!opening) for (let k = 0; k < 3; k++) {
       keep.push(p.getX(t+k), p.getY(t+k), p.getZ(t+k));
@@ -202,7 +203,6 @@ const HAIR_BUILDER = {
   hair_01(g, m) {
     // short bob: soft zig-zag fringe cut into the cap, rounded skirt
     capAndBangs(g, m, { openY: 0.16, teeth: 0.05, sideY: -0.3 });
-    addStrip(g, m, { w: 0.84, h: 0.5, x: 0, z: -0.45, jag: 0.05 });
   },
   hair_02(g, m) {
     // long straight: centre parting (small gap) + smooth tapered back
@@ -292,7 +292,6 @@ const HAIR_BUILDER = {
   hair_09(g, m) {
     // low ponytail: neat straight fringe + short back + low tail rooted inside
     capAndBangs(g, m, { openY: 0.2, sideY: -0.2 });
-    addStrip(g, m, { w: 0.84, h: 0.44, x: 0, y: -0.02, z: -0.45 });
     const tail = new THREE.Mesh(tailGeo(0.38, 0.85, 0.22), m);
     tail.position.set(0, -0.48, -0.44);
     tail.rotation.x = -0.14;

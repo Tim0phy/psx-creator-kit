@@ -86,3 +86,21 @@
   waist-to-thigh short skirt instead of a dress; legs show below the hem.
 - Verified pants/shorts/short skirt/long skirt at front + 45deg (tests/m4fix.mjs,
   shots/m4_fix_*.png): no clipping or flicker anywhere.
+
+## 面部貼圖拆分（用戶要求：眼同嘴分開兩張貼圖）
+- 舊做法：眼＋嘴＋腮紅＋皮膚底全部烘喺一張 128x128 canvas，貼喺頭前一塊
+  0.5x0.44 平面上 → 平面烘焙嘅皮膚色同頭部材質嘅燈光/頂點色唔同步，成日色差。
+- 新做法：面部改用兩塊透明 decal（eyes 層＝腮紅＋眼眉眼；mouth 層＝嘴），
+  32x32 -> 128x128 nearest 放大，座標不變；頭部自己顯示原本 skin 材質，
+  皮膚色從此由模型統一渲染，唔會再 mismatch。
+- `psxRenderer.js` map shader 加 alpha 取樣＋`discard`（a<0.5 唔畫），
+  decal 保持 opaque material，無透明排序問題。
+- 兩塊 decal z 0.368 / 0.371 微錯開，避免 vertex snap 造成 coplanar 閃爍。
+- 腮紅歸入 eyes 層（佢喺嘴層範圍外，UI 縮圖用 drawFace32 組合不受影響）。
+
+## M3 第六輪修訂（女仔髮型清理）
+- hair_01 / hair_09 後方懸浮紙板：刪走兩個 addStrip（z -0.45 嘅背板）,
+  剩返 cap + tail / 裝飾。
+- 女性 cap 底部穿模：capGeo 底面平板切割改為無條件執行（唔再綁 shortY），
+  所有髮型 cap 都無底板，唔會插穿頭/身體。DoubleSide 裹面睇入去正常。
+- hair_01: 44 tris / hair_09: 96 tris（上限 150內）。
