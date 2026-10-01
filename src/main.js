@@ -35,10 +35,10 @@ big.width = big.height = 128;
 renderFace(small, big, state);
 const faceTex = makeFaceTexture(big);
 const faceMesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.56, 0.46),
-  makePSXMaterial("#ffffff", { map: faceTex, gradient: 0.1 })
+  new THREE.PlaneGeometry(0.5, 0.44),
+  makePSXMaterial("#ffffff", { map: faceTex, gradient: 0.05 })
 );
-faceMesh.position.set(0, -0.02, 0.372);
+faceMesh.position.set(0, -0.02, 0.368);
 character.root.children.find((c) => c.position.y === 1.48).add(faceMesh);
 
 scene.add(ground, character.root);
