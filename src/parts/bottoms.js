@@ -77,15 +77,16 @@ const BOTTOM_BUILDER = {
   },
   bot_shorts(g, m, f) {
     const waist = f.lowRise ? HIP : HIGH;
-    g.add(hipsMesh(m, waist, 0.4));
-    // boxy high-waist belt: slightly proud of the hips block so waistband
-    // and hem read as one continuous piece over the top hem
+    g.add(hipsMesh(m, waist, 0.36));
+    // slim belt: bridges hips block and hem without reading as cargo overalls
     const belt = new THREE.Mesh(
-      new THREE.BoxGeometry(0.62, 0.09, 0.42).toNonIndexed(), m
+      new THREE.BoxGeometry(0.58, 0.08, 0.38).toNonIndexed(), m
     );
     belt.position.y = waist + 0.02;
     g.add(belt);
-    tubeMeshes(g, m, { r: 0.4, top: 0.56, bottom: 0.38, taper: -0.05, splay: 0.03 });
+    // straight (taper 0) tubes: r 0.4 stays 0.02 clear of the leg (z half
+    // 0.17) and the tubes overlap at the centre (no slit)
+    tubeMeshes(g, m, { r: 0.4, top: 0.56, bottom: 0.38, taper: 0, splay: 0.03 });
   },
   bot_short_skirt(g, m, f) {
     const waist = f.lowRise ? HIP : WAIST;

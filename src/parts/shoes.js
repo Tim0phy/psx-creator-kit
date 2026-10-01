@@ -10,24 +10,25 @@ import { makePSXMaterial } from "../psxRenderer.js";
 const SHOE_BUILDER = {
   shoe_sneaker(g, m) {
     for (const side of [-1, 1]) {
-      // body: deeper (z half 0.28) so the leg's back face (-0.17) is strictly
-      // inside; wider (w half 0.2) so both shoes overlap at the centre
+      // body: z back -0.18 strictly covers the leg's back face (-0.17);
+      // compact footprint so wide pant hems (outer ~0.395) fall straight
+      // over the shoe (wide-leg silhouette)
       const body = new THREE.Mesh(
-        new THREE.BoxGeometry(0.4, 0.2, 0.56).toNonIndexed(), m
+        new THREE.BoxGeometry(0.38, 0.2, 0.52).toNonIndexed(), m
       );
       body.position.set(side * 0.19, 0.13, 0.08);
       // sole also encloses the leg bottom (z -0.18 < -0.17)
       const sole = new THREE.Mesh(
-        new THREE.BoxGeometry(0.38, 0.07, 0.52).toNonIndexed(), m
+        new THREE.BoxGeometry(0.36, 0.07, 0.52).toNonIndexed(), m
       );
       sole.position.set(side * 0.19, 0.035, 0.08);
-      // cuff: fully encases the leg box (x half <=0.17, z half 0.17) with
-      // margin; the lip (top 0.32) rises above the pant hem (0.3) so the hem
-      // tucks into the shoe, and cuffs overlap at the centre (no skin slit)
+      // cuff: slim ankle collar (z half 0.19 just inside the pant hem's z
+      // half ~0.2, so nothing peeks through the tube slit); top 0.29 stays
+      // under the hem 0.3 so pants read straight to the shoe front
       const cuff = new THREE.Mesh(
-        new THREE.BoxGeometry(0.4, 0.1, 0.44).toNonIndexed(), m
+        new THREE.BoxGeometry(0.4, 0.09, 0.38).toNonIndexed(), m
       );
-      cuff.position.set(side * 0.19, 0.27, 0);
+      cuff.position.set(side * 0.19, 0.245, 0);
       g.add(body, sole, cuff);
     }
   },
