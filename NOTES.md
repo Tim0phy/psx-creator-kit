@@ -131,3 +131,4 @@
 - All clear in front/side/backfoot zooms (tests/m4fix4.mjs).
 - Shrink feet (0.20x0.13x0.32) and shoes (body 0.26x0.16x0.40, sole 0.24x0.07, cuff 0.32x0.08) per user feedback; overall shorts look confirmed OK in shots/m4_fix4_*.png.
 - Fix leg poking out of slim shoe: shoe body widened to 0.34x0.16x0.46 (back -0.18 covers leg back -0.17, sides cover leg 0.142); cuff 0.34x0.08x0.38. Overall-shorts tubes lowered 0.05 (bottom 0.38 -> 0.33) per user request.
+- Overall-shorts tubes raised 0.1 with same length (0.43..0.66). Shoe side-clip fix: body 0.36x0.16x0.47 (back -0.19, sides 0.18), sole 0.3x0.43, cuff 0.36x0.08x0.42 (inner edges +-0.01 keep a gap between cuffs); verified bare/shorts front+side+backfoot shots clean.

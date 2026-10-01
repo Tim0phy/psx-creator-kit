@@ -97,7 +97,7 @@ const BOTTOM_BUILDER = {
     // straight tubes: r 0.4 stays 0.02 clear of the leg (z half 0.17), and
     // the tubes overlap at the centre (no slit); hem 0.33 (0.05 lower than
     // before) reaches down to the shoe cuff (top 0.25)
-    tubeMeshes(g, m, { r: 0.4, top: 0.56, bottom: 0.33, taper: 0, splay: 0.03 });
+    tubeMeshes(g, m, { r: 0.4, top: 0.66, bottom: 0.43, taper: 0, splay: 0.03 });
   },
   bot_short_skirt(g, m, f) {
     const waist = f.lowRise ? HIP : WAIST;

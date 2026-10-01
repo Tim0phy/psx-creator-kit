@@ -10,22 +10,23 @@ import { makePSXMaterial } from "../psxRenderer.js";
 const SHOE_BUILDER = {
   shoe_sneaker(g, m) {
     for (const side of [-1, 1]) {
-      // body: x half 0.17 strictly covers the leg (0.142 at these heights),
-      // z back -0.18 strictly covers the leg's back face (-0.17),
-      // front 0.28 just past the foot toe (0.22)
+      // body: x half 0.18 strictly covers the leg (0.142 at these heights,
+      // with side margin), z back -0.19 strictly covers the leg's back face
+      // (-0.17), front 0.28 just past the foot toe (0.22)
       const body = new THREE.Mesh(
-        new THREE.BoxGeometry(0.34, 0.16, 0.46).toNonIndexed(), m
+        new THREE.BoxGeometry(0.36, 0.16, 0.47).toNonIndexed(), m
       );
-      body.position.set(side * 0.19, 0.09, 0.05);
+      body.position.set(side * 0.19, 0.09, 0.045);
       const sole = new THREE.Mesh(
-        new THREE.BoxGeometry(0.28, 0.07, 0.42).toNonIndexed(), m
+        new THREE.BoxGeometry(0.3, 0.07, 0.43).toNonIndexed(), m
       );
       sole.position.set(side * 0.19, 0.045, 0.05);
-      // slim ankle cuff: x half 0.17 covers the leg (0.154 at this height),
-      // z half 0.19 strictly covers the leg depth (0.17), top 0.25 under
-      // the pant hem (0.33)
+      // slim ankle cuff: x half 0.18 strictly covers the leg with margin
+      // (0.158 max) while inner edges (±0.01) keep a gap between cuffs,
+      // z half 0.21 strictly covers the leg depth (0.17), top 0.25 under
+      // the pant hem (0.43)
       const cuff = new THREE.Mesh(
-        new THREE.BoxGeometry(0.34, 0.08, 0.38).toNonIndexed(), m
+        new THREE.BoxGeometry(0.36, 0.08, 0.42).toNonIndexed(), m
       );
       cuff.position.set(side * 0.19, 0.21, 0);
       g.add(body, sole, cuff);
