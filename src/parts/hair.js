@@ -299,13 +299,12 @@ const HAIR_BUILDER = {
     g.add(tail);
   },
   hair_10(g, m) {
-    // short male diagonal fringe: straight clear sweep, right high ->
-    // left low, tight sides, short nape
+    // short male diagonal fringe: right-high -> left-low sweep ending clean
+    // above the eye (no stepped low tips), tight sides, short nape
     capAndBangs(g, m, {
-      capH: 0.6, openY: 0.22, swept: 0.55, sideY: -0.08,
+      capH: 0.62, openY: 0.2, swept: 0.3, faceW: 0.3, sideY: -0.08,
       maxCut: 0.15, shortY: -0.02, backY: -0.12,
     });
-    addStrip(g, m, { w: 0.5, h: 0.18, x: 0, y: -0.06, z: -0.44, jag: 0.03 });
   },
   hair_11(g, m) {
     // half-up long: narrow centre parting + crown puff + long back

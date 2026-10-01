@@ -37,3 +37,9 @@
   側邊 boundary step 衛生面消失。
 - 紅圈斜向反轉：加 swept -0.16（負值 = 熒幕左高右低），劉海由左上斜去右下。
 - 截圖覆核 front/angle 過關，46 tris。
+
+## M3 第四輪修訂（hair_10）
+- 紅圈低位掃尾三角剷除：swept 0.55 -> 0.3 + faceW 0.3，斜陰右上->左下
+  保持，但 fringe tip 收喺眼角之上，乾淨收尾。
+- 後方漂浮紙片：刪走 addStrip（舊 nape tuft 懸浮喺 cap 後面）。
+- crown 加高 capH 0.62，back nape 保留 backY -0.12。54 tris。
