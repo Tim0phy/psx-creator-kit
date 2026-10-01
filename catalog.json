@@ -1,0 +1,849 @@
+{
+ "version": 1,
+ "eyes": 12,
+ "mouths": 6,
+ "slots": [
+  "hair",
+  "headwear",
+  "eyewear",
+  "top",
+  "outer",
+  "bottom",
+  "socks",
+  "shoes",
+  "neck",
+  "waist",
+  "wrist",
+  "bag"
+ ],
+ "palettes": {
+  "pastel": [
+   "#ffb3c7",
+   "#c8f56b",
+   "#9fd6ff",
+   "#fff3a6",
+   "#d9c2ff"
+  ],
+  "denim": [
+   "#3a5ca8",
+   "#6f8fd0",
+   "#1d2f5c"
+  ],
+  "mono": [
+   "#ffffff",
+   "#222222",
+   "#c0c0c0"
+  ],
+  "skin": [
+   "#fbe3d3",
+   "#f5d5bf",
+   "#e8b996",
+   "#c98d65",
+   "#a8693f",
+   "#7a4a2c",
+   "#f2c9b5",
+   "#d9a98a"
+  ]
+ },
+ "items": [
+  {
+   "id": "hair_01",
+   "slot": "hair",
+   "label": "short bob",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_02",
+   "slot": "hair",
+   "label": "long straight with side strips",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_03",
+   "slot": "hair",
+   "label": "twin tails",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_04",
+   "slot": "hair",
+   "label": "side ponytail",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_05",
+   "slot": "hair",
+   "label": "bun",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_06",
+   "slot": "hair",
+   "label": "medium wavy layers",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_07",
+   "slot": "hair",
+   "label": "long hime cut",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_08",
+   "slot": "hair",
+   "label": "short pixie",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_09",
+   "slot": "hair",
+   "label": "low ponytail",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_10",
+   "slot": "hair",
+   "label": "shoulder length with bangs",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "hair_11",
+   "slot": "hair",
+   "label": "half-up long",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "top_tee",
+   "slot": "top",
+   "label": "T-shirt (short sleeve)",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "top_longsleeve",
+   "slot": "top",
+   "label": "Long sleeve",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "top_sweater",
+   "slot": "top",
+   "label": "Sweater",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "top_jacket",
+   "slot": "outer",
+   "label": "Jacket",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "top_baby_tee",
+   "slot": "top",
+   "label": "Baby tee (cropped)",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "cropped": true
+  },
+  {
+   "id": "top_knit_vest",
+   "slot": "top",
+   "label": "Cropped knit vest",
+   "tags": [
+    "preppy"
+   ],
+   "colorSlots": [
+    "main",
+    "secondary"
+   ],
+   "maxTris": 150,
+   "cropped": true,
+   "pattern": "stripes"
+  },
+  {
+   "id": "top_polo",
+   "slot": "top",
+   "label": "Polo shirt",
+   "tags": [
+    "preppy"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "top_offshoulder",
+   "slot": "top",
+   "label": "Off-shoulder crop top",
+   "tags": [
+    "street",
+    "grunge"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "cropped": true
+  },
+  {
+   "id": "top_jersey_crop",
+   "slot": "top",
+   "label": "Crop sports jersey",
+   "tags": [
+    "sport"
+   ],
+   "colorSlots": [
+    "main",
+    "secondary"
+   ],
+   "maxTris": 150,
+   "cropped": true,
+   "pattern": "number_decal"
+  },
+  {
+   "id": "top_denim_shirt",
+   "slot": "top",
+   "label": "Denim shirt",
+   "tags": [
+    "denim"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "pattern": "denim"
+  },
+  {
+   "id": "outer_blazer",
+   "slot": "outer",
+   "label": "Blazer with original crest",
+   "tags": [
+    "preppy"
+   ],
+   "colorSlots": [
+    "main",
+    "secondary"
+   ],
+   "maxTris": 150,
+   "decal": "crest_original"
+  },
+  {
+   "id": "outer_denim_jacket",
+   "slot": "outer",
+   "label": "Denim jacket",
+   "tags": [
+    "denim"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "pattern": "denim"
+  },
+  {
+   "id": "outer_bomber",
+   "slot": "outer",
+   "label": "Bomber jacket",
+   "tags": [
+    "street"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "bot_long_pants",
+   "slot": "bottom",
+   "label": "Long pants",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "bot_shorts",
+   "slot": "bottom",
+   "label": "Shorts",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "bot_short_skirt",
+   "slot": "bottom",
+   "label": "Short skirt",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "bot_long_skirt",
+   "slot": "bottom",
+   "label": "Long skirt",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "bot_lowrise_jeans",
+   "slot": "bottom",
+   "label": "Low-rise jeans",
+   "tags": [
+    "y2k",
+    "denim"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "lowRise": true,
+   "pattern": "denim"
+  },
+  {
+   "id": "bot_cargo_wide",
+   "slot": "bottom",
+   "label": "Wide cargo pants",
+   "tags": [
+    "street",
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "lowRise": true,
+   "wide": true
+  },
+  {
+   "id": "bot_plaid_pleated",
+   "slot": "bottom",
+   "label": "Plaid pleated skirt",
+   "tags": [
+    "preppy"
+   ],
+   "colorSlots": [
+    "main",
+    "secondary"
+   ],
+   "maxTris": 150,
+   "pleats": 8,
+   "pattern": "plaid"
+  },
+  {
+   "id": "bot_tennis_skirt",
+   "slot": "bottom",
+   "label": "Tennis skirt",
+   "tags": [
+    "preppy",
+    "sport"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "pleats": 6
+  },
+  {
+   "id": "bot_lowrise_mini",
+   "slot": "bottom",
+   "label": "Low-rise mini skirt",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "lowRise": true
+  },
+  {
+   "id": "bot_metallic_pants",
+   "slot": "bottom",
+   "label": "Metallic high-waist pants",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "pattern": "metallic"
+  },
+  {
+   "id": "socks_white_long",
+   "slot": "socks",
+   "label": "White long socks",
+   "tags": [
+    "preppy"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "socks_knee_stripe",
+   "slot": "socks",
+   "label": "Knee socks with stripes",
+   "tags": [
+    "sport"
+   ],
+   "colorSlots": [
+    "main",
+    "secondary"
+   ],
+   "maxTris": 150,
+   "pattern": "stripes"
+  },
+  {
+   "id": "shoe_sneaker",
+   "slot": "shoes",
+   "label": "Sneakers",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "shoe_white_sneaker",
+   "slot": "shoes",
+   "label": "White sneakers",
+   "tags": [
+    "preppy"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "shoe_platform",
+   "slot": "shoes",
+   "label": "Platform sneakers",
+   "tags": [
+    "street"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "platform": true
+  },
+  {
+   "id": "shoe_mary_jane",
+   "slot": "shoes",
+   "label": "Mary Janes",
+   "tags": [
+    "preppy",
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "shoe_knee_boots",
+   "slot": "shoes",
+   "label": "Knee-high boots",
+   "tags": [
+    "y2k",
+    "street"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_cat_ears",
+   "slot": "headwear",
+   "label": "Cat ears",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_bunny_ears",
+   "slot": "headwear",
+   "label": "Bunny ears",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_beanie",
+   "slot": "headwear",
+   "label": "Beanie",
+   "tags": [
+    "street"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_cap",
+   "slot": "headwear",
+   "label": "Baseball cap",
+   "tags": [
+    "street",
+    "sport"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_bakerboy",
+   "slot": "headwear",
+   "label": "Baker-boy cap",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_butterfly_clip",
+   "slot": "headwear",
+   "label": "Butterfly hair clip",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "pairable": true
+  },
+  {
+   "id": "acc_sparkle_clip",
+   "slot": "headwear",
+   "label": "Sparkle hair clips",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150,
+   "pairable": true
+  },
+  {
+   "id": "acc_z_hairband",
+   "slot": "headwear",
+   "label": "Z-shaped hairband",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_glasses",
+   "slot": "eyewear",
+   "label": "Glasses",
+   "tags": [
+    "base"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_big_sunglasses",
+   "slot": "eyewear",
+   "label": "Big sunglasses",
+   "tags": [
+    "street",
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_wrap_sunglasses",
+   "slot": "eyewear",
+   "label": "Wraparound sunglasses",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_choker",
+   "slot": "neck",
+   "label": "Choker",
+   "tags": [
+    "preppy",
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_pendant",
+   "slot": "neck",
+   "label": "Pendant necklace",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_belly_chain",
+   "slot": "waist",
+   "label": "Belly chain",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_friendship_bracelet",
+   "slot": "wrist",
+   "label": "Friendship bracelet",
+   "tags": [
+    "y2k"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_baguette_bag",
+   "slot": "bag",
+   "label": "Mini baguette bag",
+   "tags": [
+    "y2k",
+    "denim"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  },
+  {
+   "id": "acc_shoulder_bag",
+   "slot": "bag",
+   "label": "Small shoulder bag",
+   "tags": [
+    "street"
+   ],
+   "colorSlots": [
+    "main"
+   ],
+   "maxTris": 150
+  }
+ ],
+ "presets": [
+  {
+   "id": "preset_preppy",
+   "label": "Preppy",
+   "items": {
+    "bottom": "bot_plaid_pleated",
+    "top": "top_knit_vest",
+    "socks": "socks_white_long",
+    "shoes": "shoe_white_sneaker",
+    "neck": "acc_choker"
+   }
+  },
+  {
+   "id": "preset_street",
+   "label": "Street",
+   "items": {
+    "bottom": "bot_cargo_wide",
+    "top": "top_offshoulder",
+    "headwear": "acc_beanie",
+    "shoes": "shoe_platform",
+    "eyewear": "acc_big_sunglasses"
+   }
+  },
+  {
+   "id": "preset_denim",
+   "label": "Denim",
+   "items": {
+    "top": "top_denim_shirt",
+    "outer": "outer_denim_jacket",
+    "bottom": "bot_lowrise_jeans",
+    "bag": "acc_baguette_bag",
+    "shoes": "shoe_sneaker"
+   }
+  },
+  {
+   "id": "preset_sport",
+   "label": "Sport",
+   "items": {
+    "top": "top_jersey_crop",
+    "bottom": "bot_tennis_skirt",
+    "socks": "socks_knee_stripe",
+    "shoes": "shoe_sneaker"
+   }
+  },
+  {
+   "id": "preset_y2k",
+   "label": "Y2K",
+   "items": {
+    "top": "top_baby_tee",
+    "bottom": "bot_lowrise_mini",
+    "headwear": "acc_butterfly_clip",
+    "shoes": "shoe_mary_jane",
+    "waist": "acc_belly_chain"
+   }
+  },
+  {
+   "id": "preset_colorblock",
+   "label": "Colour block",
+   "auto": true,
+   "items": {
+    "top": "top_tee",
+    "bottom": "bot_short_skirt",
+    "shoes": "shoe_sneaker"
+   }
+  }
+ ]
+}

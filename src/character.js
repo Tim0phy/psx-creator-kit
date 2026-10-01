@@ -1,0 +1,96 @@
+import * as THREE from "three";
+import { makePSXMaterial, SHARED_GRAD } from "./psxRenderer.js";
+
+// Chibi base body (M1): all parts simple tapered boxes / rounded low-poly box.
+// No face texture, hair, or clothes yet (M2/M3/M4).
+
+function taperBox(w, h, d, topW, botW) {
+  const g = new THREE.BoxGeometry(w, h, d, 1, 1, 1).toNonIndexed();
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const t = (p.getY(i) + h / 2) / h;
+    const s = topW + (botW - topW) * t;
+    p.setX(i, p.getX(i) * s);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+function roundedHead() {
+  const g = new THREE.BoxGeometry(0.82, 0.8, 0.72, 3, 3, 2).toNonIndexed();
+  const p = g.attributes.position;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.set(p.getX(i), p.getY(i), p.getZ(i));
+    const r = 0.44;
+    v.normalize().multiplyScalar(r);
+    p.setXYZ(
+      i,
+      p.getX(i) * 0.62 + v.x * 0.38,
+      p.getY(i) * 0.62 + v.y * 0.38,
+      p.getZ(i) * 0.62 + v.z * 0.38
+    );
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+export const DEFAULT_SKIN = "#f5d5bf";
+
+export function createCharacter() {
+  const root = new THREE.Group();
+
+  const skinMat = makePSXMaterial(DEFAULT_SKIN);
+  const shirtMat = makePSXMaterial("#ffffff");
+  const footMat = makePSXMaterial("#e6d3c4", { gradient: 0.05 });
+  const mats = { skin: skinMat, shirt: shirtMat, feet: footMat };
+
+  // head ~1/3 of total height (~1.9 units)
+  const head = new THREE.Mesh(roundedHead(), skinMat);
+  head.position.y = 1.48;
+  root.add(head);
+
+  // torso: flared trapezoid box
+  const torso = new THREE.Mesh(taperBox(0.62, 0.62, 0.36, 0.62, 0.82), shirtMat);
+  torso.position.y = 0.9;
+  root.add(torso);
+
+  // arms: A-pose ~25 degrees
+  const armGeo = taperBox(0.2, 0.56, 0.2, 0.2, 0.15);
+  const handGeo = new THREE.BoxGeometry(0.24, 0.22, 0.24).toNonIndexed();
+  for (const side of [-1, 1]) {
+    const arm = new THREE.Group();
+    const upper = new THREE.Mesh(armGeo, skinMat);
+    upper.position.y = -0.28;
+    const hand = new THREE.Mesh(handGeo, skinMat);
+    hand.position.y = -0.62;
+    arm.add(upper, hand);
+    arm.position.set(side * 0.38, 1.18, 0);
+    arm.rotation.z = side * 0.22; // ~13 deg outward
+    root.add(arm);
+  }
+
+  // legs
+  const legGeo = taperBox(0.3, 0.48, 0.3, 0.3, 0.24);
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Mesh(legGeo, skinMat);
+    leg.position.set(side * 0.2, 0.32, 0);
+    const foot = new THREE.Mesh(
+      new THREE.BoxGeometry(0.3, 0.16, 0.42).toNonIndexed(),
+      footMat
+    );
+    foot.position.set(side * 0.2, 0.08, 0.08);
+    root.add(leg, foot);
+  }
+
+  root.traverse((o) => {
+    if (o.isMesh) o.geometry.computeBoundingSphere();
+  });
+  SHARED_GRAD.max = root.userData.topY = 1.9;
+
+  function setSkin(hex) {
+    skinMat.uniforms.color.value.set(hex);
+  }
+
+  return { root, mats, setSkin };
+}
