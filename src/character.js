@@ -9,7 +9,7 @@ function taperBox(w, h, d, topW, botW) {
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const t = (p.getY(i) + h / 2) / h;
-    const s = topW + (botW - topW) * t;
+    const s = (topW + (botW - topW) * t) / w;
     p.setX(i, p.getX(i) * s);
   }
   g.computeVertexNormals();
@@ -51,35 +51,35 @@ export function createCharacter() {
   root.add(head);
 
   // torso: flared trapezoid box
-  const torso = new THREE.Mesh(taperBox(0.62, 0.62, 0.36, 0.62, 0.82), shirtMat);
-  torso.position.y = 0.9;
+  const torso = new THREE.Mesh(taperBox(0.56, 0.6, 0.32, 0.56, 0.66), shirtMat);
+  torso.position.y = 0.88;
   root.add(torso);
 
   // arms: A-pose ~25 degrees
-  const armGeo = taperBox(0.2, 0.56, 0.2, 0.2, 0.15);
-  const handGeo = new THREE.BoxGeometry(0.24, 0.22, 0.24).toNonIndexed();
+  const armGeo = taperBox(0.27, 0.6, 0.27, 0.27, 0.21);
+  const handGeo = new THREE.BoxGeometry(0.3, 0.26, 0.3).toNonIndexed();
   for (const side of [-1, 1]) {
     const arm = new THREE.Group();
     const upper = new THREE.Mesh(armGeo, skinMat);
-    upper.position.y = -0.28;
+    upper.position.y = -0.29;
     const hand = new THREE.Mesh(handGeo, skinMat);
-    hand.position.y = -0.62;
+    hand.position.y = -0.68;
     arm.add(upper, hand);
-    arm.position.set(side * 0.38, 1.18, 0);
-    arm.rotation.z = side * 0.22; // ~13 deg outward
+    arm.position.set(side * 0.36, 1.18, 0);
+    arm.rotation.z = side * 0.2; // ~12 deg outward
     root.add(arm);
   }
 
   // legs
-  const legGeo = taperBox(0.3, 0.48, 0.3, 0.3, 0.24);
+  const legGeo = taperBox(0.34, 0.56, 0.34, 0.34, 0.27);
   for (const side of [-1, 1]) {
     const leg = new THREE.Mesh(legGeo, skinMat);
-    leg.position.set(side * 0.2, 0.32, 0);
+    leg.position.set(side * 0.19, 0.34, 0);
     const foot = new THREE.Mesh(
-      new THREE.BoxGeometry(0.3, 0.16, 0.42).toNonIndexed(),
+      new THREE.BoxGeometry(0.32, 0.18, 0.44).toNonIndexed(),
       footMat
     );
-    foot.position.set(side * 0.2, 0.08, 0.08);
+    foot.position.set(side * 0.19, 0.09, 0.08);
     root.add(leg, foot);
   }
 
