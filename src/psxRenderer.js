@@ -70,6 +70,7 @@ export function makePSXMaterial(colorHex, opts = {}) {
     ? { map: { value: opts.map } }
     : {};
   return new THREE.ShaderMaterial({
+    side: opts.side ?? THREE.FrontSide,
     uniforms: {
       color: { value: new THREE.Color(colorHex) },
       lightDir: { value: new THREE.Vector3(0.4, 1.0, 0.7).normalize() },

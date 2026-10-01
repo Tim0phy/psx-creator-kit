@@ -179,6 +179,12 @@ canvas.image-rendering { image-rendering: pixelated; }
   color: #e87890;
 }
 
+/* category panel colour themes */
+#panel[data-cat="head"] {
+  background: #58c8a0;
+  border-color: #3aa87e;
+}
+
 /* top right buttons */
 #topRight {
   position: absolute;

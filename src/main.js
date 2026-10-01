@@ -4,11 +4,15 @@ import { createPSXRenderer, makePSXMaterial } from "./psxRenderer.js";
 import { createCharacter, DEFAULT_SKIN } from "./character.js";
 import { createControls } from "./controls.js";
 import { makeFaceTexture, renderFace } from "./faceTexture.js";
-import { createFaceUI } from "./ui.js";
+import { createHair } from "./parts/hair.js";
+import { createUI } from "./ui.js";
 
-// M2: face system — eyes/mouth/blush/skin on a 128px canvas texture.
+// M3: face system + hair (paper strips) on a head anchor.
 
-const state = { skin: DEFAULT_SKIN, eyes: 3, mouth: 1, blush: false };
+const state = {
+  skin: DEFAULT_SKIN, eyes: 3, mouth: 1, blush: false,
+  hair: { id: "hair_01", color: "#ffffff" },
+};
 
 const canvas = document.getElementById("view");
 const { render } = createPSXRenderer(canvas);
@@ -49,7 +53,32 @@ function applyFace() {
   character.setSkin(state.skin); // whole-model skin follows the picker
 }
 
-createFaceUI(state, { onChange: applyFace });
+// hair (M3): rebuild only when the style changed; recolour otherwise
+let hairCurrent = null;
+let hairMat = null;
+function applyHair() {
+  const { id, color } = state.hair;
+  if (id !== hairCurrent) {
+    if (hairMat) character.hairAnchor.remove(character.hairAnchor.children[0]);
+    hairCurrent = id;
+    const built = createHair(id, color);
+    if (built.mat) {
+      character.hairAnchor.add(built.group);
+      hairMat = built.mat;
+    } else {
+      hairMat = null;
+    }
+  }
+  if (hairMat) hairMat.uniforms.color.value.set(color);
+}
+
+createUI(state, { onChange: applyAll });
+
+function applyAll() {
+  applyFace();
+  applyHair();
+}
+applyAll();
 
 let auto = true;
 const controls = createControls({
@@ -68,4 +97,4 @@ function tick() {
 tick();
 
 // debug hook for screenshots/tests (M0+/M2): stable yaw for deterministic shots
-window.PSXCC = { controls, state, setAuto: (v) => (auto = v) };
+window.PSXCC = { controls, state, setAuto: (v) => (auto = v), applyAll };

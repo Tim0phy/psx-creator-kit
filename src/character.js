@@ -93,9 +93,14 @@ export function createCharacter() {
   });
   SHARED_GRAD.max = root.userData.topY = 1.9;
 
+  // hair anchor (M3): origin at the head centre
+  const hairAnchor = new THREE.Group();
+  hairAnchor.position.set(0, 1.48, 0);
+  root.add(hairAnchor);
+
   function setSkin(hex) {
     skinMat.uniforms.color.value.set(hex);
   }
 
-  return { root, mats, setSkin };
+  return { root, mats, setSkin, hairAnchor };
 }
