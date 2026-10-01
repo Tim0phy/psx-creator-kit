@@ -43,3 +43,12 @@
   保持，但 fringe tip 收喺眼角之上，乾淨收尾。
 - 後方漂浮紙片：刪走 addStrip（舊 nape tuft 懸浮喺 cap 後面）。
 - crown 加高 capH 0.62，back nape 保留 backY -0.12。54 tris。
+
+## M3 第五輪修訂（hair_10 按參考圖重做）
+- 參考圖：貼頭 cap + 眉上單一斜 fringe（左上->右下，同 hair_08 同向），
+  無牙、無低位掃尾。
+- 直接用 capGeo：capW 0.92 / capH 0.62 / capD 0.82 貼頭，openY 0.1 貼眉，
+  swept -0.22 由左上斜去右下；faceW 0.6 令切線橫跨整個 cap 前面，
+  唔再有面窗 boundary step（紅圈 wedge 成因）。
+- capGeo 加 capSegY 選項（hair_10 用 6）：fringe 切線階梯細咗。
+- 無 addStrip / 無額外零件，全部由 cap 本身切出。66 tris。

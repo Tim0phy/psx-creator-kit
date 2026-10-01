@@ -54,7 +54,7 @@ function roundedBox(w, h, d, segX, segY, segZ, r, s) {
 // - partCut/partY: middle-part opening in the centre
 // - sideY: how far the front sides hang down (hime wings, short male sides)
 function capGeo(w, h, d, o = {}) {
-  const src = roundedBox(w, h, d, 4, 4, 1, 0.5, 0.38);
+  const src = roundedBox(w, h, d, 4, o.capSegY ?? 4, 1, 0.5, 0.38);
   const p = src.attributes.position;
   const n = src.attributes.normal;
   const keep = [];
@@ -299,11 +299,12 @@ const HAIR_BUILDER = {
     g.add(tail);
   },
   hair_10(g, m) {
-    // short male diagonal fringe: right-high -> left-low sweep ending clean
-    // above the eye (no stepped low tips), tight sides, short nape
+    // short male sweep per reference: snug cap, single clean diagonal fringe
+    // just above the brows (right-high -> left-low), short sides and nape
     capAndBangs(g, m, {
-      capH: 0.62, openY: 0.2, swept: 0.3, faceW: 0.3, sideY: -0.08,
-      maxCut: 0.15, shortY: -0.02, backY: -0.12,
+      capW: 0.92, capH: 0.62, capD: 0.82, capSegY: 6,
+      openY: 0.1, swept: -0.22, faceW: 0.6, sideY: 0.02,
+      maxCut: 0.15, shortY: 0.02, backY: -0.06,
     });
   },
   hair_11(g, m) {
