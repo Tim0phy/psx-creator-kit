@@ -66,7 +66,9 @@ function capGeo(w, h, d, o = {}) {
       y = o.openY ?? 0.14;
       if (o.partCut && Math.abs(cx) < o.partCut) y = Math.max(y, o.partY ?? 0.18);
       if (o.swept) y -= cx * o.swept;
-      if (o.teeth) y -= Math.round((cx + 1.5) * 7) % 2 ? o.teeth : 0;
+      if (o.teeth && Math.abs(cx) < (o.teethW ?? 0.34)) {
+        y -= Math.round(Math.abs(cx) * 7) % 2 ? o.teeth : 0; // mirrored zig-zag
+      }
       if (o.maxCut) y = Math.min(y, o.maxCut);
     }
     return y;
@@ -185,6 +187,17 @@ function sideLock(group, mat, s, o = {}) {
   });
 }
 
+const SPIKE_UP = new THREE.Vector3(0, 1, 0);
+// flat spike pointing outward along a direction from the head centre
+function radialSpike(group, mat, dir, h, w = 0.3, roll = 0) {
+  const sp = new THREE.Mesh(spikeGeo(w, h), mat);
+  const d = new THREE.Vector3(...dir).normalize();
+  sp.quaternion.setFromUnitVectors(SPIKE_UP, d);
+  if (roll) sp.rotateY(roll);
+  sp.position.copy(d).multiplyScalar(0.3);
+  group.add(sp);
+}
+
 const HAIR_BUILDER = {
   hair_01(g, m) {
     // short bob: soft zig-zag fringe cut into the cap, rounded skirt
@@ -235,33 +248,28 @@ const HAIR_BUILDER = {
     g.add(bun);
   },
   hair_06(g, m) {
-    // male spikes: short sides/back, zigzag fringe, tall crown clumps
-    // swept up and back (rooster style) + two side clumps
+    // male spikes (star burst): mirrored zig-zag V fringe, high hairline,
+    // spikes radiating up / front / sides / back following the reference
     capAndBangs(g, m, {
-      capH: 0.6, openY: 0.2, teeth: 0.1, sideY: -0.12,
-      maxCut: 0.15, shortY: -0.02, backY: -0.02,
+      capH: 0.62, openY: 0.26, teeth: 0.1, teethW: 0.3, sideY: -0.06,
+      maxCut: 0.16, shortY: -0.02, backY: -0.02,
     });
-    const clumps = [
-      // x, y, z, rx, ry, rz, height
-      [0, 0.32, 0.22, -0.05, 0, 0, 0.5],
-      [-0.16, 0.35, 0.12, 0.1, 0, -0.3, 0.56],
-      [0.16, 0.35, 0.12, 0.1, 0, 0.3, 0.56],
-      [-0.26, 0.34, -0.04, 0.45, 0, -0.45, 0.54],
-      [0.26, 0.34, -0.04, 0.45, 0, 0.45, 0.54],
-      [-0.18, 0.32, -0.22, 0.75, -0.1, -0.2, 0.5],
-      [0.18, 0.32, -0.22, 0.75, 0.1, 0.2, 0.5],
-      [0, 0.32, -0.3, 0.9, 0, 0, 0.52],
-      [-0.34, 0.26, -0.02, -0.15, -0.75, -0.65, 0.42],
-      [0.34, 0.26, -0.02, -0.15, 0.75, 0.65, 0.42],
-      [-0.1, 0.36, 0.24, -0.05, 0, -0.15, 0.42],
-      [0.1, 0.36, 0.24, -0.05, 0, 0.15, 0.42],
+    const rays = [
+      // dir, height, width, roll
+      [[0, 1, 0.12], 0.48],           // front centre crown
+      [[-0.32, 1, 0.02], 0.46],       // upper left crown
+      [[0.32, 1, 0.02], 0.46],
+      [[-0.62, 0.7, 0.02], 0.4],      // upper flanks
+      [[0.62, 0.7, 0.02], 0.4],
+      [[-1, 0.3, 0.1], 0.34, 0.34, 0],   // horizontal temple spikes
+      [[1, 0.3, 0.1], 0.34, 0.34, 0],
+      [[-0.55, 0.35, -0.85], 0.42],   // back diagonals
+      [[0.55, 0.35, -0.85], 0.42],
+      [[0, 0.6, -1], 0.4],            // back centre
+      [[-0.9, 0, -0.3], 0.3],         // lower side points
+      [[0.9, 0, -0.3], 0.3],
     ];
-    for (const [x, y, z, rx, ry, rz, h] of clumps) {
-      const sp = new THREE.Mesh(spikeGeo(0.3, h), m);
-      sp.position.set(x, y, z);
-      sp.rotation.set(rx, ry, rz);
-      g.add(sp);
-    }
+    for (const [d, h, w, roll] of rays) radialSpike(g, m, d, h, w, roll);
   },
   hair_07(g, m) {
     // hime cut: level fringe + long side wings carved from the cap + jagged back
@@ -277,7 +285,7 @@ const HAIR_BUILDER = {
     // uniform short sides and back, no extra volume
     capAndBangs(g, m, {
       capW: 0.9, capH: 0.64, capD: 0.8,
-      openY: 0.24, teeth: 0.06, sideY: -0.06, maxCut: 0.16,
+      openY: 0.24, teeth: 0.06, teethW: 0.3, sideY: -0.06, maxCut: 0.16,
       shortY: -0.02, backY: -0.02,
     });
   },
@@ -291,9 +299,10 @@ const HAIR_BUILDER = {
     g.add(tail);
   },
   hair_10(g, m) {
-    // short male diagonal fringe: swept wedge, tight sides, short nape
+    // short male diagonal fringe: straight clear sweep, right high ->
+    // left low, tight sides, short nape
     capAndBangs(g, m, {
-      capH: 0.6, openY: 0.2, swept: 0.35, teeth: 0.1, sideY: -0.08,
+      capH: 0.6, openY: 0.22, swept: 0.55, sideY: -0.08,
       maxCut: 0.15, shortY: -0.02, backY: -0.12,
     });
     addStrip(g, m, { w: 0.5, h: 0.18, x: 0, y: -0.06, z: -0.44, jag: 0.03 });
