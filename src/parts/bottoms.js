@@ -10,14 +10,15 @@ import { makePSXMaterial } from "../psxRenderer.js";
 const WAIST = 0.74; // normal waistband top
 const HIP = 0.6;    // low-rise waistband top (on the hips)
 
-// hips/pelvis block from y=0.5 up to waistY
+// hips/pelvis block from y=0.5 up to waistY. Narrower than any top shell
+// (tee 1.06 -> half-w 0.297) so the two never intersect and z-fight.
 function hipsMesh(mat, waistY) {
   const h = waistY - 0.5;
-  const g = new THREE.BoxGeometry(0.6, h, 0.34).toNonIndexed();
+  const g = new THREE.BoxGeometry(0.56, h, 0.3).toNonIndexed();
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const t = (p.getY(i) + h / 2) / h; // 0 bottom -> 1 top
-    p.setX(i, p.getX(i) * (0.66 + (0.6 - 0.66) * t) / 0.66);
+    p.setX(i, p.getX(i) * ((0.5 + 0.06 * (1 - t)) / 0.56));
   }
   g.translate(0, 0.5 + h / 2, 0);
   g.computeVertexNormals();
@@ -53,8 +54,10 @@ function skirtMesh(mat, rTop, rBottom, topY, botY) {
   return new THREE.Mesh(a, mat);
 }
 
+// waistband + skirt mouths r 0.32 (half-w ~0.296) stay inside the tee shell
+// (0.297) -> no clipping with tops; skirts flare wider below the tee hem.
 function waistbandMesh(mat, waistY) {
-  const g = new THREE.CylinderGeometry(0.355, 0.355, 0.07, 8, 1, true)
+  const g = new THREE.CylinderGeometry(0.32, 0.32, 0.07, 8, 1, true)
     .toNonIndexed();
   g.translate(0, waistY + 0.3, 0);
   g.computeVertexNormals();
@@ -75,7 +78,7 @@ const BOTTOM_BUILDER = {
   bot_short_skirt(g, m, f) {
     const waist = f.lowRise ? HIP : WAIST;
     g.add(waistbandMesh(m, waist));
-    g.add(skirtMesh(m, 0.34, 0.52, waist + 0.28, waist - 0.36));
+    g.add(skirtMesh(m, 0.32, 0.5, waist + 0.3, waist - 0.28));
   },
   bot_long_skirt(g, m, f) {
     const waist = f.lowRise ? HIP : WAIST;

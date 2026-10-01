@@ -75,3 +75,14 @@
   there is a clear gap around the top.
 - Verified with 5 yaw angles (tests/m4zf.mjs, shots/m4_zf_*.png): open front
   shows the tee cleanly, no flicker/clipping from front/side/back.
+
+## M4 fix: pant/top clipping + shorts/skirt readability (user feedback)
+- Cause of top/bottom穿模: waistband 8-gon mouth (r 0.355 -> half-w 0.328) and
+  skirt mouth (r 0.34 -> 0.314) were wider than the tee shell (half-w 0.297),
+  and the hips block (0.66..0.6 wide, d 0.34) intersected the shell too.
+- Fix (bottoms.js): waistband + skirt mouths r 0.32 (half-w 0.296, just inside
+  the tee shell); hips block narrowed to 0.56..0.5 wide, depth 0.3.
+- bot_short_skirt: hem 0.38 -> 0.46 above ground, flare 0.5 -> reads as a real
+  waist-to-thigh short skirt instead of a dress; legs show below the hem.
+- Verified pants/shorts/short skirt/long skirt at front + 45deg (tests/m4fix.mjs,
+  shots/m4_fix_*.png): no clipping or flicker anywhere.
