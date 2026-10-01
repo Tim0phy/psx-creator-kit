@@ -61,7 +61,7 @@
   {
    "id": "hair_02",
    "slot": "hair",
-   "label": "long straight with side strips",
+   "label": "long straight, curtain bangs",
    "tags": [
     "base"
    ],
@@ -109,7 +109,7 @@
   {
    "id": "hair_06",
    "slot": "hair",
-   "label": "medium wavy layers",
+   "label": "spiked short (m)",
    "tags": [
     "base"
    ],
@@ -157,7 +157,7 @@
   {
    "id": "hair_10",
    "slot": "hair",
-   "label": "shoulder length with bangs",
+   "label": "middle part (m)",
    "tags": [
     "base"
    ],
