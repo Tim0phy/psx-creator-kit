@@ -31,3 +31,9 @@
 - hair_10 斜陰加強：swept 0.55、移除 teeth，fringe 由右高直斜到左低。
 - 截圖覆核（crop 放大 3x）：06 三視圖呈星爆、08 正面劉海鏡像、10 斜 fringe
   正面/側面一致、無 left stray、back 剷短 — 全部過關。
+
+## M3 第三輪修訂（hair_08）
+- 藍圈 stray 三角：新增 faceW 0.28 + teethW 0.22，牙齒同面窗遠離邊界，
+  側邊 boundary step 衛生面消失。
+- 紅圈斜向反轉：加 swept -0.16（負值 = 熒幕左高右低），劉海由左上斜去右下。
+- 截圖覆核 front/angle 過關，46 tris。

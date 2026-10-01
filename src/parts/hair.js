@@ -285,8 +285,8 @@ const HAIR_BUILDER = {
     // uniform short sides and back, no extra volume
     capAndBangs(g, m, {
       capW: 0.9, capH: 0.64, capD: 0.8,
-      openY: 0.24, teeth: 0.06, teethW: 0.3, sideY: -0.06, maxCut: 0.16,
-      shortY: -0.02, backY: -0.02,
+      openY: 0.24, teeth: 0.06, teethW: 0.22, sideY: -0.06, maxCut: 0.16,
+      swept: -0.16, faceW: 0.28, shortY: -0.02, backY: -0.02,
     });
   },
   hair_09(g, m) {
