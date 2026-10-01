@@ -42,6 +42,28 @@ void main() {
 export const SHARED_GRAD = { min: 0.0, max: 1.9 };
 
 export function makePSXMaterial(colorHex, opts = {}) {
+  const hasMap = !!opts.map;
+  const vsrc = hasMap
+    ? VERT.replace("varying vec3 vNormalV;", "varying vec2 vUv;\nvarying vec3 vNormalV;")
+        .replace("void main() {", "void main() {\n  vUv = uv;")
+    : VERT;
+  const fsrc = hasMap
+    ? FRAG.replace(
+        "uniform vec3 color;",
+        "uniform sampler2D map;\nvarying vec2 vUv;\nuniform vec3 color;"
+      )
+        .replace(
+          "void main() {",
+          "void main() {\n  vec3 base = texture2D(map, vUv).rgb;"
+        )
+        .replace(
+          "  vec3 c = color * (ambient + diffuse * d);",
+          "  vec3 c = base * (ambient + diffuse * d);"
+        )
+    : FRAG;
+  const extraUniforms = hasMap
+    ? { map: { value: opts.map } }
+    : {};
   return new THREE.ShaderMaterial({
     uniforms: {
       color: { value: new THREE.Color(colorHex) },
@@ -52,9 +74,10 @@ export function makePSXMaterial(colorHex, opts = {}) {
       gradMin: { value: SHARED_GRAD.min },
       gradMax: { value: SHARED_GRAD.max },
       res: { value: opts.res ?? 200.0 },
+      ...extraUniforms,
     },
-    vertexShader: VERT,
-    fragmentShader: FRAG,
+    vertexShader: vsrc,
+    fragmentShader: fsrc,
   });
 }
 

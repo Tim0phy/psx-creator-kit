@@ -117,8 +117,9 @@ canvas.image-rendering { image-rendering: pixelated; }
   gap: 14px;
   justify-items: center;
   align-content: start;
-  padding: 14px 8px;
+  padding: 14px 8px 20px;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .panelBtn {
@@ -131,6 +132,51 @@ canvas.image-rendering { image-rendering: pixelated; }
   font-size: 10px;
   color: #333;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.panelBtn canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  border-radius: 50%;
+}
+
+.panelBtn.active {
+  border-color: #e85878;
+  box-shadow: 0 0 0 2px #f0a8b8;
+}
+
+.sectionLabel {
+  grid-column: 1 / -1;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #b07078;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.swatchBtn.active {
+  box-shadow: 0 0 0 2px #e85878;
+}
+
+.customSkin {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 2px solid #b8a888;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.blushBtn.active {
+  border-color: #f2a2ac;
+  box-shadow: 0 0 0 2px #f8d0d8;
+  color: #e87890;
 }
 
 /* top right buttons */

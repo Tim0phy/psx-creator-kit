@@ -16,6 +16,13 @@ for (const [w, h, name] of sizes) {
   const page = await browser.newPage({ viewport: { width: w, height: h } });
   await page.goto("http://localhost:5199");
   await page.waitForTimeout(500);
+  await page.evaluate(() => {
+    if (window.PSXCC) {
+      if (PSXCC.setAuto) PSXCC.setAuto(false);
+      PSXCC.controls.yaw = 0;
+    }
+  });
+  await page.waitForTimeout(200);
   await page.screenshot({ path: `shots/${name}` });
   await page.close();
 }
