@@ -11,7 +11,7 @@ const SLOT_ITEMS = {
     "acc_cat_ears", "acc_bunny_ears", "acc_beanie", "acc_cap",
     "acc_bakerboy", "acc_butterfly_clip", "acc_sparkle_clip", "acc_z_hairband",
   ],
-  eyewear: ["acc_glasses", "acc_big_sunglasses", "acc_wrap_sunglasses"],
+  eyewear: ["acc_glasses", "acc_wrap_sunglasses"],
   neck: ["acc_choker", "acc_pendant"],
   waist: ["acc_belly_chain"],
   wrist: ["acc_friendship_bracelet"],
@@ -35,7 +35,7 @@ for (const [slot, ids] of Object.entries(SLOT_ITEMS)) {
     for (const [view, yaw] of Object.entries(views)) {
       await page.setViewportSize({ width: 640, height: 768 });
       await page.goto(
-        `http://localhost:5199?hair=hair_01&${slot}=${id}&c=%23e85a78`
+        `http://localhost:5199?hair=hair_01&${slot}=${id}&c=%23111d44`
       );
       await page.waitForTimeout(350);
       await page.evaluate((y) => {

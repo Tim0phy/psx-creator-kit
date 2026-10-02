@@ -262,9 +262,11 @@ export function createUI(state, { onChange }) {
         none.classList.toggle("active", !state[slot]);
         items.forEach((item, i) => {
           const b = circleBtn(String(i + 1), () => {
+            // carry over this slot's colours so switching items keeps the pick
+            const prev = state[slot]?.colors ?? {};
             state[slot] = { id: item.id, colors: {} };
             for (const cs of item.colorSlots) {
-              state[slot].colors[cs] = cs === "main" ? "#ffffff" : "#222222";
+              state[slot].colors[cs] = prev[cs] ?? (cs === "main" ? "#ffffff" : "#222222");
             }
             refresh(); onChange();
           });

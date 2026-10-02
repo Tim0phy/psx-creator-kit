@@ -83,41 +83,50 @@ const HEAD_BUILDER = {
       g.add(inner);
     }
   },
-  // slouched dome + rolled brim + pompom (all above the hair cap top)
+  // slouched dome + rolled brim + pompom — worn OVER the hair cap
+  // (hair half-w is 0.475, so every radius clears it by ~0.06)
   acc_beanie(g, m) {
-    const hat = new THREE.Group();
-    const crown = new THREE.SphereGeometry(0.46, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2);
-    crown.scale(1, 0.8, 0.94);
-    crown.translate(0, 0.32, 0);
-    hat.add(new THREE.Mesh(crown.toNonIndexed(), m));
-    ring(hat, m, 0.5, 0.15, 7, 0.32);
-    const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(0.09, 0), m);
+    const crown = new THREE.SphereGeometry(0.55, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2);
+    crown.scale(1, 0.72, 0.95);
+    crown.translate(0, 0.34, 0);
+    g.add(new THREE.Mesh(crown.toNonIndexed(), m));
+    const band = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.56, 0.56, 0.16, 7, 1, true).toNonIndexed(), m
+    );
+    band.scale.set(1, 1, 0.95);
+    band.position.y = 0.36;
+    g.add(band);
+    const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(0.1, 0), m);
     pom.position.set(0, 0.76, 0);
-    hat.add(pom);
-    hat.rotation.x = -0.08;
-    g.add(hat);
+    g.add(pom);
   },
-  // deep dome crown + flat front brim + top button
+  // deep dome crown + flat front brim + top button — brim pushed out past
+  // the hair fringe plane (z 0.425)
   acc_cap(g, m) {
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(0.53, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
+      new THREE.SphereGeometry(0.55, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
-    crown.geometry.scale(1, 0.8, 0.92);
-    crown.position.y = 0.26;
+    crown.geometry.scale(1, 0.72, 0.94);
+    crown.position.y = 0.3;
     g.add(crown);
-    bx(g, m, 0.44, 0.05, 0.24, 0, 0.28, 0.5);
-    bx(g, m, 0.08, 0.06, 0.08, 0, 0.7, 0);
+    bx(g, m, 0.56, 0.06, 0.26, 0, 0.3, 0.6);
+    bx(g, m, 0.08, 0.06, 0.08, 0, 0.73, 0);
   },
   // puffy crown + deep band + short visor
   acc_bakerboy(g, m) {
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(0.5, 8, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
+      new THREE.SphereGeometry(0.54, 8, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
-    crown.geometry.scale(1, 0.5, 0.94);
-    crown.position.y = 0.3;
+    crown.geometry.scale(1, 0.42, 0.94);
+    crown.position.y = 0.38;
     g.add(crown);
-    ring(g, m, 0.52, 0.16, 8, 0.28);
-    bx(g, m, 0.3, 0.04, 0.2, 0, 0.24, 0.5);
+    const band = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.56, 0.56, 0.17, 8, 1, true).toNonIndexed(), m
+    );
+    band.scale.set(1, 1, 0.95);
+    band.position.y = 0.31;
+    g.add(band);
+    bx(g, m, 0.46, 0.05, 0.24, 0, 0.32, 0.6);
   },
   // butterfly wing pairs on both sides of the head
   acc_butterfly_clip(g, m) {
@@ -128,12 +137,12 @@ const HEAD_BUILDER = {
       bx(g, m, 0.05, 0.07, 0.04, side * 0.39, 0.11, 0.1);
     }
   },
-  // slim clip bars with two sparkle stars each
+  // slim clip bars with two sparkle stars each — rests on the hair top front
   acc_sparkle_clip(g, m) {
     for (const side of [-1, 1]) {
-      bx(g, m, 0.14, 0.03, 0.03, side * 0.42, 0.24, 0.16, { z: side * 0.2 });
-      star(g, m, side * 0.4, 0.31, 0.17);
-      star(g, m, side * 0.44, 0.18, 0.17);
+      bx(g, m, 0.14, 0.03, 0.03, side * 0.36, 0.26, 0.38);
+      star(g, m, side * 0.34, 0.32, 0.4);
+      star(g, m, side * 0.38, 0.2, 0.38);
     }
   },
   // the original Z logo: three bars across the forehead (Y2K headband)
@@ -166,35 +175,22 @@ const HEAD2_BUILDER = {
       bx(g, m, 0.035, 0.035, 0.34, side * 0.33, -0.02, 0.25);
     }
   },
-  // chunky oversized frames, no visible lens rim at the bottom
-  acc_big_sunglasses(g, m, s) {
-    for (const side of [-1, 1]) {
-      const lx = side * 0.17;
-      for (const [w, h, dx, dy] of [
-        [0.32, 0.06, 0, 0.11], [0.05, 0.28, side * 0.15, -0.01],
-        [0.05, 0.28, side * 0.04, -0.01],
-      ]) {
-        bx(g, m, w, h, 0.06, lx + dx, -0.02 + dy, 0.44);
-      }
-      const lens = new THREE.Mesh(
-        new THREE.BoxGeometry(0.26, 0.24, 0.005).toNonIndexed(), s
-      );
-      lens.position.set(lx, -0.03, 0.402);
-      g.add(lens);
-    }
-    bx(g, m, 0.08, 0.05, 0.05, 0, 0.08, 0.44);
-    for (const side of [-1, 1]) {
-      bx(g, m, 0.035, 0.035, 0.3, side * 0.35, 0.0, 0.26);
-    }
-  },
-  // one band wrapping around the whole head, thicker darker front visor arc
+  // one band wrapping around the whole head, thicker darker front visor arc —
+  // worn over the hair (clears the 0.475 hair shell), short arc keeps the
+  // visor ends off the hair sides
   acc_wrap_sunglasses(g, m, s) {
-    ring(g, m, 0.5, 0.18, 10, -0.02);
+    const band = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.51, 0.51, 0.16, 10, 1, true).toNonIndexed(), m
+    );
+    band.scale.set(1, 1, 0.94);
+    band.position.y = -0.04;
+    g.add(band);
     const visor = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.53, 0.53, 0.2, 6, 1, true, -0.9, 1.8)
+      new THREE.CylinderGeometry(0.53, 0.53, 0.15, 6, 1, true, -0.75, 1.5)
         .toNonIndexed(), s
     );
-    visor.position.y = -0.02;
+    visor.scale.set(1, 1, 0.94);
+    visor.position.y = -0.04;
     g.add(visor);
   },
 };

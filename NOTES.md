@@ -155,3 +155,23 @@
   &c=%23e85a78 + desktop.png/mobile.png (?cat=accessories&waist=acc_belly_chain).
 - main.js: ?c=<hex> debug colour applies to any URL-assigned slot; ui.js
   ?cat= opens a panel directly; no tag filter for accessory slots.
+
+## M5 fix round 2 (same session, user feedback)
+- Hats were buried in the hair (crown r 0.46-0.53 vs hair half-w 0.475, fring
+  enclaves the rim): beanie/cap/bakerboy rebuilt with r 0.54-0.56 crowns +
+  bands at y 0.30-0.36 so they read as worn OVER the hair; cap brim pushed
+  out to z 0.6 (0.56 wide) past the fringe plane, button y 0.73; bakerboy
+  crown flatter (sy 0.42) y 0.38, band 0.56/0.31, visor 0.46 at z 0.6.
+- Sparkle clip bars+stars moved onto the hair top front (z 0.38-0.4,
+  x +-0.34-0.38) — previously sunk into the side.
+- acc_big_sunglasses deleted from catalog.json, preset_street and the shot
+  script; its builder removed — eyewear now glasses + wraparound only.
+- acc_wrap_sunglasses: band r 0.51 z-scale 0.94 (clears hair 0.475/0.425),
+  visor r 0.53 arc +-43deg h 0.15, both centred y -0.04 (over the eye row).
+  Minor cosmetic: the dark band shows through the hair's open fringe cut in
+  the back view — PSX see-through slot, left as-is.
+- Colour reset bug fixed in ui.js: picking a new item in a slot now carries
+  over the slot's previous colours (prev[cs] ?? defaults) instead of always
+  resetting main to #ffffff.
+- tests/accShots.mjs now uses ?c=%23111d44 (navy) instead of the pink so
+  accessory geometry is visible against the default white hair.

@@ -654,19 +654,6 @@
    "maxTris": 150
   },
   {
-   "id": "acc_big_sunglasses",
-   "slot": "eyewear",
-   "label": "Big sunglasses",
-   "tags": [
-    "street",
-    "y2k"
-   ],
-   "colorSlots": [
-    "main"
-   ],
-   "maxTris": 150
-  },
-  {
    "id": "acc_wrap_sunglasses",
    "slot": "eyewear",
    "label": "Wraparound sunglasses",
@@ -771,8 +758,7 @@
     "bottom": "bot_cargo_wide",
     "top": "top_offshoulder",
     "headwear": "acc_beanie",
-    "shoes": "shoe_platform",
-    "eyewear": "acc_big_sunglasses"
+    "shoes": "shoe_platform"
    }
   },
   {
