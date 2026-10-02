@@ -1,7 +1,7 @@
 import catalog, { SLOT_LABELS } from "./catalog.js";
 import { renderThumb } from "./faceTexture.js";
 import { HAIR_IDS } from "./parts/hair.js";
-import { buildStyle, applyPreset, applyColourBlock } from "./uiStyle.js";
+import { applyPreset, applyColourBlock } from "./uiStyle.js";
 
 // UI: category bar switching panels (Face/Head/Top/Bottom/Shoes), pink left
 // column. All item lists are data-driven from catalog.json.
@@ -301,6 +301,35 @@ export function createUI(state, { onChange }) {
     refresh();
   }
 
+  // ---- style panel (same controls/look as the other panels) -----------------
+  function buildStylePanel() {
+    const presets = catalog.presets;
+    let last = null;
+    const thumbs = leftThumbs(2);
+    sectionLabel("PRESET");
+    const pBtns = presets.map((preset, i) =>
+      circleBtn(String(i + 1), () => {
+        applyPreset(preset, state, onChange);
+        last = i;
+        refresh();
+      })
+    );
+    pBtns.forEach((b, i) => (b.title = presets[i].label));
+    sectionLabel("AUTO");
+    const cbBtn = circleBtn("CB", () => {
+      applyColourBlock(state, onChange, null);
+      refresh();
+    });
+    refresh = () => {
+      pBtns.forEach((b, i) => b.classList.toggle("active", i === last));
+      drawLabel(thumbs[0], last == null ? "\u00d8" : String(last + 1));
+      const t = thumbs[1].getContext("2d");
+      t.clearRect(0, 0, 56, 56);
+      t.fillStyle = state.top?.colors?.main ?? "#ffffff";
+      t.fillRect(0, 0, 56, 56);
+    };
+  }
+
   const BUILDERS = {
     face: buildFace,
     head: buildHead,
@@ -308,7 +337,7 @@ export function createUI(state, { onChange }) {
     bottom: () => buildCloth("bottom"),
     shoes: () => buildCloth("shoes"),
     accessories: () => buildCloth("accessories"),
-    style: () => buildStyle(state, { onChange, refresh: () => {} }),
+    style: () => buildStylePanel(),
   };
   const CAT_LABEL = {
     face: SLOT_LABELS.face, head: SLOT_LABELS.head,
@@ -323,7 +352,6 @@ export function createUI(state, { onChange }) {
     current = cat;
     panelBody.replaceChildren();
     leftColumn.replaceChildren();
-    leftColumn.style.gap = ""; // style tab sets a tighter gap for its 6 thumbs
     panel.dataset.cat = cat;
     panelTitle.textContent = CAT_LABEL[cat] || cat.toUpperCase();
     catBtns.forEach((b) =>

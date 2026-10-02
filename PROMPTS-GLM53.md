@@ -25,7 +25,7 @@ Read AGENTS.md, STYLE.md, PLAN.md, catalog.json, /refs and latest screenshots. I
 Read all instructions, catalog.json, /refs and latest screenshots. Implement M3 only. First implement hair_01, hair_02 and hair_03 as original low-poly paper-plane geometry: double-sided jagged strips, flat shading, vertex gradient, selectable colour and head anchors, within maxTris. Review screenshots before adding hair_04 through hair_11 and none. Do not implement clothes/accessories/presets/random/save/export. Build, screenshot both sizes, compare, fix five largest differences, stop.
 ```
 
-## M4 — base clothes <---2026.10.2 12:33
+## M4 — base clothes
 ```text
 Read all instructions, catalog.json, /refs and latest screenshots. Implement M4 only: base tops, outerwear, long pants, shorts, short skirt, long skirt, socks and base sneakers. Use data-driven items, selectable colour slots, correct layering, cropped/low-rise exposure, tapered pants and faceted skirts. Implement only catalog-specified procedural 32x32 nearest patterns. No logos or copied assets. Log triangle counts. Do not implement Y2K items/accessories/presets/random/save/export. Build, test every base slot, screenshot both sizes, fix five largest differences, stop.
 ```
@@ -35,7 +35,7 @@ Read all instructions, catalog.json, /refs and latest screenshots. Implement M4 
 Read all instructions, catalog.json, /refs and latest screenshots. Implement M5 only: accessory slots and named anchors; cat/bunny ears, glasses, sunglasses, beanie, caps, hair clips, hairband, choker, pendant, belly chain, bracelet and bags from catalog.json. Each must be original, low-poly, colourable and within maxTris. Add the accessories panel. Do not add items outside catalog.json or implement presets/random/save/export. Build, test every accessory, screenshot both sizes, fix five largest differences, stop.
 ```
 
-## M6 — Y2K / NewJeans-inspired packs <---2026.10.3 03:20
+## M6 — Y2K / NewJeans-inspired packs
 ```text
 Read all instructions, catalog.json, /refs and latest screenshots. Implement M6 only: baby tee, knit vest, polo, off-shoulder top, crop jersey, denim shirt, original-crest blazer, denim jacket, bomber, low-rise jeans, cargo pants, plaid pleated skirt, tennis skirt, low-rise mini, metallic pants, striped knee socks, platform sneakers, Mary Janes and boots. Add nearest procedural plaid/stripe/denim/number/star/metallic treatments. Use original designs, no real logos. Add Style tab and catalog presets: Preppy, Street, Denim, Sport, Y2K, Colour block, plus auto colour-block. Keep low-poly PSX silhouettes and no PBR. Build, test presets/colours, screenshot both sizes, fix five largest differences, stop.
 ```
