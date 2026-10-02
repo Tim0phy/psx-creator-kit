@@ -106,17 +106,24 @@ const HEAD_BUILDER = {
     pom.position.set(0, fit.top + 0.37, 0);
     g.add(pom);
   },
-  // deep dome crown + flat front brim + top button — brim pushed out past
-  // the hair fringe plane (z fit.front + 0.14)
+  // deep dome crown + base band + flat front brim + top button — the brim
+  // tucks under the band so crown/band/brim read as one connected cap
   acc_cap(g, m, s, fit = DF) {
+    const band = new THREE.Mesh(
+      new THREE.CylinderGeometry(fit.r - 0.015, fit.r - 0.015, 0.13, 6, 1, true).toNonIndexed(), m
+    );
+    band.scale.set(1, 1, 0.95);
+    band.position.y = fit.top + 0.05;
+    g.add(band);
     const crown = new THREE.Mesh(
       new THREE.SphereGeometry(fit.r - 0.055, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
     crown.geometry.scale(1, 0.72, 0.94);
-    crown.position.y = fit.top + 0.01;
+    crown.position.y = fit.top + 0.1;
     g.add(crown);
-    bx(g, m, fit.r * 1.18, 0.06, 0.26, 0, fit.top + 0.02, fit.front + 0.14);
-    bx(g, m, 0.08, 0.06, 0.08, 0, fit.top + 0.32, 0);
+    // brim back edge (fit.front + 0.02) overlaps the band front (fit.r*0.95)
+    bx(g, m, fit.r * 1.18, 0.06, 0.28, 0, fit.top + 0.02, fit.front + 0.09);
+    bx(g, m, 0.08, 0.06, 0.08, 0, fit.top + 0.42, 0);
   },
   // puffy crown + deep band + short visor
   acc_bakerboy(g, m, s, fit = DF) {
@@ -132,7 +139,8 @@ const HEAD_BUILDER = {
     band.scale.set(1, 1, 0.95);
     band.position.y = fit.top + 0.05;
     g.add(band);
-    bx(g, m, fit.r * 0.93, 0.05, 0.22, 0, fit.top + 0.04, fit.front + 0.14);
+    // visor back edge (fit.front - 0.02) overlaps the band front (fit.r*0.95)
+    bx(g, m, fit.r * 0.93, 0.05, 0.22, 0, fit.top + 0.05, fit.front + 0.09);
   },
   // butterfly wing pairs on both sides of the head
   acc_butterfly_clip(g, m, s, fit = DF) {

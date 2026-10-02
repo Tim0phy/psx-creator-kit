@@ -198,3 +198,13 @@
   clipping through the hair cap).
 - Verified via FitCheck shots: hair_08 + hair_10 beanie snug, hair_06 cap
   correct, hair colour kept on item switch (ui.js carry-over round 2).
+
+## M5 fix round 5 (user feedback: crown/brim separation on cap + bakerboy)
+- acc_cap: brim previously floated in front of the crown (brim back edge
+  z 0.435 vs crown front ~0.34) with no base band. Now: base band ring
+  (r fit.r-0.015, h 0.13, y fit.top+0.05, sz 0.95) carries the crown, crown
+  base raised to fit.top+0.1, brim back edge (fit.front+0.02 = 0.375) tucks
+  under the band front (0.437); button raised to fit.top+0.42.
+- acc_bakerboy: visor back edge moved in to fit.front-0.02 (0.405) so it
+  overlaps the existing band front (0.437); visor y fit.top+0.05.
+- Verified front + angle shots: crown/band/brim read as one connected cap.
