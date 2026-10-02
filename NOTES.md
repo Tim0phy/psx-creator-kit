@@ -208,3 +208,10 @@
 - acc_bakerboy: visor back edge moved in to fit.front-0.02 (0.405) so it
   overlaps the existing band front (0.437); visor y fit.top+0.05.
 - Verified front + angle shots: crown/band/brim read as one connected cap.
+
+## M5 fix round 6 (user feedback)
+- Hat crowns (beanie/cap/bakerboy) reduced further to r 0.38
+  (fit.r - 0.095 instead of fit.r - 0.055).
+- Attached bits follow the smaller crowns: beanie pom y fit.top+0.27,
+  cap button y fit.top+0.33.
+- Front shots re-verified: crowns sit inside the hair cap outline.

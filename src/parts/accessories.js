@@ -92,7 +92,7 @@ const HEAD_BUILDER = {
   // slouched dome + rolled brim + pompom — geometries derive from fit so the
   // brim rim hugs the current hair cap outline (crown stays inside it)
   acc_beanie(g, m, s, fit = DF) {
-    const crown = new THREE.SphereGeometry(fit.r - 0.055, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2);
+    const crown = new THREE.SphereGeometry(fit.r - 0.095, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2);
     crown.scale(1, 0.72, 0.95);
     crown.translate(0, fit.top + 0.01, 0);
     g.add(new THREE.Mesh(crown.toNonIndexed(), m));
@@ -103,7 +103,7 @@ const HEAD_BUILDER = {
     band.position.y = fit.top + 0.04;
     g.add(band);
     const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(0.1, 0), m);
-    pom.position.set(0, fit.top + 0.37, 0);
+    pom.position.set(0, fit.top + 0.27, 0);
     g.add(pom);
   },
   // deep dome crown + base band + flat front brim + top button — the brim
@@ -116,19 +116,19 @@ const HEAD_BUILDER = {
     band.position.y = fit.top + 0.05;
     g.add(band);
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(fit.r - 0.055, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
+      new THREE.SphereGeometry(fit.r - 0.095, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
     crown.geometry.scale(1, 0.72, 0.94);
     crown.position.y = fit.top + 0.1;
     g.add(crown);
     // brim back edge (fit.front + 0.02) overlaps the band front (fit.r*0.95)
     bx(g, m, fit.r * 1.18, 0.06, 0.28, 0, fit.top + 0.02, fit.front + 0.09);
-    bx(g, m, 0.08, 0.06, 0.08, 0, fit.top + 0.42, 0);
+    bx(g, m, 0.08, 0.06, 0.08, 0, fit.top + 0.33, 0);
   },
   // puffy crown + deep band + short visor
   acc_bakerboy(g, m, s, fit = DF) {
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(fit.r - 0.055, 8, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
+      new THREE.SphereGeometry(fit.r - 0.095, 8, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
     crown.geometry.scale(1, 0.42, 0.94);
     crown.position.y = fit.top + 0.06;
