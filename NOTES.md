@@ -132,3 +132,26 @@
 - Shrink feet (0.20x0.13x0.32) and shoes (body 0.26x0.16x0.40, sole 0.24x0.07, cuff 0.32x0.08) per user feedback; overall shorts look confirmed OK in shots/m4_fix4_*.png.
 - Fix leg poking out of slim shoe: shoe body widened to 0.34x0.16x0.46 (back -0.18 covers leg back -0.17, sides cover leg 0.142); cuff 0.34x0.08x0.38. Overall-shorts tubes lowered 0.05 (bottom 0.38 -> 0.33) per user request.
 - Overall-shorts tubes raised 0.1 with same length (0.43..0.66). Shoe side-clip fix: body 0.36x0.16x0.47 (back -0.19, sides 0.18), sole 0.3x0.43, cuff 0.36x0.08x0.42 (inner edges +-0.01 keep a gap between cuffs); verified bare/shorts front+side+backfoot shots clean.
+
+## M5 accessories (2026-10-02)
+- Named anchors in character.js: anchor_head (0,1.48,0) = hairAnchor, anchor_neck
+  (0,1.16,0), anchor_waist (0,0.7,0), anchor_wrist (0,0.59,0, rings tilted
+  rz side*-0.2 to follow the A-pose arms), anchor_bag (0,1.0,0.05).
+- All 17 catalog accessories built in src/parts/accessories.js; head-space
+  builders (headwear/eyewear) use head-centre origin like hair.js, the rest use
+  their anchor space. One main colour + secMat (x0.45 darker) for lenses/inner
+  ears. Tris all <=132 (max 150), logged to shots/m5-tris.json.
+- Head geometry facts that drove the fixes: head box 0.82x0.8x0.72 rounded to
+  sphere r 0.44 spans y 1.08..1.88, torso top 1.18 -> NO visible neck; the
+  head-torso seam is the only "neck" area. Hair cap top +0.43 above head
+  centre, half-w 0.475, half-d 0.425; camera frame top ~2.26.
+- Fix round: cap crown sy 0.55->0.8 y 0.26 (was a pancake perched on the hair);
+  beanie crown/ring/pom lowered 0.06; bakerboy band 0.28 + crown 0.3;
+  choker moved up to y +0.06 rel anchor (world 1.22) r 0.45 z 0.95 with the
+  O-ring at z 0.42 — the band was fully buried inside the head/tee before.
+- baguette bag reworked twice: chest roll -> under-arm tube (0.34,-0.24,0.28,
+  rz -0.25) + flap + crossbody strap (0.03,-0.06,0.33, rz -0.94, h 0.82).
+- tests/accShots.mjs: 17 items x front/angle/back via ?hair=hair_01&<slot>=<id>
+  &c=%23e85a78 + desktop.png/mobile.png (?cat=accessories&waist=acc_belly_chain).
+- main.js: ?c=<hex> debug colour applies to any URL-assigned slot; ui.js
+  ?cat= opens a panel directly; no tag filter for accessory slots.

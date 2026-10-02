@@ -42,6 +42,14 @@ function roundedHead() {
 
 export const DEFAULT_SKIN = "#f5d5bf";
 
+function anchorAt(root, name, x, y, z) {
+  const a = new THREE.Group();
+  a.name = name;
+  a.position.set(x, y, z);
+  root.add(a);
+  return a;
+}
+
 export function createCharacter() {
   const root = new THREE.Group();
 
@@ -93,14 +101,27 @@ export function createCharacter() {
   });
   SHARED_GRAD.max = root.userData.topY = 1.9;
 
-  // hair anchor (M3): origin at the head centre
+  // named anchors (M5): accessory slot attachment points
   const hairAnchor = new THREE.Group();
   hairAnchor.position.set(0, 1.48, 0);
+  hairAnchor.name = "anchor_head";
   root.add(hairAnchor);
+
+  const neckAnchor = anchorAt(root, "anchor_neck", 0, 1.16, 0);
+  const waistAnchor = anchorAt(root, "anchor_waist", 0, 0.7, 0);
+  // wrists: at the arm/en-hand joint (arm pivot y1.18 - 0.6 down, tilted)
+  const wristAnchor = anchorAt(root, "anchor_wrist", 0, 0.59, 0);
+  const bagAnchor = anchorAt(root, "anchor_bag", 0, 1.0, 0.05);
 
   function setSkin(hex) {
     skinMat.uniforms.color.value.set(hex);
   }
 
-  return { root, mats, setSkin, hairAnchor };
+  return {
+    root, mats, setSkin, hairAnchor,
+    anchors: {
+      head: hairAnchor, neck: neckAnchor,
+      waist: waistAnchor, wrist: wristAnchor, bag: bagAnchor,
+    },
+  };
 }

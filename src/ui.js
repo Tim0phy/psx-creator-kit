@@ -17,17 +17,27 @@ const CLOTH_SWATCHES = [
   "#ffb3c7", "#c8f56b", "#9fd6ff", "#fff3a6", "#d9c2ff",
 ];
 
-// sections per cloth category: [slot, title]
+// sections per cloth category: [slot, title]. M5: the accessories tab shows
+// all accessory slots; those item lists include every catalog item (all are
+// still tagged style packs, so no "base" filter for accessories).
+const ACC_SLOT_SET = new Set(
+  catalog.items
+    .map((i) => i.slot)
+    .filter((s) => !["hair", "top", "outer", "bottom", "shoes"].includes(s))
+);
 const CLOTH_SECTIONS = {
   top: [["top", "TOP"], ["outer", "OUTER"]],
   bottom: [["bottom", "BOTTOM"]],
   shoes: [["shoes", "SHOES"]],
+  accessories: [
+    ["headwear", "HEADWEAR"], ["eyewear", "EYEWEAR"], ["neck", "NECK"],
+    ["waist", "WAIST"], ["wrist", "WRIST"], ["bag", "BAG"],
+  ],
 };
 
 function itemsFor(slot) {
-  return catalog.items.filter(
-    (i) => i.slot === slot && i.tags.includes("base")
-  );
+  const all = ACC_SLOT_SET.has(slot);
+  return catalog.items.filter((i) => i.slot === slot && (all || i.tags.includes("base")));
 }
 
 export function createUI(state, { onChange }) {
@@ -238,7 +248,8 @@ export function createUI(state, { onChange }) {
   // ---- cloth panels (top/outer, bottom, shoes) ------------------------------
   function buildCloth(cat) {
     const sections = CLOTH_SECTIONS[cat];
-    const thumbs = leftThumbs(sections.length + 1);
+    const thumbs = leftThumbs(Math.min(sections.length + 1, 4));
+    const tCount = thumbs.length;
 
     function reRender() {
       panelBody.replaceChildren();
@@ -260,7 +271,7 @@ export function createUI(state, { onChange }) {
           b.classList.toggle("active", state[slot]?.id === item.id);
         });
         const idx = items.findIndex((it) => it.id === state[slot]?.id);
-        drawLabel(thumbs[sIdx], state[slot] ? String(idx + 1) : "\u00d8");
+        drawLabel(thumbs[Math.min(sIdx, tCount - 2)], state[slot] ? String(idx + 1) : "\u00d8");
         const colors = state[slot]?.colors;
         if (colors) {
           const slots = catalog.items.find(
@@ -288,11 +299,12 @@ export function createUI(state, { onChange }) {
     top: () => buildCloth("top"),
     bottom: () => buildCloth("bottom"),
     shoes: () => buildCloth("shoes"),
+    accessories: () => buildCloth("accessories"),
   };
   const CAT_LABEL = {
     face: SLOT_LABELS.face, head: SLOT_LABELS.head,
     top: SLOT_LABELS.top, bottom: SLOT_LABELS.bottom,
-    shoes: SLOT_LABELS.shoes,
+    shoes: SLOT_LABELS.shoes, accessories: SLOT_LABELS.accessories,
   };
   let current = null;
 
@@ -314,7 +326,8 @@ export function createUI(state, { onChange }) {
   catBtns.forEach((b) =>
     b.addEventListener("click", () => switchCat(b.dataset.cat))
   );
-  switchCat("face");
+  const startCat = new URLSearchParams(location.search).get("cat");
+  switchCat(startCat && BUILDERS[startCat] ? startCat : "face");
 
   return { switchCat };
 }

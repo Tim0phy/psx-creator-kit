@@ -8,10 +8,15 @@ import { createHair } from "./parts/hair.js";
 import { createTop } from "./parts/tops.js";
 import { createBottom } from "./parts/bottoms.js";
 import { createShoes } from "./parts/shoes.js";
+import { createAccessory } from "./parts/accessories.js";
 import catalog from "./catalog.js";
 import { createUI } from "./ui.js";
 
-// M4: face system + hair + base clothes (top/outer/bottom/shoes).
+// M5: face system + hair + base clothes + accessories with named anchors.
+
+const CLOTH_SLOTS = ["top", "outer", "bottom", "shoes"];
+const ACC_SLOTS = ["headwear", "eyewear", "neck", "waist", "wrist", "bag"];
+const ALL_SLOTS = [...CLOTH_SLOTS, ...ACC_SLOTS];
 
 const state = {
   skin: DEFAULT_SKIN, eyes: 3, mouth: 1, blush: false,
@@ -20,17 +25,25 @@ const state = {
   outer: null,
   bottom: { id: "bot_long_pants", colors: { main: "#3a5ca8" } },
   shoes: { id: "shoe_sneaker", colors: { main: "#e8913a" } },
+  headwear: null, eyewear: null,
+  neck: null, waist: null, wrist: null, bag: null,
 };
 
 // debug: ?hair=hair_XX etc. lets the shot scripts capture specific items
 const params = new URLSearchParams(location.search);
-for (const slot of ["hair", "top", "outer", "bottom", "shoes"]) {
+for (const slot of ALL_SLOTS) {
   const v = params.get(slot);
   if (v) {
     if (v === "none") state[slot] = null;
     else if (slot === "hair") state.hair.id = v;
     else state[slot] = { id: v, colors: state[slot]?.colors ?? {} };
   }
+}
+// optional debug colour for any URL-assigned slot: ?top=top_tee&c=#ff00ff
+const urlColor = params.get("c");
+for (const slot of ALL_SLOTS) {
+  if (urlColor && slot !== "hair" && state[slot]?.id)
+    state[slot].colors.main = urlColor;
 }
 
 const canvas = document.getElementById("view");
@@ -126,14 +139,17 @@ function catalogItem(slot) {
 }
 
 function mount(slot, built) {
-  if (CLOTH[slot]?.group) character.root.remove(CLOTH[slot].group);
-  CLOTH[slot] = built ?? null;
+  const parent = SLOT_ANCHOR[slot] ?? character.root;
+  if (CLOTH[slot]) {
+    if (CLOTH[slot].parent) CLOTH[slot].parent.remove(CLOTH[slot].group);
+  }
+  CLOTH[slot] = built ? { ...built, parent } : null;
   if (built) {
-    character.root.add(built.group);
-    // layering: draw order top -> outer -> bottom -> shoes
-    const order = ["top", "outer", "bottom", "shoes"];
+    parent.add(built.group);
+    // layering draw order per STYLE.md sections 4/5
+    const order = [...ALL_SLOTS];
     for (let i = order.indexOf(slot) + 1; i < order.length; i++) {
-      if (CLOTH[order[i]]) character.root.add(CLOTH[order[i]].group);
+      if (CLOTH[order[i]]) CLOTH[order[i]].parent.add(CLOTH[order[i]].group);
     }
   }
 }
@@ -156,6 +172,9 @@ function applyCloth(slot) {
     built = createBottom(item.id, colors.main, flags);
   } else if (item.slot === "shoes") {
     built = createShoes(item.id, colors.main);
+  } else {
+    // accessories: builders include all anchor-space offsets already
+    built = createAccessory(item.id, colors.main);
   }
   mount(slot, built);
 }
@@ -169,14 +188,27 @@ function recolor(slot) {
     return;
   }
   if (CLOTH[slot].mat) CLOTH[slot].mat.uniforms.color.value.set(colors.main);
+  if (CLOTH[slot].secMat) {
+    CLOTH[slot].secMat.uniforms.color.value
+      .set(colors.main).multiplyScalar(0.45);
+  }
 }
 
 createUI(state, { onChange: applyAll });
 
+const SLOT_ANCHOR = {
+  headwear: character.anchors.head,
+  eyewear: character.anchors.head,
+  neck: character.anchors.neck,
+  waist: character.anchors.waist,
+  wrist: character.anchors.wrist,
+  bag: character.anchors.bag,
+};
+
 function applyAll() {
   applyFace();
   applyHair();
-  for (const slot of ["top", "outer", "bottom", "shoes"]) {
+  for (const slot of ALL_SLOTS) {
     applyCloth(slot);
     recolor(slot);
   }
