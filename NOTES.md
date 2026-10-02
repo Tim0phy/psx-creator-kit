@@ -245,3 +245,21 @@
 - 驗證：before/after shots（accessory 用螢光粉/綠獨立上色）front+angle
   逐件核對；再加 jacket+baguette、longsleeve+shoulder、longsleeve+bracelet
   三個 layering case 確認無穿模。accShots.mjs 更新後 m5-tris.json 全部 <=144。
+
+## M5 fix round 8 (user feedback: choker 穿下巴 + 肩帶無後面)
+- acc_choker 再降 0.05：band y -0.015 -> -0.065（world 1.095，band 頂邊
+  1.145 剛好在頭底 rim 下），O-ring charm 同步 -0.11。正面唔再穿下巴。
+- 肩帶補做後面，兩款袋嘅肩帶變成閉環：
+  - strap() helper 改 3D（quaternion setFromUnitVectors 對齊任意方向）。
+  - 後帶平面 world z -0.21（builder -0.26）：tee 背面 0.17 之外、jacket
+    背面 0.182 之內（薄薄藏入 jacket，無 coplanar）。
+  - baguette 後段：頸後 (-0.22,1.16) -> 背左 (-0.3,1.0) -> 橫過背部
+    (0.3,0.8) -> 繞入袋身 (0.4,0.75,0.13)（經手臂後面沒入，末端喺袋內）。
+    108 tris。
+  - shoulder 後段：頸後 (0.2,1.17) -> 背右 (0.3,0.82) -> 繞入袋背
+    (0.42,0.62,0.19)。84 tris。
+  - 兩款末端都冚入袋體內，前面過肩位冚入頭底 rim 後面 — 前後四個角度
+    睇都係連續肩帶，無懸浮端點。
+- 已知取捨：長裙/長髮會遮住背帶（現實一致）；短袖時背帶喺背部可見。
+- 驗證：front/back/angle shots（螢光粉獨立上色）逐款核對；build + accShots
+  全過，tris baguette 108 / shoulder 84 / 其餘不變。

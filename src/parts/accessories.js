@@ -172,12 +172,12 @@ const BODY_BUILDER = {
       new THREE.CylinderGeometry(0.4, 0.4, 0.1, 8, 1, true).toNonIndexed(), m
     );
     band.scale.set(1, 1, 0.9); // oval: wider than the head rim, clears the jaw
-    band.position.y = -0.015; // world 1.145: wraps the head bottom rim
+    band.position.y = -0.065; // world 1.095: wraps the head bottom rim
     g.add(band);
     const o = new THREE.Mesh(
       new THREE.TorusGeometry(0.04, 0.016, 4, 8).toNonIndexed(), m
     );
-    o.position.set(0, -0.06, 0.345); // O-ring charm hanging at the band front
+    o.position.set(0, -0.11, 0.345); // O-ring charm hanging at the band front
     g.add(o);
   },
   // full bead ring around the base of each hand (below any sleeve end),
