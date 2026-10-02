@@ -12,8 +12,7 @@ const SLOT_ITEMS = {
     "acc_bakerboy", "acc_butterfly_clip", "acc_z_hairband",
   ],
   eyewear: ["acc_glasses", "acc_wrap_sunglasses"],
-  neck: ["acc_choker", "acc_pendant"],
-  waist: ["acc_belly_chain"],
+  neck: ["acc_choker"],
   wrist: ["acc_friendship_bracelet"],
   bag: ["acc_baguette_bag", "acc_shoulder_bag"],
 };
@@ -53,7 +52,7 @@ for (const [slot, ids] of Object.entries(SLOT_ITEMS)) {
 // full page + accessories panel, both sizes
 for (const [w, h, name] of [[1024, 768, "desktop.png"], [390, 844, "mobile.png"]]) {
   await page.setViewportSize({ width: w, height: h });
-  await page.goto("http://localhost:5199?cat=accessories&waist=acc_belly_chain");
+  await page.goto("http://localhost:5199?cat=accessories&bag=acc_shoulder_bag");
   await page.waitForTimeout(400);
   await page.evaluate(() => {
     if (window.PSXCC) {

@@ -215,3 +215,33 @@
 - Attached bits follow the smaller crowns: beanie pom y fit.top+0.27,
   cap button y fit.top+0.33.
 - Front shots re-verified: crowns sit inside the hair cap outline.
+
+## M5 fix round 7 (user feedback: neck/waist/wrist/bag)
+- acc_pendant + acc_belly_chain 剷除（用戶要求）；waist slot 整個移除
+  （catalog.json slots/items/preset_y2k、main.js ACC_SLOTS/state/SLOT_ANCHOR、
+  character.js anchor_waist、ui.js WAIST section、accShots.mjs）。
+  star()/starGeo()/ring() helpers 冇人用，一併刪走。
+- acc_choker 位置修正：舊版 band y +0.06 r 0.45 蓋住下巴/衫領（睇落似衫
+  嘅一部分）。新版 band r 0.40 (z x0.9) y -0.015（world 1.145），啱啱圍住
+  頭底邊緣（head bottom rim y 1.11-1.13, x 0.355, z 0.334），下頜底下露出
+  一圈；O-ring charm 掛喺 band 前面 (0, -0.06, 0.345)。80 tris。
+- acc_friendship_bracelet 重做：舊版得一條幼圈加三粒懸浮方珠（完全睇唔出
+  係咩）。新版每隻手腕一圈完整珠環：8 粒 octahedron 珠（r 0.05，
+  main/darker 交替）+ 1 粒大 charm 珠（r 0.075）喺手腕正面，圍繞手腕關節
+  （arm t 0.63，world (±0.485, 0.563)），環面垂直 A-pose 手臂軸線，位置喺
+  任何袖口（sleeve ends t 0.5-0.6）之下所以長袖都遮唔到。144 tris <= 150。
+- 兩款袋重做（新檔 src/parts/bags.js + 共用 helper src/parts/geo.js bx），
+  舊版袋筒/帶互相分離。新結構：
+  - acc_baguette_bag: trapezoid pouch（taperBox 0.44x0.24x0.16，top 0.46/
+    bottom 0.36）喺右胸 (0.30, 0.75, 0.19) 頂邊掂到右臂底面 + flap 蓋頂 +
+    zip + strap 入口 buckle；肩帶兩段相連（袋頂 (0.13,0.82) -> 胸前
+    (-0.12,1.07) -> 左肩後 (-0.26,1.21)，末端沒入頭底 rim 後面 = 過肩效果）。
+    72 tris。
+  - acc_shoulder_bag: trapezoid satchel（0.3x0.22x0.16）掛右前髖
+    (0.40, 0.66, 0.25) + flap + clasp；肩帶兩段（袋頂 (0.48,0.77) -> 胸前
+    (0.40,1.03) -> 右肩後 (0.26,1.16)），末端一樣沒入頭 rim。60 tris。
+  - 肩帶平面 z 0.20/0.21（胸前 0.16、tee 袖前 0.165、jacket 袖前 0.189 之前），
+    末端冚入袋頂/頭 rim 入面，所有件永遠相連。
+- 驗證：before/after shots（accessory 用螢光粉/綠獨立上色）front+angle
+  逐件核對；再加 jacket+baguette、longsleeve+shoulder、longsleeve+bracelet
+  三個 layering case 確認無穿模。accShots.mjs 更新後 m5-tris.json 全部 <=144。

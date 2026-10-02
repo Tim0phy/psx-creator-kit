@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
 import { taperBox } from "../character.js";
+import { bx } from "./geo.js";
+import { BAG_BUILDER } from "./bags.js";
 import { DEFAULT_FIT as DF } from "./hair.js";
 
 // M5 accessories: every item from catalog.json, original low-poly geometry.
@@ -8,48 +10,6 @@ import { DEFAULT_FIT as DF } from "./hair.js";
 // matching hair.js; all other builders use the matching character anchor.
 // Each item gets one colour slot (main); optional darker material for
 // lenses/inner ears is returned as secMat.
-
-function bx(g, m, w, h, d, x, y, z, r = {}) {
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(w, h, d).toNonIndexed(), m
-  );
-  mesh.position.set(x, y, z);
-  if (r.z) mesh.rotation.z = r.z;
-  if (r.x) mesh.rotation.x = r.x;
-  if (r.y) mesh.rotation.y = r.y;
-  g.add(mesh);
-  return mesh;
-}
-
-function ring(g, m, r, h, seg, y, z = 0) {
-  const mesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(r, r, h, seg, 1, true).toNonIndexed(), m
-  );
-  mesh.position.set(0, y, z);
-  g.add(mesh);
-  return mesh;
-}
-
-// flat 4-point sparkle star (pointer finger star decal)
-function starGeo(r, w) {
-  const p = [];
-  const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
-  for (let i = 0; i < 4; i++) {
-    const a = dirs[i], b = dirs[(i + 1) % 4];
-    p.push(0, 0, 0.02, a[0] * r, a[1] * r, 0.02, (a[0] + b[0]) * w, (a[1] + b[1]) * w, 0.02);
-    p.push(0, 0, -0.02, (a[0] + b[0]) * w, (a[1] + b[1]) * w, -0.02, a[0] * r, a[1] * r, -0.02);
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(p, 3));
-  g.computeVertexNormals();
-  return g;
-}
-
-function star(g, m, x, y, z) {
-  const s = new THREE.Mesh(starGeo(0.07, 0.025), m);
-  s.position.set(x, y, z);
-  g.add(s);
-}
 
 // Mouth-less headwear builders read fit = { r, top, front } from hair.js so
 // each headwear item hugs the CURRENT hairstyle's cap surface (hair_01 fit
@@ -205,75 +165,48 @@ const HEAD2_BUILDER = {
 
 // anchor-space builders (root space via main.js)
 const BODY_BUILDER = {
-  // snug collar right under the chin (no neck: wrap the head-torso seam)
+  // snug collar hugging the head-torso seam right under the chin (the chibi
+  // body has no neck): the band peeks out around the head's bottom rim
   acc_choker(g, m) {
     const band = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.45, 0.45, 0.1, 8, 1, true).toNonIndexed(), m
+      new THREE.CylinderGeometry(0.4, 0.4, 0.1, 8, 1, true).toNonIndexed(), m
     );
-    band.scale.set(1, 1, 0.95); // oval: clears the chin, hugs the neck
-    band.position.y = 0.06;
+    band.scale.set(1, 1, 0.9); // oval: wider than the head rim, clears the jaw
+    band.position.y = -0.015; // world 1.145: wraps the head bottom rim
     g.add(band);
     const o = new THREE.Mesh(
-      new THREE.TorusGeometry(0.05, 0.018, 4, 8).toNonIndexed(), m
+      new THREE.TorusGeometry(0.04, 0.016, 4, 8).toNonIndexed(), m
     );
-    o.position.set(0, 0.05, 0.42);
+    o.position.set(0, -0.06, 0.345); // O-ring charm hanging at the band front
     g.add(o);
   },
-  // relaxed band + V chain + sparkle pendant
-  acc_pendant(g, m) {
-    const band = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.43, 0.43, 0.05, 8, 1, true).toNonIndexed(), m
-    );
-    band.scale.set(1, 1, 0.8);
-    band.position.y = -0.12;
-    g.add(band);
-    bx(g, m, 0.025, 0.24, 0.02, -0.11, -0.25, 0.26, { z: 0.5 });
-    bx(g, m, 0.025, 0.24, 0.02, 0.11, -0.25, 0.26, { z: -0.5 });
-    star(g, m, 0, -0.38, 0.27);
-  },
-  // hip ring with three dangling charms
-  acc_belly_chain(g, m) {
-    ring(g, m, 0.37, 0.04, 10, 0);
-    bx(g, m, 0.05, 0.09, 0.03, 0.28, -0.07, 0.2);
-    bx(g, m, 0.05, 0.09, 0.03, -0.3, -0.07, 0);
-    star(g, m, 0, -0.09, 0.36);
-  },
-  // beaded cuffs just above each hand
-  acc_friendship_bracelet(g, m) {
+  // full bead ring around the base of each hand (below any sleeve end),
+  // alternating main/darker beads + one chunky charm bead at the front
+  acc_friendship_bracelet(g, m, s) {
     for (const side of [-1, 1]) {
-      const wrist = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.17, 0.17, 0.06, 6, 1, true).toNonIndexed(), m
-      );
-      wrist.position.set(side * 0.48, 0.05, 0.03);
-      wrist.rotation.z = side * -0.2;
-      g.add(wrist);
-      const cx = side * 0.48;
-      bx(g, m, 0.05, 0.05, 0.05, cx - side * 0.09, 0.05, 0.16);
-      bx(g, m, 0.05, 0.05, 0.05, cx, 0.06, 0.2);
-      bx(g, m, 0.05, 0.05, 0.05, cx + side * 0.09, 0.05, 0.16);
+      const cx = side * 0.485, cy = -0.03;
+      // ring plane perpendicular to the A-pose arm axis (rz side * 0.2)
+      const ax = 0.9801, ay = side * 0.1987;
+      for (let i = 0; i < 8; i++) {
+        const phi = (i + 0.5) * (Math.PI / 4);
+        const bead = new THREE.Mesh(
+          new THREE.OctahedronGeometry(0.05), i % 2 ? s : m
+        );
+        bead.position.set(
+          cx + 0.16 * Math.cos(phi) * ax,
+          cy + 0.16 * Math.cos(phi) * ay,
+          0.16 * Math.sin(phi)
+        );
+        g.add(bead);
+      }
+      const charm = new THREE.Mesh(new THREE.OctahedronGeometry(0.075), m);
+      charm.position.set(cx, cy, 0.16); // chunky charm bead at the front
+      g.add(charm);
     }
-  },
-  // baguette tube tucked under the right arm + crossbody strap
-  acc_baguette_bag(g, m) {
-    const bag = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.1, 0.1, 0.36, 8, 1, false).toNonIndexed(), m
-    );
-    bag.position.set(0.34, -0.24, 0.28);
-    bag.rotation.z = -0.25;
-    g.add(bag);
-    bx(g, m, 0.14, 0.05, 0.22, 0.39, -0.05, 0.28);
-    bx(g, m, 0.04, 0.82, 0.04, 0.03, -0.06, 0.33, { z: -0.94 });
-  },
-  // box body + flap + strap over the shoulder
-  acc_shoulder_bag(g, m) {
-    bx(g, m, 0.3, 0.24, 0.14, 0.38, -0.34, 0.26);
-    bx(g, m, 0.32, 0.1, 0.15, 0.38, -0.2, 0.26);
-    bx(g, m, 0.05, 0.05, 0.05, 0.38, -0.2, 0.34);
-    bx(g, m, 0.035, 0.82, 0.045, 0.0, 0.02, 0.21, { z: 1.05 });
   },
 };
 
-const ALL = { ...HEAD_BUILDER, ...HEAD2_BUILDER, ...BODY_BUILDER };
+const ALL = { ...HEAD_BUILDER, ...HEAD2_BUILDER, ...BODY_BUILDER, ...BAG_BUILDER };
 
 export const ACC_IDS = Object.keys(ALL);
 

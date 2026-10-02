@@ -108,7 +108,6 @@ export function createCharacter() {
   root.add(hairAnchor);
 
   const neckAnchor = anchorAt(root, "anchor_neck", 0, 1.16, 0);
-  const waistAnchor = anchorAt(root, "anchor_waist", 0, 0.7, 0);
   // wrists: at the arm/en-hand joint (arm pivot y1.18 - 0.6 down, tilted)
   const wristAnchor = anchorAt(root, "anchor_wrist", 0, 0.59, 0);
   const bagAnchor = anchorAt(root, "anchor_bag", 0, 1.0, 0.05);
@@ -121,7 +120,7 @@ export function createCharacter() {
     root, mats, setSkin, hairAnchor,
     anchors: {
       head: hairAnchor, neck: neckAnchor,
-      waist: waistAnchor, wrist: wristAnchor, bag: bagAnchor,
+      wrist: wristAnchor, bag: bagAnchor,
     },
   };
 }

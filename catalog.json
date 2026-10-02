@@ -10,10 +10,9 @@
   "outer",
    "bottom",
    "shoes",
-  "neck",
-  "waist",
-  "wrist",
-  "bag"
+   "neck",
+   "wrist",
+   "bag"
  ],
  "palettes": {
   "pastel": [
@@ -666,30 +665,6 @@
    "maxTris": 150
   },
   {
-   "id": "acc_pendant",
-   "slot": "neck",
-   "label": "Pendant necklace",
-   "tags": [
-    "y2k"
-   ],
-   "colorSlots": [
-    "main"
-   ],
-   "maxTris": 150
-  },
-  {
-   "id": "acc_belly_chain",
-   "slot": "waist",
-   "label": "Belly chain",
-   "tags": [
-    "y2k"
-   ],
-   "colorSlots": [
-    "main"
-   ],
-   "maxTris": 150
-  },
-  {
    "id": "acc_friendship_bracelet",
    "slot": "wrist",
    "label": "Friendship bracelet",
@@ -775,8 +750,7 @@
     "top": "top_baby_tee",
     "bottom": "bot_lowrise_mini",
     "headwear": "acc_butterfly_clip",
-    "shoes": "shoe_mary_jane",
-    "waist": "acc_belly_chain"
+    "shoes": "shoe_mary_jane"
    }
   },
   {

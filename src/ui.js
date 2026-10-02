@@ -31,7 +31,7 @@ const CLOTH_SECTIONS = {
   shoes: [["shoes", "SHOES"]],
   accessories: [
     ["headwear", "HEADWEAR"], ["eyewear", "EYEWEAR"], ["neck", "NECK"],
-    ["waist", "WAIST"], ["wrist", "WRIST"], ["bag", "BAG"],
+    ["wrist", "WRIST"], ["bag", "BAG"],
   ],
 };
 

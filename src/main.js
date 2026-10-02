@@ -16,7 +16,7 @@ import { createUI } from "./ui.js";
 // M5: face system + hair + base clothes + accessories with named anchors.
 
 const CLOTH_SLOTS = ["top", "outer", "bottom", "shoes"];
-const ACC_SLOTS = ["headwear", "eyewear", "neck", "waist", "wrist", "bag"];
+const ACC_SLOTS = ["headwear", "eyewear", "neck", "wrist", "bag"];
 const ALL_SLOTS = [...CLOTH_SLOTS, ...ACC_SLOTS];
 
 const state = {
@@ -27,7 +27,7 @@ const state = {
   bottom: { id: "bot_long_pants", colors: { main: "#3a5ca8" } },
   shoes: { id: "shoe_sneaker", colors: { main: "#e8913a" } },
   headwear: null, eyewear: null,
-  neck: null, waist: null, wrist: null, bag: null,
+  neck: null, wrist: null, bag: null,
 };
 
 // debug: ?hair=hair_XX etc. lets the shot scripts capture specific items
@@ -205,7 +205,6 @@ const SLOT_ANCHOR = {
   headwear: character.anchors.head,
   eyewear: character.anchors.head,
   neck: character.anchors.neck,
-  waist: character.anchors.waist,
   wrist: character.anchors.wrist,
   bag: character.anchors.bag,
 };
