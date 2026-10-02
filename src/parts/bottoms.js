@@ -136,7 +136,13 @@ function bot_tennis_skirt(g, m, f) {
 
 function bot_lowrise_mini(g, m, f) {
   const waist = f.lowRise ? HIP : WAIST;
-  g.add(waistbandMesh(m, waist + 0.24));
+  // rectangular waistband flush with the skirt box (a round cylinder band
+  // would float around the rectangle front/sides like a hoop)
+  const bandW = 0.68;
+  const band = new THREE.BoxGeometry(bandW, 0.09, 0.4).toNonIndexed();
+  band.translate(0, waist + 0.2, 0);
+  band.computeVertexNormals();
+  g.add(new THREE.Mesh(band, m));
   // rectangular A-line skirt box (matches the boxy hips silhouette — no
   // hula-hoop round profile from the side like the old 8-gon cylinder)
   const topY = waist + 0.2;
