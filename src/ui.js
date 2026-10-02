@@ -323,6 +323,7 @@ export function createUI(state, { onChange }) {
     current = cat;
     panelBody.replaceChildren();
     leftColumn.replaceChildren();
+    leftColumn.style.gap = ""; // style tab sets a tighter gap for its 6 thumbs
     panel.dataset.cat = cat;
     panelTitle.textContent = CAT_LABEL[cat] || cat.toUpperCase();
     catBtns.forEach((b) =>

@@ -78,7 +78,30 @@ export function applyColourBlock(state, onChange, hue = null) {
   onChange();
 }
 
-// style panel body: preset buttons + auto colour-block button
+// does the current state match this preset's item ids (used for the
+// selected ring, works even after a reload)
+function matchedPreset(state) {
+  return catalog.presets.find((preset) =>
+    Object.entries(preset.items).every(
+      ([slot, id]) => state[slot]?.id === id
+    )
+  );
+}
+
+// main colours the preset would set (defaults for slots without curated col)
+function presetColors(preset) {
+  const out = {};
+  for (const [slot, id] of Object.entries(preset.items)) {
+    const item = catalog.items.find((i) => i.id === id);
+    if (!item || item.colorSlots[0] !== "main") continue;
+    const cols = PRESET_COLORS[preset.id]?.[slot] ?? { main: "#ffffff" };
+    out[slot] = cols.main;
+  }
+  return out;
+}
+
+// style panel body: preset buttons (with outfit colour chips) + auto
+// colour-block button; left column shows palette thumbs + selection ring
 export function buildStyle(state, { onChange }) {
   const panelBody = document.getElementById("panelBody");
   const leftColumn = document.getElementById("leftColumn");
@@ -89,46 +112,59 @@ export function buildStyle(state, { onChange }) {
     label.className = "sectionLabel";
     label.textContent = "PRESETS";
     panelBody.appendChild(label);
-    let lastApplied = null;
+    const active = matchedPreset(state)?.id;
     for (const preset of catalog.presets) {
       const b = document.createElement("button");
-      b.className = "panelBtn presetBtn";
-      b.textContent = preset.label;
-      b.dataset.preset = preset.id;
-      b.addEventListener("click", () => {
-        applyPreset(preset, state, onChange);
-        lastApplied = preset.id;
+      b.className = "panelBtn presetBtn" +
+        (preset.auto ? " presetAuto" : "") +
+        (preset.id === active ? " active" : "");
+      const chips = presetColors(preset);
+      const strip = document.createElement("span");
+      strip.className = "presetChips";
+      for (const hex of Object.values(chips)) {
+        const c = document.createElement("span");
+        c.className = "presetChip";
+        c.style.background = hex;
+        strip.appendChild(c);
+      }
+      const txt = document.createElement("span");
+      txt.className = "presetTxt";
+      txt.textContent = preset.label;
+      b.appendChild(strip);
+      b.appendChild(txt);
+      if (preset.auto) {
+        b.addEventListener("click", () => applyColourBlock(state, onChange, null));
+        panelBody.appendChild(b);
+      } else {
+        b.addEventListener("click", () => {
+          applyPreset(preset, state, onChange);
+          reRender();
+        });
+        panelBody.appendChild(b);
+      }
+
+      // left column thumb: stacked outfit colour bands (smaller when 6
+      // presets so the whole set fits inside the left column)
+      const S = catalog.presets.length > 4 ? 34 : 56;
+      const t = document.createElement("canvas");
+      t.className = "thumb" + (preset.id === active ? " active" : " dim");
+      t.width = t.height = S;
+      t.style.width = t.style.height = S + "px";
+      t.title = preset.label;
+      const ctx = t.getContext("2d");
+      const bandH = S > 50 ? 9 : 7;
+      const cols = Object.entries(chips);
+      cols.forEach(([slot, hex], i) => {
+        ctx.fillStyle = hex;
+        ctx.fillRect(5, 9 + i * (bandH + 2), S - 10, bandH);
+        ctx.strokeStyle = "rgba(0,0,0,0.35)";
+        ctx.strokeRect(5.5, 9.5 + i * (bandH + 2), S - 11, bandH - 1);
+      });
+      t.addEventListener("click", () => {
+        if (preset.auto) applyColourBlock(state, onChange, null);
+        else applyPreset(preset, state, onChange);
         reRender();
       });
-      panelBody.appendChild(b);
-    }
-    const autoLabel = document.createElement("div");
-    autoLabel.className = "sectionLabel";
-    autoLabel.textContent = "AUTO";
-    panelBody.appendChild(autoLabel);
-    const cb = document.createElement("button");
-    cb.className = "panelBtn presetBtn";
-    cb.textContent = "COLOUR BLOCK";
-    cb.addEventListener("click", () => {
-      applyColourBlock(state, onChange, null);
-      reRender();
-    });
-    panelBody.appendChild(cb);
-
-    // left column: active preset ring + top/bottom colour swatches
-    leftColumn.replaceChildren();
-    for (const preset of catalog.presets) {
-      const t = document.createElement("canvas");
-      t.className = "thumb";
-      t.width = t.height = 56;
-      const ctx = t.getContext("2d");
-      ctx.fillStyle = "#fff";
-      ctx.font = '15px "Press Start 2P", monospace';
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(preset.label.slice(0, 2).toUpperCase(), 28, 30);
-      if (preset.id === lastApplied) t.classList.add("active");
-      else t.classList.add("dim");
       leftColumn.appendChild(t);
     }
   }

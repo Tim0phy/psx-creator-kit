@@ -270,13 +270,44 @@ canvas.image-rendering { image-rendering: pixelated; }
 .presetBtn {
   width: 54px;
   border-radius: 8px;
-  font-size: 6px;
-  line-height: 1.5;
-  padding: 6px 2px;
+  padding: 5px 3px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
 }
 
 #panel[data-cat="style"] #panelBody {
   padding: 12px 2px 20px;
+}
+
+/* mini colour strip previewing the preset's outfit colours */
+.presetChips {
+  display: flex;
+  gap: 3px;
+}
+
+.presetChip {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+.presetTxt {
+  font-size: 6px;
+  line-height: 1.3;
+}
+
+/* auto colour-block button: dashed ring = generated, not a fixed look */
+.presetAuto {
+  border-style: dashed;
+}
+
+/* left column thumbs keep the same hover language as item circles */
+#leftColumn .thumb.active,
+#leftColumn .thumb:not(.active):hover {
+  box-shadow: inset 0 3px 0 #fff, inset 0 -3px 0 #c8a888,
+    0 0 0 3px #e85878;
 }
 
 .thumb.dim { opacity: 0.55; }

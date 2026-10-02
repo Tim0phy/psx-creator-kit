@@ -364,3 +364,9 @@
   colour-block 對比色（藍top+紅裙）。
 - 驗證：build 過；m6Shots.mjs 逐件 front/angle + 6 preset desktop/mobile
   截圖全過無 pageerror；tris 398-504 <= 800 預算（m6Probe 已刪）。
+- 後續修訂（用戶反饋）：bot_lowrise_mini 改矩形 A-line 裙盒（舊 8 角圆筒
+  側面似呼拉圈，且太細）+ 矩形腰帶取代圓筒 waistband（圓筒會繞着矩形裙
+  浮起）。STYLE panel polish：preset 按鈕加 outfit 色版 chips；
+  colour-block 用虛線框；左欄 thumbnail 改為 preset 色帶 canvas（6 個時
+  34px + gap 8 收緊，切 tab 重設 gap）避免溢出粉色欄；選中 ring 用
+  matchedPreset 比對 state slot id（reload 後都會高亮）。
