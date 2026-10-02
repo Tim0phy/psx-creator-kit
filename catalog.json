@@ -6,9 +6,10 @@
   "hair",
   "headwear",
   "eyewear",
-  "top",
+   "top",
   "outer",
    "bottom",
+   "socks",
    "shoes",
    "neck",
    "wrist",
@@ -465,19 +466,34 @@
    "maxTris": 150,
    "lowRise": true
   },
-  {
-   "id": "bot_metallic_pants",
-   "slot": "bottom",
-   "label": "Metallic high-waist pants",
-   "tags": [
-    "y2k"
-   ],
-   "colorSlots": [
-    "main"
-   ],
-   "maxTris": 150,
-   "pattern": "metallic"
-  },
+   {
+    "id": "bot_metallic_pants",
+    "slot": "bottom",
+    "label": "Metallic high-waist pants",
+    "tags": [
+     "y2k"
+    ],
+    "colorSlots": [
+     "main"
+    ],
+    "maxTris": 150,
+    "pattern": "metallic"
+   },
+   {
+    "id": "sock_knee_stripe",
+    "slot": "socks",
+    "label": "Striped knee socks",
+    "tags": [
+     "sport",
+     "preppy"
+    ],
+    "colorSlots": [
+     "main",
+     "secondary"
+    ],
+    "maxTris": 150,
+    "pattern": "stripes"
+   },
   {
    "id": "shoe_sneaker",
    "slot": "shoes",
@@ -665,14 +681,15 @@
    "maxTris": 150
   },
   {
-   "id": "acc_friendship_bracelet",
+   "id": "acc_watch",
    "slot": "wrist",
-   "label": "Friendship bracelet",
+   "label": "Wristwatch (left)",
    "tags": [
-    "y2k"
+    "base"
    ],
    "colorSlots": [
-    "main"
+    "main",
+    "secondary"
    ],
    "maxTris": 150
   },
@@ -703,16 +720,18 @@
   }
  ],
  "presets": [
-  {
-   "id": "preset_preppy",
-   "label": "Preppy",
-   "items": {
-    "bottom": "bot_plaid_pleated",
-    "top": "top_knit_vest",
+   {
+    "id": "preset_preppy",
+    "label": "Preppy",
+    "items": {
+     "top": "top_knit_vest",
+    "outer": "outer_blazer",
+     "bottom": "bot_plaid_pleated",
+     "socks": "sock_knee_stripe",
      "shoes": "shoe_white_sneaker",
-    "neck": "acc_choker"
-   }
-  },
+     "neck": "acc_choker"
+    }
+   },
   {
    "id": "preset_street",
    "label": "Street",
@@ -734,15 +753,16 @@
     "shoes": "shoe_sneaker"
    }
   },
-  {
-   "id": "preset_sport",
-   "label": "Sport",
-   "items": {
-    "top": "top_jersey_crop",
-    "bottom": "bot_tennis_skirt",
-     "shoes": "shoe_sneaker"
-   }
-  },
+   {
+    "id": "preset_sport",
+    "label": "Sport",
+    "items": {
+     "top": "top_jersey_crop",
+     "bottom": "bot_tennis_skirt",
+      "socks": "sock_knee_stripe",
+      "shoes": "shoe_sneaker"
+    }
+   },
   {
    "id": "preset_y2k",
    "label": "Y2K",

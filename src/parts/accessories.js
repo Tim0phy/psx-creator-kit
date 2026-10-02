@@ -202,29 +202,34 @@ const BODY_BUILDER = {
     o.position.set(0, -0.085, 0.37); // O-ring charm mounted at the band front
     g.add(o);
   },
-  // full bead ring around the base of each hand (below any sleeve end),
-  // alternating main/darker beads + one chunky charm bead at the front
-  acc_friendship_bracelet(g, m, s) {
-    for (const side of [-1, 1]) {
-      const cx = side * 0.485, cy = -0.03;
-      // ring plane perpendicular to the A-pose arm axis (rz side * 0.2)
-      const ax = 0.9801, ay = side * 0.1987;
-      for (let i = 0; i < 8; i++) {
-        const phi = (i + 0.5) * (Math.PI / 4);
-        const bead = new THREE.Mesh(
-          new THREE.OctahedronGeometry(0.05), i % 2 ? s : m
-        );
-        bead.position.set(
-          cx + 0.16 * Math.cos(phi) * ax,
-          cy + 0.16 * Math.cos(phi) * ay,
-          0.16 * Math.sin(phi)
-        );
-        g.add(bead);
-      }
-      const charm = new THREE.Mesh(new THREE.OctahedronGeometry(0.075), m);
-      charm.position.set(cx, cy, 0.16); // chunky charm bead at the front
-      g.add(charm);
-    }
+  // wristwatch on the left hand (screen-left = -x, model's right wrist in
+  // A-pose story terms users read as "left hand"): rounded-rect strap with
+  // the same boxiness as the arms, white fixed dial, case/strap colourable
+  acc_watch(g, m, s) {
+    // strap: rounded-rect tube around the wrist, tilted with the A-pose arm
+    // (anchor_wrist ring plane spans x 0.29-0.35 / z 0.16 vs arm half 0.135)
+    const shape = new THREE.Shape();
+    roundedRectPath(shape, 0.185, 0.165, 0.04);
+    const hole = new THREE.Path();
+    roundedRectPath(hole, 0.15, 0.13, 0.03);
+    shape.holes.push(hole);
+    const strap = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(shape, {
+        depth: 0.075, bevelEnabled: false, curveSegments: 1,
+      }).rotateX(-Math.PI / 2), s
+    );
+    strap.rotation.z = -0.2; // follow the A-pose tilt of this arm
+    strap.position.set(-0.485, -0.045, 0); // above the sleeve ends (t 0.5-0.6)
+    g.add(strap);
+    // case mounted on the FRONT of the strap (dial faces the camera, like
+    // checking the time) + crown on the case's right edge
+    bx(g, m, 0.16, 0.15, 0.05, -0.485, -0.045, 0.155, { z: -0.2 });
+    bx(g, m, 0.03, 0.03, 0.035, -0.398, -0.045, 0.168, { z: -0.2 });
+    // fixed white dial inset in the case front (always white)
+    const dial = bx(g, m, 0.115, 0.105, 0.014, -0.485, -0.045, 0.184, { z: -0.2 });
+    dial.material = makePSXMaterial("#ffffff", { gradient: 0.08 });
+    // hands: one dark bar on the dial
+    bx(g, s, 0.02, 0.06, 0.014, -0.485, -0.027, 0.192, { z: 0.4 });
   },
 };
 
@@ -232,14 +237,20 @@ const ALL = { ...HEAD_BUILDER, ...HEAD2_BUILDER, ...BODY_BUILDER, ...BAG_BUILDER
 
 export const ACC_IDS = Object.keys(ALL);
 
-export function createAccessory(id, colorHex, fit) {
+export function createAccessory(id, colors, fit) {
   const group = new THREE.Group();
-  const mat = makePSXMaterial(colorHex, { gradient: 0.12 });
+  const main = colors.main ?? "#ffffff";
+  const mat = makePSXMaterial(main, { gradient: 0.12 });
   let secMat = null;
   if (ALL[id]) {
-    // darker variant of the main colour for lenses / inner ears
-    secMat = makePSXMaterial(colorHex, { gradient: 0.08 });
-    secMat.uniforms.color.value.multiplyScalar(0.45);
+    // secondary slot (watch strap): user-coloured; darker variant of main
+    // otherwise as before for lenses/inner ears
+    if (colors.secondary) {
+      secMat = makePSXMaterial(colors.secondary, { gradient: 0.12 });
+    } else {
+      secMat = makePSXMaterial(main, { gradient: 0.08 });
+      secMat.uniforms.color.value.multiplyScalar(0.45);
+    }
     ALL[id](group, mat, secMat, fit);
   }
   let tris = 0;

@@ -293,3 +293,22 @@
 - 80 -> 128 tris（Extrude side walls + caps，max 150 內）。
 - 驗證：front/side/back/angle 螢光粉 shots — 正/背係直橫帶，側面只見帶
   一節 + charm，無任何懸空弧；build + accShots 全過。
+
+## M5 fix round 11 (user request: WRIST1 手錶)
+- acc_friendship_bracelet 換成 acc_watch（WRIST1 = 一號 wrist 配件）：
+  左手（畫面左邊，x -0.485）手錶，錶盤釘死白色，外殼（main）同手帶
+  （secondary）由用戶自由換色。
+- 幾何：rounded-rect 錶帶（外 0.37x0.33 tube / 內洞 0.3x0.26，跟 choker
+  同工法）跟 A-pose 傾斜 rz -0.2，位於 sleeve ends (t 0.5-0.6) 之下；
+  錶殼掛帶正面（0.16x0.15x0.05）+ 右邊 crown + 白錶盤 inset (0.115x0.105)
+  + 一條深色指針。112 tris <= 150。
+- 系統改動：createAccessory signature (id, colorHex, fit) -> (id, colors,
+  fit)；colors.secondary 存在時 secMat 用用戶色（唔再 x0.45），否則保持
+  舊 derived-dark 行為（glasses lens / cat inner ear 等不受影響）。
+  main.js recolor() 同款邏輯；ui.js 本來就會按 colorSlots 畫
+  MAIN/SECONDARY 兩個 picker（top_knit_vest 已有用），無需改。
+- 舊 bracelet (144 tris) 刪除；catalog tags 改 base。左手決定：chibi
+  對鏡實際係模型右腕，但畫面閱讀為「左手」，用 -x 側。
+- 第一次嘗試錶殼放帶頂被tee遮住（crop 驗證）-> 移到帶正面才可見。
+- 驗證：front/side/back/angle + longsleeve layering crops（螢光紅殼綠帶
+  白面）全部確認錶面可讀；build + accShots 全過。

@@ -179,7 +179,7 @@ function applyCloth(slot) {
     const fit = item.slot === "headwear"
       ? (HAT_FIT[state.hair?.id] ?? BARE_HEAD_FIT)
       : null;
-    built = createAccessory(item.id, colors.main, fit);
+    built = createAccessory(item.id, colors, fit);
   }
   mount(slot, built);
 }
@@ -194,8 +194,16 @@ function recolor(slot) {
   }
   if (CLOTH[slot].mat) CLOTH[slot].mat.uniforms.color.value.set(colors.main);
   if (CLOTH[slot].secMat) {
-    CLOTH[slot].secMat.uniforms.color.value
-      .set(colors.main).multiplyScalar(0.45);
+    if (colors.secondary) {
+      // user-driven secondary (watch strap); lenses/inner ears stay derived
+      const derived = !catalogItem(slot)?.colorSlots?.includes("secondary");
+      CLOTH[slot].secMat.uniforms.color.value
+        .set(derived ? colors.main : colors.secondary);
+      if (derived) CLOTH[slot].secMat.uniforms.color.value.multiplyScalar(0.45);
+    } else {
+      CLOTH[slot].secMat.uniforms.color.value
+        .set(colors.main).multiplyScalar(0.45);
+    }
   }
 }
 

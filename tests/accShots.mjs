@@ -13,7 +13,7 @@ const SLOT_ITEMS = {
   ],
   eyewear: ["acc_glasses", "acc_wrap_sunglasses"],
   neck: ["acc_choker"],
-  wrist: ["acc_friendship_bracelet"],
+  wrist: ["acc_watch"],
   bag: ["acc_baguette_bag", "acc_shoulder_bag"],
 };
 const views = { front: 0, angle: 0.6, back: Math.PI };
