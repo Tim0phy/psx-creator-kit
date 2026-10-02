@@ -8,14 +8,18 @@ import { createHair } from "./parts/hair.js";
 import { createTop } from "./parts/tops.js";
 import { createBottom } from "./parts/bottoms.js";
 import { createShoes } from "./parts/shoes.js";
+import { createSocks } from "./parts/socks.js";
 import { createAccessory } from "./parts/accessories.js";
 import catalog from "./catalog.js";
 import { HAT_FIT, BARE_HEAD_FIT } from "./parts/hair.js";
 import { createUI } from "./ui.js";
+import {
+  applyPreset, applyColourBlock,
+} from "./uiStyle.js";
 
-// M5: face system + hair + base clothes + accessories with named anchors.
+// M6: style-pack tops/bottoms/shoes + socks slot + patterns + Style tab.
 
-const CLOTH_SLOTS = ["top", "outer", "bottom", "shoes"];
+const CLOTH_SLOTS = ["top", "outer", "bottom", "socks", "shoes"];
 const ACC_SLOTS = ["headwear", "eyewear", "neck", "wrist", "bag"];
 const ALL_SLOTS = [...CLOTH_SLOTS, ...ACC_SLOTS];
 
@@ -25,6 +29,7 @@ const state = {
   top: { id: "top_tee", colors: { main: "#e06060" } },
   outer: null,
   bottom: { id: "bot_long_pants", colors: { main: "#3a5ca8" } },
+  socks: null,
   shoes: { id: "shoe_sneaker", colors: { main: "#e8913a" } },
   headwear: null, eyewear: null,
   neck: null, wrist: null, bag: null,
@@ -166,13 +171,15 @@ function applyCloth(slot) {
     wide: !!item.wide,
   };
   if (item.slot === "top" || item.slot === "outer") {
-    built = createTop(item.id, colors.main, flags);
+    built = createTop(item.id, colors, flags, item.pattern);
     // top geometry is built around the torso centre (world y 0.88)
     built.group.position.y = 0.88;
   } else if (item.slot === "bottom") {
-    built = createBottom(item.id, colors.main, flags);
+    built = createBottom(item.id, colors, flags, item.pattern);
+  } else if (item.slot === "socks") {
+    built = createSocks(item.id, colors, item.pattern);
   } else if (item.slot === "shoes") {
-    built = createShoes(item.id, colors.main);
+    built = createShoes(item.id, colors);
   } else {
     // accessories: builders include all anchor-space offsets already
     // headwear hugs the current hairstyle's cap surface via its fit data
@@ -189,25 +196,22 @@ function recolor(slot) {
   if (!item || !CLOTH[slot]) return;
   const colors = state[slot].colors;
   if (CLOTH[slot].pattern) {
-    CLOTH[slot].pattern.set("stripes", colors.main, colors.secondary);
+    CLOTH[slot].pattern.set(item.pattern, colors.main, colors.secondary);
     return;
   }
+  // one material slot: main; secondary tracks the watcher's rules below
   if (CLOTH[slot].mat) CLOTH[slot].mat.uniforms.color.value.set(colors.main);
-  if (CLOTH[slot].secMat) {
-    if (colors.secondary) {
-      // user-driven secondary (watch strap); lenses/inner ears stay derived
-      const derived = !catalogItem(slot)?.colorSlots?.includes("secondary");
-      CLOTH[slot].secMat.uniforms.color.value
-        .set(derived ? colors.main : colors.secondary);
-      if (derived) CLOTH[slot].secMat.uniforms.color.value.multiplyScalar(0.45);
-    } else {
-      CLOTH[slot].secMat.uniforms.color.value
-        .set(colors.main).multiplyScalar(0.45);
-    }
+  if (CLOTH[slot].secMat && item.colorSlots?.includes("secondary")) {
+    // two colour slots: secMat follows the user's secondary pick
+    CLOTH[slot].secMat.uniforms.color.value.set(
+      colors.secondary ?? colors.main
+    );
+  } else if (CLOTH[slot].secMat) {
+    // one colour slot: secMat stays a derived darker shade of main
+    CLOTH[slot].secMat.uniforms.color.value
+      .set(colors.main).multiplyScalar(0.45);
   }
 }
-
-createUI(state, { onChange: applyAll });
 
 const SLOT_ANCHOR = {
   headwear: character.anchors.head,
@@ -216,6 +220,18 @@ const SLOT_ANCHOR = {
   wrist: character.anchors.wrist,
   bag: character.anchors.bag,
 };
+
+createUI(state, { onChange: applyAll });
+
+// ?preset= applies a catalog preset on load (shot scripts / shareable links);
+// ?hue= makes the auto colour-block deterministic
+const startPreset = params.get("preset");
+const startHue = params.get("hue");
+if (startPreset) {
+  const preset = catalog.presets.find((p) => p.id === startPreset);
+  if (preset) applyPreset(preset, state, applyAll);
+  if (startHue) applyColourBlock(state, applyAll, Number(startHue));
+}
 
 function applyAll() {
   applyFace();

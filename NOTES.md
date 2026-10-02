@@ -332,3 +332,35 @@
 - 註：M6 session 並行改緊 main.js/ui.js（socks + Style tab，引用未追蹤
   socks.js/uiStyle.js），所以今次 commit 只含 accessories.js + NOTES.md；
   ui.js 嘅 secondaryFollow 改動留待 M6 一併提交。temp 腳本已刪。
+
+## M6 完成（2026-10-03：Y2K/NewJeans 風格包）
+- 新增 20 件 catalog 件：top_baby_tee / top_knit_vest / top_polo /
+  top_offshoulder / top_jersey_crop / top_denim_shirt（tops.js TOP6）、
+  outer_blazer（lapel crest + 領帶）/ outer_denim_jacket / outer_bomber
+  （OUTER6，denim/shirt 共用 denim pattern）、bot_lowrise_jeans /
+  bot_cargo_wide（前大腿口袋）/ bot_plaid_pleated / bot_tennis_skirt /
+  bot_lowrise_mini / bot_metallic_pants（bottoms.js）、shoe_platform /
+  shoe_mary_jane / shoe_knee_boots（shoes.js）、及(socks) sock_knee_stripe。
+- patterns.js：plaid / stripe / denim / star / metallic / number_decal
+  （pixel-bitmap drawDigitsDecal）六大程序貼圖，32x32 nearest；makeDecal
+  出 crest/digits 貼花。catalog item 加 `pattern` 欄位，createTop/Bottom/
+  Socks 收 patternName 建PatternTexture 材質；main.js recolor() 每次
+  換色都 set(item.pattern, main, secondary)。
+- 建構函式統一 (g, m, s, flags)；lower torso 改用 skinMat（crop top 露腰）。
+- Style tab（uiStyle.js + catStyle 按鈕）：6 個 catalog preset
+  （Preppy/Street/Denim/Sport/Y2K/Colour block）＋ AUTO COLOUR BLOCK。
+  PRESET_COLORS 表放 curated 色；applyPreset 套 items+colors；
+  applyColourBlock 一 hue 派生深淺，bottom 用 h+150 對比色（避免藍配深藍
+  monochrome）。`?preset=<id>&hue=<n>` URL 參數供截圖。
+- M6 修訂輪（截圖對照後 4 項大差異）：
+  ① 桌面 STYLE panel preset 按鈕被右邊裁切 — presetBtn 56->54px、字
+     7->6px、style panel grid padding 收窄。
+  ② cargo 口袋移前大腿（x ±0.36, z 0.16）+ flap，側面先見到。
+  ③ plaid pleated skirt 每塊 panel 給 UV 0..1，格紋先顯示出嚟。
+  ④ blazer crest 移到 lapel 面 z 0.245；jersey digits 改 pixel bitmap。
+- 最後修訂：bot_lowrise_mini 收窄（rBot 0.44->0.4）同縮短（hem
+  waist-0.24->-0.16）同 tennis skirt 分離樣；drawMetallic 改雙 loop
+  3px 亮帶 + 2px 暗帶每 12px 週期（0.5 白 / 0.28 黑）明顯 foiled look；
+  colour-block 對比色（藍top+紅裙）。
+- 驗證：build 過；m6Shots.mjs 逐件 front/angle + 6 preset desktop/mobile
+  截圖全過無 pageerror；tris 398-504 <= 800 預算（m6Probe 已刪）。

@@ -1,43 +1,84 @@
 import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
 
-// M4 shoes only (socks slot removed). Shoes are compact boxes over the base
-// feet plus a sole plate and a slim ankle cuff.
+// M4 shoes (base sneaker) + M6 style packs. Shoes are compact boxes over the
+// base feet plus a sole plate and a slim ankle cuff.
 // Feet: 0.20 x 0.13 x 0.32 box at (±0.19, 0.065, 0.06) so top y=0.13.
 // Legs: y 0.06..0.62, z half 0.17 -> shoe walls must strictly enclose that
 // envelope (no coplanar back faces).
 
+function bx(g, m, w, h, d, x, y, z) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d).toNonIndexed(), m);
+  mesh.position.set(x, y, z);
+  g.add(mesh);
+  return mesh;
+}
+
+// base sneaker reused by the white variant (main colour only)
+function sneaker(g, m) {
+  for (const side of [-1, 1]) {
+    // body: x half 0.18 strictly covers the leg (0.142 at these heights,
+    // with side margin), z back -0.19 strictly covers the leg's back face
+    // (-0.17), front 0.28 just past the foot toe (0.22)
+    bx(g, m, 0.36, 0.16, 0.47, side * 0.19, 0.09, 0.045);
+    bx(g, m, 0.3, 0.07, 0.43, side * 0.19, 0.045, 0.05);
+    // slim ankle cuff: x half 0.18 strictly covers the leg with margin
+    // (0.158 max) while inner edges (±0.01) keep a gap between cuffs,
+    // z half 0.21 strictly covers the leg depth (0.17), top 0.25 under
+    // the pant hem (0.43)
+    bx(g, m, 0.36, 0.08, 0.42, side * 0.19, 0.21, 0);
+  }
+}
+
 const SHOE_BUILDER = {
-  shoe_sneaker(g, m) {
+  shoe_sneaker: sneaker,
+  shoe_white_sneaker(g, m, s) {
+    sneaker(g, m);
+    // contrasting toe cap + sole stripe in the secondary colour
     for (const side of [-1, 1]) {
-      // body: x half 0.18 strictly covers the leg (0.142 at these heights,
-      // with side margin), z back -0.19 strictly covers the leg's back face
-      // (-0.17), front 0.28 just past the foot toe (0.22)
-      const body = new THREE.Mesh(
-        new THREE.BoxGeometry(0.36, 0.16, 0.47).toNonIndexed(), m
-      );
-      body.position.set(side * 0.19, 0.09, 0.045);
-      const sole = new THREE.Mesh(
-        new THREE.BoxGeometry(0.3, 0.07, 0.43).toNonIndexed(), m
-      );
-      sole.position.set(side * 0.19, 0.045, 0.05);
-      // slim ankle cuff: x half 0.18 strictly covers the leg with margin
-      // (0.158 max) while inner edges (±0.01) keep a gap between cuffs,
-      // z half 0.21 strictly covers the leg depth (0.17), top 0.25 under
-      // the pant hem (0.43)
-      const cuff = new THREE.Mesh(
-        new THREE.BoxGeometry(0.36, 0.08, 0.42).toNonIndexed(), m
-      );
-      cuff.position.set(side * 0.19, 0.21, 0);
-      g.add(body, sole, cuff);
+      bx(g, s, 0.3, 0.06, 0.14, side * 0.19, 0.13, 0.2);
+      bx(g, s, 0.32, 0.02, 0.44, side * 0.19, 0.075, 0.05);
+    }
+  },
+  // chunky platform: taller sole + body, keeps the sneaker cuff silhouette
+  shoe_platform(g, m, s) {
+    for (const side of [-1, 1]) {
+      bx(g, s, 0.38, 0.1, 0.5, side * 0.19, 0.055, 0.05); // platform sole
+      bx(g, m, 0.38, 0.18, 0.5, side * 0.19, 0.16, 0.045); // taller body
+      bx(g, m, 0.38, 0.08, 0.44, side * 0.19, 0.25, 0); // ankle cuff
+    }
+  },
+  // flat Mary Jane: thin sole, low body, strap across the instep
+  shoe_mary_jane(g, m, s) {
+    for (const side of [-1, 1]) {
+      bx(g, m, 0.34, 0.12, 0.46, side * 0.19, 0.08, 0.04);
+      bx(g, s, 0.28, 0.05, 0.44, side * 0.19, 0.03, 0.05); // slim sole
+      bx(g, s, 0.36, 0.03, 0.08, side * 0.19, 0.145, 0.02); // instep strap
+      bx(g, s, 0.05, 0.03, 0.03, side * 0.19, 0.145, -0.05); // buckle
+    }
+  },
+  // knee-high boots: sneaker foot + tall shaft wrapping the leg up to y 0.62
+  shoe_knee_boots(g, m, s) {
+    for (const side of [-1, 1]) {
+      bx(g, m, 0.36, 0.16, 0.47, side * 0.19, 0.09, 0.045);
+      bx(g, s, 0.3, 0.07, 0.43, side * 0.19, 0.045, 0.05);
+      // shaft: covers the leg (half 0.2 > 0.17) up to the knee top (0.62)
+      bx(g, m, 0.4, 0.4, 0.4, side * 0.19, 0.4, 0);
+      // fold-over cuff band at the top of the shaft
+      bx(g, s, 0.42, 0.08, 0.42, side * 0.19, 0.59, 0);
     }
   },
 };
 
-export function createShoes(id, colorHex) {
+export function createShoes(id, colors) {
   const group = new THREE.Group();
-  const mat = makePSXMaterial(colorHex, { gradient: 0.12 });
-  if (SHOE_BUILDER[id]) SHOE_BUILDER[id](group, mat);
+  const main = colors.main ?? "#ffffff";
+  const mat = makePSXMaterial(main, { gradient: 0.12 });
+  let secMat = null;
+  if (SHOE_BUILDER[id]) {
+    if (colors.secondary) secMat = makePSXMaterial(colors.secondary, { gradient: 0.12 });
+    SHOE_BUILDER[id](group, mat, secMat ?? mat);
+  }
   let tris = 0;
   group.traverse((o) => {
     if (o.isMesh) {
@@ -46,5 +87,5 @@ export function createShoes(id, colorHex) {
     }
   });
   if (SHOE_BUILDER[id]) console.log(`[psxcc] ${id}: ${tris} tris (max 150)`);
-  return { group, mat };
+  return { group, mat, secMat };
 }

@@ -1,6 +1,7 @@
 import catalog, { SLOT_LABELS } from "./catalog.js";
 import { renderThumb } from "./faceTexture.js";
 import { HAIR_IDS } from "./parts/hair.js";
+import { buildStyle, applyPreset, applyColourBlock } from "./uiStyle.js";
 
 // UI: category bar switching panels (Face/Head/Top/Bottom/Shoes), pink left
 // column. All item lists are data-driven from catalog.json.
@@ -17,18 +18,13 @@ const CLOTH_SWATCHES = [
   "#ffb3c7", "#c8f56b", "#9fd6ff", "#fff3a6", "#d9c2ff",
 ];
 
-// sections per cloth category: [slot, title]. M5: the accessories tab shows
-// all accessory slots; those item lists include every catalog item (all are
-// still tagged style packs, so no "base" filter for accessories).
-const ACC_SLOT_SET = new Set(
-  catalog.items
-    .map((i) => i.slot)
-    .filter((s) => !["hair", "top", "outer", "bottom", "shoes"].includes(s))
-);
+// sections per cloth category: [slot, title]. M6: cloth panels list every
+// catalog item for the slot (base + style packs); accessories tab shows all
+// accessory slots.
 const CLOTH_SECTIONS = {
   top: [["top", "TOP"], ["outer", "OUTER"]],
   bottom: [["bottom", "BOTTOM"]],
-  shoes: [["shoes", "SHOES"]],
+  shoes: [["socks", "SOCKS"], ["shoes", "SHOES"]],
   accessories: [
     ["headwear", "HEADWEAR"], ["eyewear", "EYEWEAR"], ["neck", "NECK"],
     ["wrist", "WRIST"], ["bag", "BAG"],
@@ -36,8 +32,7 @@ const CLOTH_SECTIONS = {
 };
 
 function itemsFor(slot) {
-  const all = ACC_SLOT_SET.has(slot);
-  return catalog.items.filter((i) => i.slot === slot && (all || i.tags.includes("base")));
+  return catalog.items.filter((i) => i.slot === slot);
 }
 
 export function createUI(state, { onChange }) {
@@ -104,12 +99,14 @@ export function createUI(state, { onChange }) {
     custom.title = "custom colour";
     custom.addEventListener("input", () => setColor(custom.value));
     panelBody.appendChild(custom);
-    function setColor(hex) {
-      sourceObj[key] = hex;
-      custom.value = hex;
-      refresh();
-      onChange();
-    }
+      function setColor(hex) {
+        sourceObj[key] = hex;
+        // picking a secondary colour by hand unlocks it from the case colour
+        if (key === "secondary") sourceObj.secondaryFollow = false;
+        custom.value = hex;
+        refresh();
+        onChange();
+      }
     return {
       sync: () => {
         btns.forEach((b) =>
@@ -262,12 +259,16 @@ export function createUI(state, { onChange }) {
         none.classList.toggle("active", !state[slot]);
         items.forEach((item, i) => {
           const b = circleBtn(String(i + 1), () => {
-            // carry over this slot's colours so switching items keeps the pick
-            const prev = state[slot]?.colors ?? {};
-            state[slot] = { id: item.id, colors: {} };
-            for (const cs of item.colorSlots) {
-              state[slot].colors[cs] = prev[cs] ?? (cs === "main" ? "#ffffff" : "#222222");
-            }
+              // carry over this slot's colours so switching items keeps the pick
+              const prev = state[slot]?.colors ?? {};
+              state[slot] = { id: item.id, colors: {} };
+              for (const cs of item.colorSlots) {
+                state[slot].colors[cs] = prev[cs] ?? (cs === "main" ? "#ffffff" : "#222222");
+              }
+              // multi-colour item freshly picked: strap follows case until
+              // the user explicitly picks its own secondary colour
+              state[slot].colors.secondaryFollow
+                = item.colorSlots.includes("secondary");
             refresh(); onChange();
           });
           b.classList.toggle("active", state[slot]?.id === item.id);
@@ -279,10 +280,15 @@ export function createUI(state, { onChange }) {
           const slots = catalog.items.find(
             (i) => i.id === state[slot].id
           )?.colorSlots ?? ["main"];
-          slots.forEach((cs) => {
-            sectionLabel(cs === "main" ? "COLOUR" : cs.toUpperCase());
-            swatchRow(colors, cs, CLOTH_SWATCHES);
-          });
+            slots.forEach((cs) => {
+              sectionLabel(cs === "main" ? "COLOUR" : cs.toUpperCase());
+              // watch: strap (secondary) tracks the case colour until the
+              // user explicitly picks its own secondary colour
+              const follow = cs === "secondary"
+                && colors.secondaryFollow !== false;
+              if (follow) colors.secondary = colors.main;
+              swatchRow(colors, cs, CLOTH_SWATCHES);
+            });
           const t = thumbs[thumbs.length - 1].getContext("2d");
           t.clearRect(0, 0, 56, 56);
           t.fillStyle = colors.main;
@@ -302,11 +308,13 @@ export function createUI(state, { onChange }) {
     bottom: () => buildCloth("bottom"),
     shoes: () => buildCloth("shoes"),
     accessories: () => buildCloth("accessories"),
+    style: () => buildStyle(state, { onChange, refresh: () => {} }),
   };
   const CAT_LABEL = {
     face: SLOT_LABELS.face, head: SLOT_LABELS.head,
     top: SLOT_LABELS.top, bottom: SLOT_LABELS.bottom,
     shoes: SLOT_LABELS.shoes, accessories: SLOT_LABELS.accessories,
+    style: SLOT_LABELS.style,
   };
   let current = null;
 

@@ -54,9 +54,10 @@ export function createCharacter() {
   const root = new THREE.Group();
 
   const skinMat = makePSXMaterial(DEFAULT_SKIN);
-  const shirtMat = makePSXMaterial("#ffffff");
+  // torso shares the skin material so cropped tops (M6) expose skin,
+  // not the old white M1 shirt
   const footMat = makePSXMaterial("#e6d3c4", { gradient: 0.05 });
-  const mats = { skin: skinMat, shirt: shirtMat, feet: footMat };
+  const mats = { skin: skinMat, shirt: skinMat, feet: footMat };
 
   // head ~1/3 of total height (~1.9 units)
   const head = new THREE.Mesh(roundedHead(), skinMat);
@@ -64,7 +65,7 @@ export function createCharacter() {
   root.add(head);
 
   // torso: flared trapezoid box
-  const torso = new THREE.Mesh(taperBox(0.56, 0.6, 0.32, 0.56, 0.66), shirtMat);
+  const torso = new THREE.Mesh(taperBox(0.56, 0.6, 0.32, 0.56, 0.66), skinMat);
   torso.position.y = 0.88;
   root.add(torso);
 

@@ -60,14 +60,18 @@ function star5(ctx, cx, cy, r, c) {
 function drawMetallic(ctx, main) {
   ctx.fillStyle = main;
   ctx.fillRect(0, 0, 32, 32);
-  ctx.fillStyle = "rgba(255,255,255,0.34)";
-  for (let i = -32; i < 32; i += 8) {
-    for (let k = 0; k < 4; k++) ctx.fillRect(i + k, 31 - k, 1, 1);
-    for (let k = 0; k < 4; k++) ctx.fillRect(i + 4 + k, 31 - k, 1, 1);
-  }
-  ctx.fillStyle = "rgba(0,0,0,0.22)";
-  for (let i = -32; i < 32; i += 8) {
-    for (let k = 0; k < 4; k++) ctx.fillRect(i + 3 - k, k, 1, 1);
+  // wide 3px light band + 2px shadow band per 12px cycle for a stronger sheen
+  for (let y = 0; y < 32; y++) {
+    for (let x = 0; x < 32; x++) {
+      const t = ((x + y) % 12 + 12) % 12;
+      if (t < 3) {
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.fillRect(x, y, 1, 1);
+      } else if (t >= 10) {
+        ctx.fillStyle = "rgba(0,0,0,0.28)";
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
   }
 }
 
@@ -86,6 +90,7 @@ const DRAW = {
   denim: drawDenim,
   star: (c, m, s) => drawStar(c, m, s),
   metallic: (c, m) => drawMetallic(c, m),
+  number_decal: drawNumber,
 };
 
 export class PatternTexture {
@@ -111,6 +116,19 @@ function darkenHex(hex) {
   const b = Math.round((n & 255) * 0.4);
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
+
+// hsl(0-360, 0-1, 0-1) -> #rrggbb (used by the auto colour-block UI)
+export function hslHex(h, s, l) {
+  const a = s * Math.min(l, 1 - l);
+  const f = (n) => {
+    const k = (n + h / 30) % 12;
+    const v = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(255 * v);
+  };
+  return `#${((f(0) << 16) | (f(8) << 8) | f(4)).toString(16).padStart(6, "0")}`;
+}
+
+export { darkenHex };
 
 // transparent 32x32 decal (crest / number) returned as a CanvasTexture
 function crestCanvas() {
@@ -143,19 +161,55 @@ function drawCrest(ctx) {
   ctx.fillRect(15, 8, 2, 6);
 }
 
-function drawNumber(ctx, n = "12") {
-  // big pixel jersey number, 5x7 digit font
-  ctx.fillStyle = "#26221e";
-  ctx.font = "bold 12px monospace";
-  ctx.textAlign = "center";
-  ctx.fillText(n, 16, 12);
+// chunky pixel jersey digits "12": flush 5x7 font, 2px scanline scale,
+// dark offset outline keeps it readable on any field colour
+function drawNumber(ctx, main, secondary) {
+  const ONE = [
+    "00110", "01110", "00110", "00110", "00110", "00110", "01111",
+  ];
+  const TWO = [
+    "01110", "10001", "00001", "00110", "01000", "10000", "11111",
+  ];
+  const blit = (m, ox, c) => {
+    ctx.fillStyle = c;
+    for (let r = 0; r < 7; r++)
+      for (let cx = 0; cx < 5; cx++)
+        if (m[r][cx] === "1") ctx.fillRect(ox + cx * 2, 9 + r * 2, 2, 2);
+  };
+  ctx.fillStyle = secondary;
+  ctx.fillRect(0, 0, 32, 32);
+  blit(ONE, 4, "#26221e");
+  blit(TWO, 18, "#26221e");
+  blit(ONE, 3, "#ffffff");
+  blit(TWO, 17, "#ffffff");
 }
 
-export function makeDecal(kind, hex) {
-  const cv = crestCanvas();
-  const ctx = cv.getContext("2d");
+// digits-only transparent decal (jersey number): white digits + dark shadow,
+// no background so the plate vanishes behind the digits
+function drawDigitsDecal(ctx) {
+  const ONE = [
+    "00110", "01110", "00110", "00110", "00110", "00110", "01111",
+  ];
+  const TWO = [
+    "01110", "10001", "00001", "00110", "01000", "10000", "11111",
+  ];
+  const blit = (m, ox, c) => {
+    ctx.fillStyle = c;
+    for (let r = 0; r < 7; r++)
+      for (let cx = 0; cx < 5; cx++)
+        if (m[r][cx] === "1") ctx.fillRect(ox + cx * 2, 9 + r * 2, 2, 2);
+  };
+  blit(ONE, 4, "#26221e");
+  blit(TWO, 18, "#26221e");
+  blit(ONE, 3, "#ffffff");
+  blit(TWO, 17, "#ffffff");
+}
+
+export function makeDecal(kind) {
+  const ctx = crestCanvas().getContext("2d");
   if (kind === "crest") drawCrest(ctx);
-  else drawNumber(ctx, hex ?? "12");
+  else drawDigitsDecal(ctx);
+  const cv = ctx.canvas;
   const tex = new THREE.CanvasTexture(cv);
   tex.magFilter = THREE.NearestFilter;
   tex.minFilter = THREE.NearestFilter;
