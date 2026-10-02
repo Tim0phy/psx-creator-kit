@@ -10,6 +10,7 @@ import { createBottom } from "./parts/bottoms.js";
 import { createShoes } from "./parts/shoes.js";
 import { createAccessory } from "./parts/accessories.js";
 import catalog from "./catalog.js";
+import { HAT_FIT, BARE_HEAD_FIT } from "./parts/hair.js";
 import { createUI } from "./ui.js";
 
 // M5: face system + hair + base clothes + accessories with named anchors.
@@ -174,7 +175,11 @@ function applyCloth(slot) {
     built = createShoes(item.id, colors.main);
   } else {
     // accessories: builders include all anchor-space offsets already
-    built = createAccessory(item.id, colors.main);
+    // headwear hugs the current hairstyle's cap surface via its fit data
+    const fit = item.slot === "headwear"
+      ? (HAT_FIT[state.hair?.id] ?? BARE_HEAD_FIT)
+      : null;
+    built = createAccessory(item.id, colors.main, fit);
   }
   mount(slot, built);
 }

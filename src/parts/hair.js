@@ -324,6 +324,24 @@ const HAIR_BUILDER = {
 
 export const HAIR_IDS = Object.keys(HAIR_BUILDER);
 
+// hat-fit data per hairstyle: the headwear builders read these to hug each
+// style's cap surface (no floating / no sinking into the hair shell).
+// r: cap outline half-width at the widest point, top: cap top surface y,
+// front: cap front face z. All values are head-space (origin = head centre).
+export const DEFAULT_FIT = { r: 0.475, top: 0.43, front: 0.425 };
+export const HAT_FIT = {
+  hair_01: DEFAULT_FIT,
+  hair_02: DEFAULT_FIT, hair_03: DEFAULT_FIT, hair_04: DEFAULT_FIT,
+  hair_05: DEFAULT_FIT,
+  hair_06: { r: 0.475, top: 0.38, front: 0.425 },   // spikes: lower cap
+  hair_07: DEFAULT_FIT,
+  hair_08: { r: 0.45, top: 0.39, front: 0.4 },     // buzz: snug cap
+  hair_09: DEFAULT_FIT,
+  hair_10: { r: 0.46, top: 0.38, front: 0.41 },    // male sweep: snug cap
+  hair_11: DEFAULT_FIT,
+};
+export const BARE_HEAD_FIT = { r: 0.42, top: 0.41, front: 0.4 };
+
 export function createHair(id, colorHex) {
   const group = new THREE.Group();
   if (!HAIR_BUILDER[id]) return { group, mat: null };

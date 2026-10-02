@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
 import { taperBox } from "../character.js";
+import { DEFAULT_FIT as DF } from "./hair.js";
 
 // M5 accessories: every item from catalog.json, original low-poly geometry.
 // Head-space builders (headwear/eyewear) use origin = head centre (y 1.48),
@@ -50,99 +51,105 @@ function star(g, m, x, y, z) {
   g.add(s);
 }
 
+// Mouth-less headwear builders read fit = { r, top, front } from hair.js so
+// each headwear item hugs the CURRENT hairstyle's cap surface (hair_01 fit
+// gives the tuned reference numbers: crown r 0.42, base y 0.44).
 const HEAD_BUILDER = {
   // pyramids poking out of the hair cap, tilted outward
-  acc_cat_ears(g, m, s) {
+  acc_cat_ears(g, m, s, fit = DF) {
+    const y = fit.top + 0.17, x = fit.r * 0.57;
     for (const side of [-1, 1]) {
       const ear = new THREE.Mesh(
         new THREE.ConeGeometry(0.16, 0.38, 4, 1, true), m
       );
-      ear.position.set(side * 0.27, 0.6, 0.05);
+      ear.position.set(side * x, y, 0.05);
       ear.rotation.y = Math.PI / 4;
       ear.rotation.z = side * -0.2;
       g.add(ear);
       const inner = new THREE.Mesh(
         new THREE.ConeGeometry(0.09, 0.24, 4, 1, true), s
       );
-      inner.position.set(side * 0.28, 0.57, 0.06);
+      inner.position.set(side * (x + 0.01), y - 0.03, 0.06);
       inner.rotation.y = Math.PI / 4;
       inner.rotation.z = side * -0.2;
       g.add(inner);
     }
   },
   // tall rounded ears with darker inner fronts
-  acc_bunny_ears(g, m, s) {
+  acc_bunny_ears(g, m, s, fit = DF) {
+    const y = fit.top + 0.14, x = fit.r * 0.46;
     for (const side of [-1, 1]) {
       const ear = new THREE.Mesh(taperBox(0.17, 0.46, 0.09, 0.17, 0.11), m);
-      ear.position.set(side * 0.22, 0.57, 0.02);
+      ear.position.set(side * x, y, 0.02);
       ear.rotation.z = side * -0.12;
       g.add(ear);
       const inner = new THREE.Mesh(taperBox(0.09, 0.32, 0.02, 0.09, 0.06), s);
-      inner.position.set(side * 0.23, 0.55, 0.065);
+      inner.position.set(side * (x + 0.01), y - 0.02, 0.065);
       inner.rotation.z = side * -0.12;
       g.add(inner);
     }
   },
-  // slouched dome + rolled brim + pompom — tucked snugly over the hair top:
-  // every radius sits under the hair shell (half-w 0.475), raised +0.05 to
-  // keep the rim clear of the fringe
-  acc_beanie(g, m) {
-    const crown = new THREE.SphereGeometry(0.46, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2);
+  // slouched dome + rolled brim + pompom — geometries derive from fit so the
+  // brim rim hugs the current hair cap outline (crown stays inside it)
+  acc_beanie(g, m, s, fit = DF) {
+    const crown = new THREE.SphereGeometry(fit.r - 0.055, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2);
     crown.scale(1, 0.72, 0.95);
-    crown.translate(0, 0.39, 0);
+    crown.translate(0, fit.top + 0.01, 0);
     g.add(new THREE.Mesh(crown.toNonIndexed(), m));
     const band = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.47, 0.47, 0.16, 7, 1, true).toNonIndexed(), m
+      new THREE.CylinderGeometry(fit.r - 0.015, fit.r - 0.015, 0.16, 7, 1, true).toNonIndexed(), m
     );
     band.scale.set(1, 1, 0.95);
-    band.position.y = 0.41;
+    band.position.y = fit.top + 0.04;
     g.add(band);
     const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(0.1, 0), m);
-    pom.position.set(0, 0.78, 0);
+    pom.position.set(0, fit.top + 0.37, 0);
     g.add(pom);
   },
   // deep dome crown + flat front brim + top button — brim pushed out past
-  // the hair fringe plane (z 0.425)
-  acc_cap(g, m) {
+  // the hair fringe plane (z fit.front + 0.14)
+  acc_cap(g, m, s, fit = DF) {
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(0.46, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
+      new THREE.SphereGeometry(fit.r - 0.055, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
     crown.geometry.scale(1, 0.72, 0.94);
-    crown.position.y = 0.35;
+    crown.position.y = fit.top + 0.01;
     g.add(crown);
-    bx(g, m, 0.5, 0.06, 0.26, 0, 0.35, 0.55);
-    bx(g, m, 0.08, 0.06, 0.08, 0, 0.72, 0);
+    bx(g, m, fit.r * 1.18, 0.06, 0.26, 0, fit.top + 0.02, fit.front + 0.14);
+    bx(g, m, 0.08, 0.06, 0.08, 0, fit.top + 0.32, 0);
   },
   // puffy crown + deep band + short visor
-  acc_bakerboy(g, m) {
+  acc_bakerboy(g, m, s, fit = DF) {
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(0.45, 8, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
+      new THREE.SphereGeometry(fit.r - 0.055, 8, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
     crown.geometry.scale(1, 0.42, 0.94);
-    crown.position.y = 0.43;
+    crown.position.y = fit.top + 0.06;
     g.add(crown);
     const band = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.47, 0.47, 0.17, 8, 1, true).toNonIndexed(), m
+      new THREE.CylinderGeometry(fit.r - 0.015, fit.r - 0.015, 0.17, 8, 1, true).toNonIndexed(), m
     );
     band.scale.set(1, 1, 0.95);
-    band.position.y = 0.36;
+    band.position.y = fit.top + 0.05;
     g.add(band);
-    bx(g, m, 0.42, 0.05, 0.22, 0, 0.37, 0.55);
+    bx(g, m, fit.r * 0.93, 0.05, 0.22, 0, fit.top + 0.04, fit.front + 0.14);
   },
   // butterfly wing pairs on both sides of the head
-  acc_butterfly_clip(g, m) {
+  acc_butterfly_clip(g, m, s, fit = DF) {
+    const dy = fit.top - 0.43, x = fit.r * 0.93;
     for (const side of [-1, 1]) {
-      bx(g, m, 0.2, 0.09, 0.03, side * 0.44, 0.24, 0.1, { z: side * 0.55 });
-      bx(g, m, 0.15, 0.08, 0.03, side * 0.45, 0.16, 0.1, { z: side * -0.55 });
-      bx(g, m, 0.05, 0.12, 0.05, side * 0.39, 0.2, 0.11);
-      bx(g, m, 0.05, 0.07, 0.04, side * 0.39, 0.11, 0.1);
+      bx(g, m, 0.2, 0.09, 0.03, side * x, 0.24 + dy, 0.1, { z: side * 0.55 });
+      bx(g, m, 0.15, 0.08, 0.03, side * (x + 0.01), 0.16 + dy, 0.1, { z: side * -0.55 });
+      bx(g, m, 0.05, 0.12, 0.05, side * (fit.r * 0.82), 0.2 + dy, 0.11);
+      bx(g, m, 0.05, 0.07, 0.04, side * (fit.r * 0.82), 0.11 + dy, 0.1);
     }
   },
   // the original Z logo: three bars across the forehead (Y2K headband)
-  acc_z_hairband(g, m) {
-    bx(g, m, 0.46, 0.07, 0.05, 0, 0.5, 0.44);
-    bx(g, m, 0.09, 0.44, 0.05, 0, 0.31, 0.44, { z: -0.48 });
-    bx(g, m, 0.46, 0.07, 0.05, 0, 0.12, 0.44);
+  acc_z_hairband(g, m, s, fit = DF) {
+    const z = fit.front + 0.015, y = fit.top + 0.07;
+    bx(g, m, 0.46, 0.07, 0.05, 0, y, z);
+    bx(g, m, 0.09, 0.44, 0.05, 0, y - 0.19, z, { z: -0.48 });
+    bx(g, m, 0.46, 0.07, 0.05, 0, y - 0.38, z);
   },
 };
 
@@ -262,7 +269,7 @@ const ALL = { ...HEAD_BUILDER, ...HEAD2_BUILDER, ...BODY_BUILDER };
 
 export const ACC_IDS = Object.keys(ALL);
 
-export function createAccessory(id, colorHex) {
+export function createAccessory(id, colorHex, fit) {
   const group = new THREE.Group();
   const mat = makePSXMaterial(colorHex, { gradient: 0.12 });
   let secMat = null;
@@ -270,7 +277,7 @@ export function createAccessory(id, colorHex) {
     // darker variant of the main colour for lenses / inner ears
     secMat = makePSXMaterial(colorHex, { gradient: 0.08 });
     secMat.uniforms.color.value.multiplyScalar(0.45);
-    ALL[id](group, mat, secMat);
+    ALL[id](group, mat, secMat, fit);
   }
   let tris = 0;
   group.traverse((o) => {

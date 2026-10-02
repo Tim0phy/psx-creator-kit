@@ -185,3 +185,16 @@
 - acc_sparkle_clip deleted (catalog.json + shot script + builder) — HEADWEAR
   is now 7 items: cat/bunny ears, beanie, cap, bakerboy, butterfly clip,
   z hairband. star()/starGeo() kept (pendant still uses them).
+
+## M5 fix round 4 (user feedback)
+- Hat crowns (beanie/cap/bakerboy) reduced to r 0.42 as requested.
+- Headwear now fits dynamically per hairstyle: hair.js exports
+  DEFAULT_FIT {r:.475, top:.43, front:.425}, HAT_FIT overrides for hair_06
+  (top .38), hair_08 (r .45, top .39, front .4), hair_10 (r .46, top .38,
+  front .41), and BARE_HEAD_FIT {r:.42, top:.41, front:.4} for no hair.
+  All headwear builders take a `fit` param; main.js passes
+  HAT_FIT[state.hair.id] ?? BARE_HEAD_FIT when rebuilding, so hats follow
+  each hairstyle's cap shell on every applyAll rebuild (no floating in /
+  clipping through the hair cap).
+- Verified via FitCheck shots: hair_08 + hair_10 beanie snug, hair_06 cap
+  correct, hair colour kept on item switch (ui.js carry-over round 2).
