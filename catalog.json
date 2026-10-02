@@ -613,24 +613,11 @@
    "colorSlots": [
     "main"
    ],
-   "maxTris": 150,
-   "pairable": true
-  },
-  {
-   "id": "acc_sparkle_clip",
-   "slot": "headwear",
-   "label": "Sparkle hair clips",
-   "tags": [
-    "y2k"
-   ],
-   "colorSlots": [
-    "main"
-   ],
-   "maxTris": 150,
-   "pairable": true
-  },
-  {
-   "id": "acc_z_hairband",
+    "maxTris": 150,
+    "pairable": true
+   },
+   {
+    "id": "acc_z_hairband",
    "slot": "headwear",
    "label": "Z-shaped hairband",
    "tags": [

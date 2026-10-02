@@ -9,7 +9,7 @@ mkdirSync("shots", { recursive: true });
 const SLOT_ITEMS = {
   headwear: [
     "acc_cat_ears", "acc_bunny_ears", "acc_beanie", "acc_cap",
-    "acc_bakerboy", "acc_butterfly_clip", "acc_sparkle_clip", "acc_z_hairband",
+    "acc_bakerboy", "acc_butterfly_clip", "acc_z_hairband",
   ],
   eyewear: ["acc_glasses", "acc_wrap_sunglasses"],
   neck: ["acc_choker", "acc_pendant"],

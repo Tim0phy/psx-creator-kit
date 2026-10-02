@@ -83,50 +83,51 @@ const HEAD_BUILDER = {
       g.add(inner);
     }
   },
-  // slouched dome + rolled brim + pompom — worn OVER the hair cap
-  // (hair half-w is 0.475, so every radius clears it by ~0.06)
+  // slouched dome + rolled brim + pompom — tucked snugly over the hair top:
+  // every radius sits under the hair shell (half-w 0.475), raised +0.05 to
+  // keep the rim clear of the fringe
   acc_beanie(g, m) {
-    const crown = new THREE.SphereGeometry(0.55, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2);
+    const crown = new THREE.SphereGeometry(0.46, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2);
     crown.scale(1, 0.72, 0.95);
-    crown.translate(0, 0.34, 0);
+    crown.translate(0, 0.39, 0);
     g.add(new THREE.Mesh(crown.toNonIndexed(), m));
     const band = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.56, 0.56, 0.16, 7, 1, true).toNonIndexed(), m
+      new THREE.CylinderGeometry(0.47, 0.47, 0.16, 7, 1, true).toNonIndexed(), m
     );
     band.scale.set(1, 1, 0.95);
-    band.position.y = 0.36;
+    band.position.y = 0.41;
     g.add(band);
     const pom = new THREE.Mesh(new THREE.IcosahedronGeometry(0.1, 0), m);
-    pom.position.set(0, 0.76, 0);
+    pom.position.set(0, 0.78, 0);
     g.add(pom);
   },
   // deep dome crown + flat front brim + top button — brim pushed out past
   // the hair fringe plane (z 0.425)
   acc_cap(g, m) {
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(0.55, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
+      new THREE.SphereGeometry(0.46, 6, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
     crown.geometry.scale(1, 0.72, 0.94);
-    crown.position.y = 0.3;
+    crown.position.y = 0.35;
     g.add(crown);
-    bx(g, m, 0.56, 0.06, 0.26, 0, 0.3, 0.6);
-    bx(g, m, 0.08, 0.06, 0.08, 0, 0.73, 0);
+    bx(g, m, 0.5, 0.06, 0.26, 0, 0.35, 0.55);
+    bx(g, m, 0.08, 0.06, 0.08, 0, 0.72, 0);
   },
   // puffy crown + deep band + short visor
   acc_bakerboy(g, m) {
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(0.54, 8, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
+      new THREE.SphereGeometry(0.45, 8, 3, 0, Math.PI * 2, 0, Math.PI / 2), m
     );
     crown.geometry.scale(1, 0.42, 0.94);
-    crown.position.y = 0.38;
+    crown.position.y = 0.43;
     g.add(crown);
     const band = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.56, 0.56, 0.17, 8, 1, true).toNonIndexed(), m
+      new THREE.CylinderGeometry(0.47, 0.47, 0.17, 8, 1, true).toNonIndexed(), m
     );
     band.scale.set(1, 1, 0.95);
-    band.position.y = 0.31;
+    band.position.y = 0.36;
     g.add(band);
-    bx(g, m, 0.46, 0.05, 0.24, 0, 0.32, 0.6);
+    bx(g, m, 0.42, 0.05, 0.22, 0, 0.37, 0.55);
   },
   // butterfly wing pairs on both sides of the head
   acc_butterfly_clip(g, m) {
@@ -135,14 +136,6 @@ const HEAD_BUILDER = {
       bx(g, m, 0.15, 0.08, 0.03, side * 0.45, 0.16, 0.1, { z: side * -0.55 });
       bx(g, m, 0.05, 0.12, 0.05, side * 0.39, 0.2, 0.11);
       bx(g, m, 0.05, 0.07, 0.04, side * 0.39, 0.11, 0.1);
-    }
-  },
-  // slim clip bars with two sparkle stars each — rests on the hair top front
-  acc_sparkle_clip(g, m) {
-    for (const side of [-1, 1]) {
-      bx(g, m, 0.14, 0.03, 0.03, side * 0.36, 0.26, 0.38);
-      star(g, m, side * 0.34, 0.32, 0.4);
-      star(g, m, side * 0.38, 0.2, 0.38);
     }
   },
   // the original Z logo: three bars across the forehead (Y2K headband)

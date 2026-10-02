@@ -175,3 +175,13 @@
   resetting main to #ffffff.
 - tests/accShots.mjs now uses ?c=%23111d44 (navy) instead of the pink so
   accessory geometry is visible against the default white hair.
+
+## M5 fix round 3 (user feedback)
+- Per user: hat crowns must NOT exceed the hair cap outline (hair half-w
+  0.475) and hats raised +0.05. beanie crown r 0.46 y 0.39, band 0.47 y 0.41,
+  pom y 0.78; cap crown 0.46 y 0.35, brim 0.5x0.06x0.26 at z 0.55, button
+  y 0.72; bakerboy crown 0.45 (sy 0.42) y 0.43, band 0.47 y 0.36, visor
+  0.42x0.05x0.22 y 0.37 z 0.55. Hats now read as tucked caps on the hair.
+- acc_sparkle_clip deleted (catalog.json + shot script + builder) — HEADWEAR
+  is now 7 items: cat/bunny ears, beanie, cap, bakerboy, butterfly clip,
+  z hairband. star()/starGeo() kept (pendant still uses them).
