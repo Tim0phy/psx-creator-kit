@@ -312,3 +312,23 @@
 - 第一次嘗試錶殼放帶頂被tee遮住（crop 驗證）-> 移到帶正面才可見。
 - 驗證：front/side/back/angle + longsleeve layering crops（螢光紅殼綠帶
   白面）全部確認錶面可讀；build + accShots 全過。
+
+## M5 fix round 12 (user feedback x3)
+- ①手帶唔跟殼色：新 secondaryFollow 機制。ui.js 揀新 item 時
+  colors.secondaryFollow = colorSlots 包含 secondary；render color rows 時
+  follow 中會同步 colors.secondary = colors.main；用戶手動揀 SECONDARY
+  swatch 即 secondaryFollow = false 解鎖。main.js recolor 由 M6 session
+  重寫做 colors.secondary ?? colors.main（同 follow 機制兼容，效果一致）。
+- ②錶盤移側邊：原本掛帶正面（用家話應該掛側旁）。錶殼改為貼在錶帶
+  外側平面（-x），白錶盤 + 兩支深色指針面向外，crown 移去 -z 邊。
+- ③帶與殼對齊：所有部件收入單一 arm-tilted frame Group
+  (position -0.485,-0.045,0 / rz -0.2)，帶/殼/盤/針共用同一座標，
+  結構上唔可能再走位。
+- 幾何：帶 (outer 0.185x0.165 / hole 0.15x0.13 / depth 0.075)、殼
+  0.05x0.09x0.15 貼帶面、盤 0.014x0.07x0.12 inset、指針兩支。124 tris。
+- 驗證：follow 模式（紅殼紅帶）、unlock（紅殼綠帶）、sync（藍殼藍帶）
+  crop 全過；side view（yaw pi/2 外側向鏡）白盤深針清晰、殼帶貼合；
+  front view 殼側望僅見邊緣 = 符合「掛側旁」。build + accShots 全過。
+- 註：M6 session 並行改緊 main.js/ui.js（socks + Style tab，引用未追蹤
+  socks.js/uiStyle.js），所以今次 commit 只含 accessories.js + NOTES.md；
+  ui.js 嘅 secondaryFollow 改動留待 M6 一併提交。temp 腳本已刪。

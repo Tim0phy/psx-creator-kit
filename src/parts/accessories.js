@@ -206,8 +206,15 @@ const BODY_BUILDER = {
   // A-pose story terms users read as "left hand"): rounded-rect strap with
   // the same boxiness as the arms, white fixed dial, case/strap colourable
   acc_watch(g, m, s) {
-    // strap: rounded-rect tube around the wrist, tilted with the A-pose arm
-    // (anchor_wrist ring plane spans x 0.29-0.35 / z 0.16 vs arm half 0.135)
+    // everything is built in one arm-tilted frame: translate to the wrist
+    // centre then rotate with the A-pose arm (rz -0.2) so strap, case and
+    // dial share one coordinate space and can never drift apart
+    const frame = new THREE.Group();
+    frame.position.set(-0.485, -0.045, 0);
+    frame.rotation.z = -0.2;
+    g.add(frame);
+    // strap: rounded-rect tube around the wrist, extruded along the arm axis
+    // (frame-local y 0..0.075); ring cross-section halves x 0.185 / z 0.165
     const shape = new THREE.Shape();
     roundedRectPath(shape, 0.185, 0.165, 0.04);
     const hole = new THREE.Path();
@@ -218,18 +225,17 @@ const BODY_BUILDER = {
         depth: 0.075, bevelEnabled: false, curveSegments: 1,
       }).rotateX(-Math.PI / 2), s
     );
-    strap.rotation.z = -0.2; // follow the A-pose tilt of this arm
-    strap.position.set(-0.485, -0.045, 0); // above the sleeve ends (t 0.5-0.6)
-    g.add(strap);
-    // case mounted on the FRONT of the strap (dial faces the camera, like
-    // checking the time) + crown on the case's right edge
-    bx(g, m, 0.16, 0.15, 0.05, -0.485, -0.045, 0.155, { z: -0.2 });
-    bx(g, m, 0.03, 0.03, 0.035, -0.398, -0.045, 0.168, { z: -0.2 });
-    // fixed white dial inset in the case front (always white)
-    const dial = bx(g, m, 0.115, 0.105, 0.014, -0.485, -0.045, 0.184, { z: -0.2 });
+    frame.add(strap);
+    // case: chunky box flush-mounted on the strap's OUTER flat (-x), sized
+    // to the band (0.09 tall vs strap 0.075) so the two read as one piece;
+    // dial inset on the case face, hands on the dial, crown on the -z edge
+    bx(frame, m, 0.05, 0.09, 0.15, -0.18, 0.0375, 0);
+    bx(frame, m, 0.026, 0.026, 0.026, -0.175, 0.0375, -0.09);
+    const dial = bx(frame, m, 0.014, 0.07, 0.12, -0.205, 0.0375, 0);
     dial.material = makePSXMaterial("#ffffff", { gradient: 0.08 });
-    // hands: one dark bar on the dial
-    bx(g, s, 0.02, 0.06, 0.014, -0.485, -0.027, 0.192, { z: 0.4 });
+    // hands: dark bars on the dial face (dial faces -x outward)
+    bx(frame, s, 0.014, 0.045, 0.02, -0.213, 0.047, 0);
+    bx(frame, s, 0.014, 0.02, 0.04, -0.213, 0.028, 0.015);
   },
 };
 
