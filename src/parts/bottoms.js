@@ -137,8 +137,20 @@ function bot_tennis_skirt(g, m, f) {
 function bot_lowrise_mini(g, m, f) {
   const waist = f.lowRise ? HIP : WAIST;
   g.add(waistbandMesh(m, waist + 0.24));
-  // snug fit: narrower hem + shorter rise than the tennis skirt
-  g.add(skirtMesh(m, 0.32, 0.4, waist + 0.24, waist - 0.16));
+  // rectangular A-line skirt box (matches the boxy hips silhouette — no
+  // hula-hoop round profile from the side like the old 8-gon cylinder)
+  const topY = waist + 0.2;
+  const h = 0.38; // hem at waist - 0.18
+  const bg = new THREE.BoxGeometry(0.66, h, 0.36).toNonIndexed();
+  const p = bg.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const t = (p.getY(i) + h / 2) / h; // 0 bottom -> 1 top
+    const w = 1 + 0.14 * (1 - t); // slight flare to the hem
+    p.setXYZ(i, p.getX(i) * w, p.getY(i), p.getZ(i) * w);
+  }
+  bg.translate(0, topY - h / 2, 0);
+  bg.computeVertexNormals();
+  g.add(new THREE.Mesh(bg, m));
 }
 
 function bot_metallic_pants(g, m, f) {
