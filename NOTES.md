@@ -263,3 +263,20 @@
 - 已知取捨：長裙/長髮會遮住背帶（現實一致）；短袖時背帶喺背部可見。
 - 驗證：front/back/angle shots（螢光粉獨立上色）逐款核對；build + accShots
   全過，tris baguette 108 / shoulder 84 / 其餘不變。
+
+## M5 fix round 9 (user feedback: choker 側面似呼啦圈)
+- 用戶：choker 淨係一個圓圍住身體，側面睇似呼啦圈，要緊貼身體模型。
+- 成因：band（y 1.07–1.16）成 0.041 露喺頭底 rim（1.111–1.134）之下，
+  而胸前 torso 前 z 0.16 vs band z 0.3465，側面前弧完全懸空，加埋 charm
+  吊到中胸，整體就係一個浮住嘅圈。
+- 修法（acc_choker）：band r 0.385->0.38、h 0.09->0.07、y -0.045->-0.04
+  （world 1.12，span 1.085–1.155）：只有 0.026 露喺 rim 底下，其餘冚入頭底
+  邊（rim x 0.373 / z 0.334 vs band 0.38 / 0.342，縫隙 0.007/0.008），
+  正/背/側面都貼住頭底；charm 上移 (0,-0.1,0.35) -> (0,-0.085,0.355)
+  （world 1.075，背面 0.339 離頭前面 0.334 0.005），頂部冚入 band 前弧，
+  變成 chin 對下嘅小 O 環，唔再吊到中胸。80 tris 不變。
+- 幾何限制筆記：chibi 無頸，頭 rim（x 0.373）遠闊過 torso 頂（0.28），
+  任何細過頭 rim 嘅頸飾會被頭 overhang 完全遮住 — 所以 choker 半徑一定
+  要大過頭 rim 先見到；「貼身」只能靠收細縫隙＋縮短 rim 底下懸空高度。
+- 驗證：front/side/back/angle 螢光粉 shots — 側面只剩 chin 下 sliver +
+  charm，無懸空弧；build + accShots 全過。

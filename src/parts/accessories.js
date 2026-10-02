@@ -165,19 +165,20 @@ const HEAD2_BUILDER = {
 
 // anchor-space builders (root space via main.js)
 const BODY_BUILDER = {
-  // snug collar hugging the head-torso seam right under the chin (the chibi
-  // body has no neck): the band peeks out around the head's bottom rim
+  // snug collar hugging the head's bottom rim right under the chin (the
+  // chibi body has no neck): the band is just outside the head silhouette
+  // (rim x 0.373 / z 0.334) so from every side it sits flush on the model
   acc_choker(g, m) {
     const band = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.4, 0.4, 0.1, 8, 1, true).toNonIndexed(), m
+      new THREE.CylinderGeometry(0.38, 0.38, 0.07, 8, 1, true).toNonIndexed(), m
     );
-    band.scale.set(1, 1, 0.9); // oval: wider than the head rim, clears the jaw
-    band.position.y = -0.065; // world 1.095: wraps the head bottom rim
+    band.scale.set(1, 1, 0.9); // oval matching the head bottom rim
+    band.position.y = -0.04; // world 1.12: squeezed against the head base
     g.add(band);
     const o = new THREE.Mesh(
       new THREE.TorusGeometry(0.04, 0.016, 4, 8).toNonIndexed(), m
     );
-    o.position.set(0, -0.11, 0.345); // O-ring charm hanging at the band front
+    o.position.set(0, -0.085, 0.355); // O-ring charm tucked right under the chin
     g.add(o);
   },
   // full bead ring around the base of each hand (below any sleeve end),
