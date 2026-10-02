@@ -280,3 +280,16 @@
   要大過頭 rim 先見到；「貼身」只能靠收細縫隙＋縮短 rim 底下懸空高度。
 - 驗證：front/side/back/angle 螢光粉 shots — 側面只剩 chin 下 sliver +
   charm，無懸空弧；build + accShots 全過。
+
+## M5 fix round 10 (user feedback: 橢圓環仍似呼啦圈，改方帶)
+- 用戶：成效不佳；改用接近身體模型嘅四邊形，緊貼身體。
+- 橢圓問題本質：頭底 rim 係圓角方形（平面 x 0.373 / z 0.334），橢圓環
+  一定會喺平面位凸出／角位懸空，側面前弧離 torso 遠，點改半徑都係圈。
+- acc_choker 改用 rounded-rect tube（新 helper roundedRectPath：Shape +
+  quadraticCurve 角，外框 0.385x0.345 角切 0.04，內洞 0.35x0.31），
+  ExtrudeGeometry depth 0.07 rotateX(-90deg)，y -0.075（world 1.085-1.155）。
+  四個平面貼住頭底四邊（縫隙 ~0.007-0.011 均勻），角位 chamfer 對應頭
+  圓角；任何角度睇都係一條貼頸橫帶，唔再係圈。charm 掛帶前 (0,-0.085,0.37)。
+- 80 -> 128 tris（Extrude side walls + caps，max 150 內）。
+- 驗證：front/side/back/angle 螢光粉 shots — 正/背係直橫帶，側面只見帶
+  一節 + charm，無任何懸空弧；build + accShots 全過。

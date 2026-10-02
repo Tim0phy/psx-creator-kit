@@ -163,22 +163,43 @@ const HEAD2_BUILDER = {
   },
 };
 
+// rounded-rect outline (halves hx/hz, corner chamfer r) as a Shape/Path —
+// used to build a band whose cross-section matches a boxy body part
+function roundedRectPath(p, hx, hz, r) {
+  p.moveTo(-hx + r, -hz);
+  p.lineTo(hx - r, -hz);
+  p.quadraticCurveTo(hx, -hz, hx, -hz + r);
+  p.lineTo(hx, hz - r);
+  p.quadraticCurveTo(hx, hz, hx - r, hz);
+  p.lineTo(-hx + r, hz);
+  p.quadraticCurveTo(-hx, hz, -hx, hz - r);
+  p.lineTo(-hx, -hz + r);
+  p.quadraticCurveTo(-hx, -hz, -hx + r, -hz);
+}
+
 // anchor-space builders (root space via main.js)
 const BODY_BUILDER = {
-  // snug collar hugging the head's bottom rim right under the chin (the
-  // chibi body has no neck): the band is just outside the head silhouette
-  // (rim x 0.373 / z 0.334) so from every side it sits flush on the model
+  // squared choker: rounded-rect tube matching the head's boxy base rim
+  // (flats x 0.373 / z 0.334, corners ~0.06-0.075) instead of an ellipse —
+  // constant small gap on all four flats and corners, so it reads as a
+  // collar squeezed onto the body from every angle
   acc_choker(g, m) {
+    const shape = new THREE.Shape();
+    roundedRectPath(shape, 0.385, 0.345, 0.04);
+    const hole = new THREE.Path();
+    roundedRectPath(hole, 0.35, 0.31, 0.02);
+    shape.holes.push(hole);
     const band = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.38, 0.38, 0.07, 8, 1, true).toNonIndexed(), m
+      new THREE.ExtrudeGeometry(shape, {
+        depth: 0.07, bevelEnabled: false, curveSegments: 1,
+      }).rotateX(-Math.PI / 2), m
     );
-    band.scale.set(1, 1, 0.9); // oval matching the head bottom rim
-    band.position.y = -0.04; // world 1.12: squeezed against the head base
+    band.position.y = -0.075; // extruded 0..0.07 tall: world 1.085-1.155
     g.add(band);
     const o = new THREE.Mesh(
       new THREE.TorusGeometry(0.04, 0.016, 4, 8).toNonIndexed(), m
     );
-    o.position.set(0, -0.085, 0.355); // O-ring charm tucked right under the chin
+    o.position.set(0, -0.085, 0.37); // O-ring charm mounted at the band front
     g.add(o);
   },
   // full bead ring around the base of each hand (below any sleeve end),
