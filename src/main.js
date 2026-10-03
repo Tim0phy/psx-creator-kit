@@ -221,6 +221,42 @@ const SLOT_ANCHOR = {
   bag: character.anchors.bag,
 };
 
+// M7: RANDOM/RESET (config format unchanged)
+function resetState() {
+  state.skin = DEFAULT_SKIN; state.eyes = 3; state.mouth = 1; state.blush = false;
+  state.hair = { id: "hair_01", color: "#ffffff" };
+  state.top = { id: "top_tee", colors: { main: "#e06060" } };
+  state.outer = null;
+  state.bottom = { id: "bot_long_pants", colors: { main: "#3a5ca8" } };
+  state.socks = null;
+  state.shoes = { id: "shoe_sneaker", colors: { main: "#e8913a" } };
+  state.headwear = null; state.eyewear = null;
+  state.neck = null; state.wrist = null; state.bag = null;
+  applyAll();
+}
+
+document.getElementById("btnRandom").addEventListener("click", () => {
+  for (const slot of ALL_SLOTS) {
+    const items = catalog.items.filter((i) => i.slot === slot);
+    if (!items.length) continue;
+    const pick = items[Math.floor(Math.random() * items.length)];
+    if (slot === "hair") {
+      state.hair = {
+        id: pick.id,
+        color: "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0"),
+      };
+    } else {
+      state[slot] = { id: pick.id, colors: { main: "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0") } };
+    }
+  }
+  // random face
+  state.eyes = 1 + Math.floor(Math.random() * catalog.eyes);
+  state.mouth = 1 + Math.floor(Math.random() * catalog.mouths);
+  applyAll();
+});
+
+document.getElementById("btnReset").addEventListener("click", resetState);
+
 createUI(state, { onChange: applyAll });
 
 // ?preset= applies a catalog preset on load (shot scripts / shareable links);

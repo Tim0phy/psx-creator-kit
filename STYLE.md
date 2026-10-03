@@ -58,6 +58,8 @@ Goal: a character creator in the style of the reference screenshots in /refs (cu
 - Rotation: mouse drag, arrow keys, A/D, touch drag. Auto-rotation toggle.
 - Layout must work in portrait mobile (panel collapses to bottom sheet).
 - Thumbnails: render each item once to an offscreen canvas at 64x64 (or draw procedural icons) and cache.
+- UI layout follows `ui-psx-mockup.png`
+
 
 ## 8. Config / save format
 ```json

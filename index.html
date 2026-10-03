@@ -15,16 +15,35 @@
       <canvas id="view" width="480" height="360"></canvas>
     </div>
 
-    <div id="leftColumn"></div>
-    <aside id="panel">
-      <div id="panelHead"><span id="panelTitle">EYES</span></div>
-      <div id="panelBody"></div>
-    </aside>
+    <div id="topBar">
+      <div id="nameBox">
+        <input id="nameInput" maxlength="12" placeholder="NAME" autocomplete="off" />
+        <span id="namePencil" class="pixIcon"></span>
+      </div>
+      <button id="btnDice" class="topIconBtn" title="Random name"></button>
+      <button id="btnRandom" class="pixBtn pixShuffle" title="Random"></button>
+      <button id="btnReset" class="pixBtn pixReset" title="Reset"></button>
+    </div>
 
-    <div id="topRight">
-      <button class="topBtn btnPink" id="btnRotate">AUTO ROTATION</button>
-      <button class="topBtn btnPurple" id="btnRandom">RANDOM</button>
-      <button class="topBtn btnOrange" id="btnReset">RESET</button>
+    <button id="btnRotate" class="pixBtn pixRotate" title="Auto rotation"></button>
+
+    <div id="sheet">
+      <aside id="leftPanel">
+        <div id="leftPill">
+          <span class="pillStar"></span><span id="leftPillText">HAIR STYLE</span><span class="pillStar"></span>
+        </div>
+        <div id="leftGrid"></div>
+        <div id="gridDots"></div>
+      </aside>
+
+      <aside id="rightPanel">
+        <div id="rightBody"></div>
+      </aside>
+
+      <div id="centreCol">
+        <button id="btnConfirm">CONFIRM</button>
+        <div id="toast">SAVED</div>
+      </div>
     </div>
 
     <nav id="categoryBar">
