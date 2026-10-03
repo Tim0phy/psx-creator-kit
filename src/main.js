@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import "./style.css";
 import { createPSXRenderer, makePSXMaterial } from "./psxRenderer.js";
-import { createCharacter, DEFAULT_SKIN } from "./character.js";
+import { createCharacter } from "./character.js";
 import { createControls } from "./controls.js";
 import { makeFaceTexture, renderEyes, renderMouth } from "./faceTexture.js";
 import { createHair } from "./parts/hair.js";
@@ -16,41 +16,17 @@ import { createUI } from "./ui.js";
 import {
   applyPreset, applyColourBlock,
 } from "./uiStyle.js";
+import {
+  ALL_SLOTS, defaultState, applyUrlState, resetInto, randomizeInto,
+} from "./state.js";
 
-// M6: style-pack tops/bottoms/shoes + socks slot + patterns + Style tab.
+// M8 body selector: `state.body` ("female" | "male") rebuilds the whole
+// character root (rig, face decals, hair and every clothing item re-mount).
 
-const CLOTH_SLOTS = ["top", "outer", "bottom", "socks", "shoes"];
-const ACC_SLOTS = ["headwear", "eyewear", "neck", "wrist", "bag"];
-const ALL_SLOTS = [...CLOTH_SLOTS, ...ACC_SLOTS];
+const state = defaultState();
 
-const state = {
-  skin: DEFAULT_SKIN, eyes: 3, mouth: 1, blush: false,
-  hair: { id: "hair_01", color: "#ffffff" },
-  top: { id: "top_tee", colors: { main: "#e06060" } },
-  outer: null,
-  bottom: { id: "bot_long_pants", colors: { main: "#3a5ca8" } },
-  socks: null,
-  shoes: { id: "shoe_sneaker", colors: { main: "#e8913a" } },
-  headwear: null, eyewear: null,
-  neck: null, wrist: null, bag: null,
-};
-
-// debug: ?hair=hair_XX etc. lets the shot scripts capture specific items
 const params = new URLSearchParams(location.search);
-for (const slot of ALL_SLOTS) {
-  const v = params.get(slot);
-  if (v) {
-    if (v === "none") state[slot] = null;
-    else if (slot === "hair") state.hair.id = v;
-    else state[slot] = { id: v, colors: state[slot]?.colors ?? {} };
-  }
-}
-// optional debug colour for any URL-assigned slot: ?top=top_tee&c=#ff00ff
-const urlColor = params.get("c");
-for (const slot of ALL_SLOTS) {
-  if (urlColor && slot !== "hair" && state[slot]?.id)
-    state[slot].colors.main = urlColor;
-}
+applyUrlState(state, params);
 
 const canvas = document.getElementById("view");
 const { render } = createPSXRenderer(canvas);
@@ -67,7 +43,8 @@ const ground = new THREE.Mesh(
 );
 ground.rotation.x = -Math.PI / 2;
 
-const character = createCharacter();
+let character = createCharacter(state.body);
+let builtBody = state.body;
 
 // face decals: eyes and mouth are two separate transparent textures laid on
 // top of the head mesh; the head itself keeps its own skin material so the
@@ -85,7 +62,6 @@ renderEyes(eyesPair.small, eyesPair.big, state);
 renderMouth(mouthPair.small, mouthPair.big, state);
 const eyesTex = makeFaceTexture(eyesPair.big);
 const mouthTex = makeFaceTexture(mouthPair.big);
-const headAnchor = character.root.children.find((c) => c.position.y === 1.48);
 // 1.5x face feature scale: planes enlarged about each feature's centre so
 // eyes/mouth grow without drifting (anchor = eye-row centre / mouth centre)
 const eyesMesh = new THREE.Mesh(
@@ -98,7 +74,7 @@ const mouthMesh = new THREE.Mesh(
   makePSXMaterial("#ffffff", { map: mouthTex, gradient: 0.05 })
 );
 mouthMesh.position.set(0, -0.16, 0.371); // tiny offset: avoids vertex-snap shimmer
-headAnchor.add(eyesMesh, mouthMesh);
+character.hairAnchor.add(eyesMesh, mouthMesh);
 
 scene.add(ground, character.root);
 
@@ -171,11 +147,11 @@ function applyCloth(slot) {
     wide: !!item.wide,
   };
   if (item.slot === "top" || item.slot === "outer") {
-    built = createTop(item.id, colors, flags, item.pattern);
+    built = createTop(item.id, colors, flags, item.pattern, state.body);
     // top geometry is built around the torso centre (world y 0.88)
     built.group.position.y = 0.88;
   } else if (item.slot === "bottom") {
-    built = createBottom(item.id, colors, flags, item.pattern);
+    built = createBottom(item.id, colors, flags, item.pattern, state.body);
   } else if (item.slot === "socks") {
     built = createSocks(item.id, colors, item.pattern);
   } else if (item.slot === "shoes") {
@@ -221,41 +197,18 @@ const SLOT_ANCHOR = {
   bag: character.anchors.bag,
 };
 
-// M7: RANDOM/RESET (config format unchanged)
-function resetState() {
-  state.skin = DEFAULT_SKIN; state.eyes = 3; state.mouth = 1; state.blush = false;
-  state.hair = { id: "hair_01", color: "#ffffff" };
-  state.top = { id: "top_tee", colors: { main: "#e06060" } };
-  state.outer = null;
-  state.bottom = { id: "bot_long_pants", colors: { main: "#3a5ca8" } };
-  state.socks = null;
-  state.shoes = { id: "shoe_sneaker", colors: { main: "#e8913a" } };
-  state.headwear = null; state.eyewear = null;
-  state.neck = null; state.wrist = null; state.bag = null;
+// M7: RANDOM/RESET via state.js
+function doReset() {
+  resetInto(state);
   applyAll();
 }
 
 document.getElementById("btnRandom").addEventListener("click", () => {
-  for (const slot of ALL_SLOTS) {
-    const items = catalog.items.filter((i) => i.slot === slot);
-    if (!items.length) continue;
-    const pick = items[Math.floor(Math.random() * items.length)];
-    if (slot === "hair") {
-      state.hair = {
-        id: pick.id,
-        color: "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0"),
-      };
-    } else {
-      state[slot] = { id: pick.id, colors: { main: "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0") } };
-    }
-  }
-  // random face
-  state.eyes = 1 + Math.floor(Math.random() * catalog.eyes);
-  state.mouth = 1 + Math.floor(Math.random() * catalog.mouths);
+  randomizeInto(state, catalog);
   applyAll();
 });
 
-document.getElementById("btnReset").addEventListener("click", resetState);
+document.getElementById("btnReset").addEventListener("click", doReset);
 
 createUI(state, { onChange: applyAll });
 
@@ -269,7 +222,43 @@ if (startPreset) {
   if (startHue) applyColourBlock(state, applyAll, Number(startHue));
 }
 
+// ---- body rebuild (M8) ------------------------------------------------------
+function disposeGroup(root) {
+  root.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    mats.forEach((mt) => {
+      if (!mt) return;
+      mt.map?.dispose();
+      mt.dispose();
+    });
+  });
+}
+
+function rebuildCharacter() {
+  builtBody = state.body;
+  const old = character;
+  // detach the re-usable face decals before disposing the old rig
+  for (const m of [eyesMesh, mouthMesh]) m.removeFromParent();
+  character = createCharacter(state.body);
+  if (old) {
+    scene.remove(old);
+    disposeGroup(old);
+  }
+  scene.add(character.root);
+  character.root.rotation.y = lastYaw;
+  SLOT_ANCHOR.headwear = character.anchors.head;
+  SLOT_ANCHOR.eyewear = character.anchors.head;
+  SLOT_ANCHOR.neck = character.anchors.neck;
+  SLOT_ANCHOR.wrist = character.anchors.wrist;
+  SLOT_ANCHOR.bag = character.anchors.bag;
+  // force hair + items to re-mount onto the fresh anchors
+  hairCurrent = null;
+  hairMat = null;
+}
+
 function applyAll() {
+  if (builtBody !== state.body) rebuildCharacter();
   applyFace();
   applyHair();
   for (const slot of ALL_SLOTS) {
@@ -284,7 +273,11 @@ const controls = createControls({
   getAuto: () => auto,
   setAuto: (v) => (auto = v),
 });
-controls.addYaw((y) => (character.root.rotation.y = y));
+let lastYaw = -0.5;
+controls.addYaw((y) => {
+  lastYaw = y;
+  character.root.rotation.y = y;
+});
 
 const clock = new THREE.Clock();
 function tick() {
@@ -299,7 +292,9 @@ tick();
 window.PSXCC = {
   controls, state, setAuto: (v) => (auto = v), applyAll,
   scene, camera,
-  character,
+  get character() {
+    return character;
+  },
   tris() {
     let t = 0;
     scene.traverse((o) => {

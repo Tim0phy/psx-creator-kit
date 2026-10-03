@@ -8,6 +8,7 @@ M3 Hair: hair_01..hair_03 first (screenshot review), then the remaining 8. Hair 
 M4 Tops/outer + bottoms + shoes + socks (base set from catalog.json). Colour pickers per item. Layering rules.
 M5 Accessories: ears (cat, bunny), glasses, headwear, neck, waist, wrist, bag with anchors.
 M6 Y2K / NewJeans style packs: remaining items from catalog.json, patterns (plaid, stripes, star, denim), Style tab with presets and "auto colour-block".
+M6.5 Pose system: joint hierarchy, 9 presets, manual sliders, clipping limits, state integration.
 M7 State: Random, Reset, localStorage, JSON import/export, thumbnails cache.
 M8 Polish + export: GLTFExporter (.glb), mobile layout, performance check, README.
 After each milestone: build, screenshot, compare with /refs, tick STYLE.md checklist, commit, stop and report.

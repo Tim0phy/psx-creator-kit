@@ -73,6 +73,7 @@ Goal: a character creator in the style of the reference screenshots in /refs (cu
   "socks": null,
   "shoes": {"id": "shoe_sneaker", "colors": ["#e8913a"]},
   "neck": null, "waist": null, "wrist": null, "bag": null
+  "pose": {"preset": "pose\_default", "custom": null}
 }
 ```
 Saved to localStorage key `psxcc.v1`. Export/import as JSON file.

@@ -3,9 +3,14 @@ import { renderThumb } from "./faceTexture.js";
 import { HAIR_IDS } from "./parts/hair.js";
 import { applyPreset, applyColourBlock } from "./uiStyle.js";
 import { initNameSave, showSaved } from "./uiState.js";
+import { BODY_TYPES } from "./state.js";
+import {
+  el, cell64, pillRow, itemsFor, drawNum, colourGroup, buildRight,
+} from "./uiWidgets.js";
 
 // M2.5 UI redesign: left 3-col thumbnail grid + pixel pill title, right
 // stacked colour groups, confirm + toast. All item data driven by catalog.
+// M8: new BODY category (female/male body-type selector).
 
 const EYE_COUNT = catalog.eyes;
 const MOUTH_COUNT = catalog.mouths;
@@ -31,45 +36,16 @@ const CLOTH_SECTIONS = {
   ],
 };
 
-const $ = (id) => document.getElementById(id);
-
-function itemsFor(slot) {
-  return catalog.items.filter((i) => i.slot === slot);
-}
-
-function el(tag, cls, parent) {
-  const d = document.createElement(tag);
-  if (cls) d.className = cls;
-  if (parent) parent.appendChild(d);
-  return d;
-}
-
-function cell64() {
-  // 64x64 offscreen thumbnail cache (per grid cell), pixelated display
-  const cv = document.createElement("canvas");
-  cv.width = cv.height = 64;
-  return cv;
-}
-
-function pillRow(parent, text, withStars) {
-  const pill = el("div", withStars ? "rightPill" : "void", parent);
-  if (withStars) {
-    el("span", "pillStar", pill);
-    const t = el("span", null, pill);
-    t.textContent = text;
-    el("span", "pillStar", pill);
-  } else {
-    pill.textContent = text;
-  }
-  return pill;
-}
-
 export function createUI(state, { onChange }) {
-  const leftGrid = $("leftGrid");
-  const leftPillText = $("leftPillText");
-  const gridDots = $("gridDots");
-  const rightBody = $("rightBody");
+  const leftGrid = document.getElementById("leftGrid");
+  const leftPillText = document.getElementById("leftPillText");
+  const gridDots = document.getElementById("gridDots");
+  const rightBody = document.getElementById("rightBody");
   const catBtns = [...document.querySelectorAll(".catBtn")];
+  const hooks = {
+    refresh: () => refresh(),
+    onChange,
+  };
 
   // name / confirm / toast wiring; returns nothing but mounts handlers once
   initNameSave({ onConfirm: () => showSaved() });
@@ -79,11 +55,6 @@ export function createUI(state, { onChange }) {
 
   function setPill(text) {
     leftPillText.textContent = text;
-  }
-
-  function sectionLabel(text, parent = rightBody) {
-    const d = el("div", "sectionLabel", parent);
-    d.textContent = text;
   }
 
   // ---- left 3-col grid ------------------------------------------------------
@@ -142,53 +113,6 @@ export function createUI(state, { onChange }) {
     }
   }
 
-  // ---- right colour groups --------------------------------------------------
-  function colourGroup(title, key, ownerObj, swatches) {
-    const grp = el("div", "colorGroup", rightBody);
-    pillRow(grp, title, true);
-    const row = el("div", "swatchRow", grp);
-    const btns = swatches.map((hex) => {
-      const b = el("button", "swatchBtn", row);
-      b.dataset.sw = `${key}:${hex.toLowerCase()}`;
-      b.style.background = hex;
-      b.title = hex;
-      b.addEventListener("click", () => setColor(hex));
-      return b;
-    });
-    const custom = el("input", "customSkin", row);
-    custom.type = "color";
-    custom.value = ownerObj[key];
-    custom.title = "custom colour";
-    custom.addEventListener("input", () => setColor(custom.value));
-    function setColor(hex) {
-      ownerObj[key] = hex;
-      if (key === "secondary") ownerObj.secondaryFollow = false;
-      custom.value = hex;
-      refresh();
-      onChange();
-    }
-    return {
-      sync: () => {
-        btns.forEach((b) =>
-          b.classList.toggle(
-            "active",
-            b.dataset.sw === `${key}:${ownerObj[key]?.toLowerCase()}`
-          )
-        );
-        custom.value = ownerObj[key];
-      },
-    };
-  }
-
-  // rebuild the whole right column synchronised with current state
-  function buildRight(groups) {
-    rightBody.replaceChildren();
-    const syncs = groups.map(({ title, key, owner, swatches }) =>
-      colourGroup(title, key, owner, swatches)
-    );
-    return () => syncs.forEach((s) => s.sync());
-  }
-
   // ---- face panel -----------------------------------------------------------
   function buildFace() {
     setPill("EYES");
@@ -209,9 +133,9 @@ export function createUI(state, { onChange }) {
         pick: () => (state.mouth = i),
       });
     }
-    const syncRight = buildRight([
+    const syncRight = buildRight(rightBody, [
       { title: "SKIN TONE", key: "skin", owner: state, swatches: SKIN_PRESETS },
-    ]);
+    ], hooks);
     const syncLeft = () => buildGrid(faceEntries, state, refresh);
     syncLeft();
     syncRight();
@@ -248,10 +172,10 @@ export function createUI(state, { onChange }) {
         pick: () => (state.hair.id = id),
       });
     });
-    const syncRight = buildRight([
+    const syncRight = buildRight(rightBody, [
       { title: "SKIN TONE", key: "skin", owner: state, swatches: SKIN_PRESETS },
       { title: "HAIR COLOR", key: "color", owner: state.hair, swatches: HAIR_SWATCHES },
-    ]);
+    ], hooks);
     const syncLeft = () => buildGrid(entries, state, refresh);
     syncLeft();
     syncRight();
@@ -277,14 +201,6 @@ export function createUI(state, { onChange }) {
     drawNum(ctx, n || 0, "#38220c");
   }
 
-  function drawNum(ctx, n, col) {
-    ctx.fillStyle = col;
-    ctx.font = "28px 'Press Start 2P', monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(String(n), 32, 36);
-  }
-
   // ---- cloth panels / accessories -------------------------------------------
   // accessories: one sub-pill row per slot (HEADWEAR/EYEWEAR/...) so the grid
   // shows only the active section, not everything at once
@@ -297,8 +213,7 @@ export function createUI(state, { onChange }) {
       const old = document.getElementById("subPills");
       if (old) old.remove();
       if (sections.length < 2) return;
-      const bar = el("div", null, null);
-      bar.className = "subPillBar";
+      const bar = el("div", "subPillBar");
       bar.id = "subPills";
       // insert between pill title and grid inside #leftPanel
       document.getElementById("leftPanel").insertBefore(
@@ -326,7 +241,7 @@ export function createUI(state, { onChange }) {
           ?.colorSlots ?? ["main"];
         slots.forEach((cs) => {
           const label = `${title} ${cs === "main" ? "COLOR" : cs.toUpperCase()}`;
-          syncs.push(colourGroup(label, cs, colors, CLOTH_SWATCHES));
+          syncs.push(colourGroup(rightBody, label, cs, colors, CLOTH_SWATCHES, hooks));
         });
       }
       const syncRight = () => syncs.forEach((s) => s.sync());
@@ -395,10 +310,48 @@ export function createUI(state, { onChange }) {
     drawNum(ctx, n, "#38220c");
   }
 
+  // ---- body panel (M8 body-type selector) ------------------------------------
+  // two round thumbnail buttons: female hourglass silhouette / male straight
+  // rectangle silhouette. Selecting rebuilds the character via onChange().
+  function drawBodyThumb(c, type) {
+    const ctx = c.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = "#fffdfa";
+    ctx.fillRect(0, 0, 64, 64);
+    ctx.fillStyle = "#f07890";
+    ctx.fillRect(0, 0, 64, 14);
+    ctx.fillStyle = "#38220c";
+    if (type === "male") {
+      ctx.fillRect(14, 20, 36, 30); // straight rectangular torso
+      ctx.fillRect(18, 50, 28, 6);
+    } else {
+      ctx.fillRect(16, 20, 32, 8);  // hourglass: shoulders -> waist -> hips
+      ctx.fillRect(22, 28, 20, 10);
+      ctx.fillRect(12, 38, 40, 14);
+    }
+  }
+
+  function buildBody() {
+    setPill("BODY");
+    const entries = BODY_TYPES.map((id) => ({
+      label: id === "female" ? "Female" : "Male",
+      draw: (c) => drawBodyThumb(c, id),
+      isActive: () => (state.body ?? "female") === id,
+      pick: () => (state.body = id),
+    }));
+    const syncLeft = () => buildGrid(entries, state, refresh);
+    syncLeft();
+    rightBody.replaceChildren();
+    pillRow(rightBody, "BODY TYPE", true);
+    rebuildCurrent = syncLeft;
+    refresh = syncLeft;
+  }
+
   // ---- style panel -----------------------------------------------------------
   const SLOT_PILL = {
-    face: "FACE", head: "HAIR STYLE", top: "TOP", bottom: "BOTTOM",
-    shoes: "SHOES", accessories: "ACCESSORIES", style: "STYLE",
+    face: "FACE", head: "HAIR STYLE", body: "BODY", top: "TOP",
+    bottom: "BOTTOM", shoes: "SHOES", accessories: "ACCESSORIES",
+    style: "STYLE",
   };
 
   function buildStylePanel() {
@@ -460,6 +413,7 @@ export function createUI(state, { onChange }) {
   const BUILDERS = {
     face: buildFace,
     head: buildHead,
+    body: buildBody,
     top: () => buildCloth("top"),
     bottom: () => buildCloth("bottom"),
     shoes: () => buildCloth("shoes"),

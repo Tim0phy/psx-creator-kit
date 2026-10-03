@@ -2,7 +2,62 @@ import * as THREE from "three";
 import { makePSXMaterial, SHARED_GRAD } from "./psxRenderer.js";
 
 // Chibi base body (M1): all parts simple tapered boxes / rounded low-poly box.
-// No face texture, hair, or clothes yet (M2/M3/M4).
+// M8: two body profiles (female / male). Torso widths follow the existing art
+// convention: `hips` = the torso box's lower edge (hip/hem line, y 0.58) and
+// `shoulders` = its upper edge (shoulder flare, y 1.18). The female profile
+// keeps the exact M1-M6 numbers so the default character stays
+// pixel-identical; male broadens the shoulders (0.64 vs 0.66 female art) and
+// trims the hem (0.58 vs 0.56) -> a much straighter, more rectangular torso.
+// Head size, arm length, leg length, feet and the overall chibi proportions
+// are identical in both profiles (triangle budget unchanged, still <= 800).
+
+// body profiles shared with the clothing builders: tops.js / bottoms.js read
+// these through bodyFit()/getBodyProfile() instead of hardcoding torso values.
+export const BODY_PROFILES = {
+  female: {
+    label: "Female",
+    shoulders: 0.66,   // torso upper (shoulder-flare) edge width
+    hips: 0.56,        // torso lower (hip/hem) edge width
+    depth: 0.32,       // torso depth (identical for both bodies)
+    torsoH: 0.6,       // torso box height
+    armX: 0.36,        // arm shoulder pivot x (shoulder edge + 0.03 gap)
+    legX: 0.19,        // leg/foot pivot x (unchanged)
+    hipsW: 0.56,       // pelvis block (bottoms.js) width at the hem
+    hipsTopW: 0.5,     // pelvis block width at the waistband
+    hipsDepth: 0.3,    // pelvis block depth (inside the torso depth)
+    skirtR: 0.32,      // waistband / skirt mouth radius (inside top shells)
+  },
+  male: {
+    label: "Male",
+    shoulders: 0.64,   // broader shoulders than the male hem (0.58)
+    hips: 0.58,        // narrower hem -> much straighter torso
+    depth: 0.32,
+    torsoH: 0.6,
+    armX: 0.35,        // follows the (narrower) male shoulder edge
+    legX: 0.19,
+    hipsW: 0.56,
+    hipsTopW: 0.5,
+    hipsDepth: 0.3,
+    skirtR: 0.32,
+  },
+};
+
+export function getBodyProfile(type) {
+  return BODY_PROFILES[type] ?? BODY_PROFILES.female;
+}
+
+// per-body scale helper for the clothing builders. Every factor collapses to
+// exactly 1 for the female profile, so all tuned female item numbers are
+// reproduced without change.
+export function bodyFit(bodyType = "female") {
+  const p = getBodyProfile(bodyType);
+  return {
+    profile: p,
+    hw: p.hips / 0.56,        // hem-edge trim scale (knit band, bomber hem...)
+    sw: p.shoulders / 0.66,   // shoulder-edge trim scale (off-shoulder band)
+    wr: p.skirtR / 0.32,      // skirt/waistband mouth scale
+  };
+}
 
 export function taperBox(w, h, d, topW, botW) {
   const g = new THREE.BoxGeometry(w, h, d, 1, 1, 1).toNonIndexed();
@@ -50,7 +105,8 @@ function anchorAt(root, name, x, y, z) {
   return a;
 }
 
-export function createCharacter() {
+export function createCharacter(bodyType = "female") {
+  const p = getBodyProfile(bodyType);
   const root = new THREE.Group();
 
   const skinMat = makePSXMaterial(DEFAULT_SKIN);
@@ -64,12 +120,14 @@ export function createCharacter() {
   head.position.y = 1.48;
   root.add(head);
 
-  // torso: flared trapezoid box
-  const torso = new THREE.Mesh(taperBox(0.56, 0.6, 0.32, 0.56, 0.66), skinMat);
+  // torso: flared trapezoid box, widths from the body profile
+  const torso = new THREE.Mesh(
+    taperBox(p.hips, p.torsoH, p.depth, p.hips, p.shoulders), skinMat
+  );
   torso.position.y = 0.88;
   root.add(torso);
 
-  // arms: A-pose ~25 degrees
+  // arms: A-pose ~25 degrees (pivot follows the profile shoulder edge)
   const armGeo = taperBox(0.27, 0.6, 0.27, 0.27, 0.21);
   const handGeo = new THREE.BoxGeometry(0.3, 0.26, 0.3).toNonIndexed();
   for (const side of [-1, 1]) {
@@ -79,21 +137,21 @@ export function createCharacter() {
     const hand = new THREE.Mesh(handGeo, skinMat);
     hand.position.y = -0.68;
     arm.add(upper, hand);
-    arm.position.set(side * 0.36, 1.18, 0);
+    arm.position.set(side * p.armX, 1.18, 0);
     arm.rotation.z = side * 0.2; // ~12 deg outward
     root.add(arm);
   }
 
-  // legs
+  // legs (identical in both profiles)
   const legGeo = taperBox(0.34, 0.56, 0.34, 0.34, 0.27);
   for (const side of [-1, 1]) {
     const leg = new THREE.Mesh(legGeo, skinMat);
-    leg.position.set(side * 0.19, 0.34, 0);
+    leg.position.set(side * p.legX, 0.34, 0);
     const foot = new THREE.Mesh(
       new THREE.BoxGeometry(0.2, 0.13, 0.32).toNonIndexed(),
       footMat
     );
-    foot.position.set(side * 0.19, 0.065, 0.06);
+    foot.position.set(side * p.legX, 0.065, 0.06);
     root.add(leg, foot);
   }
 
@@ -118,7 +176,7 @@ export function createCharacter() {
   }
 
   return {
-    root, mats, setSkin, hairAnchor,
+    root, mats, setSkin, hairAnchor, profile: p,
     anchors: {
       head: hairAnchor, neck: neckAnchor,
       wrist: wristAnchor, bag: bagAnchor,

@@ -5,6 +5,7 @@ export default catalogJson;
 export const SLOT_LABELS = {
   face: "EYES",
   head: "HAIR",
+  body: "BODY",
   top: "TOP",
   bottom: "BOTTOM",
   shoes: "SHOES",
