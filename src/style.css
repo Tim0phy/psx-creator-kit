@@ -42,10 +42,10 @@ canvas.image-rendering { image-rendering: pixelated; }
 /* ---- centre 3D stage ------------------------------------------------------ */
 #stage {
   position: absolute;
-  left: 26%;
-  right: 26%;
-  top: 76px;
-  bottom: 150px;
+  left: 27%;
+  right: 27%;
+  top: 96px;
+  bottom: 176px;
   touch-action: none;
   z-index: 1;
 }
@@ -54,6 +54,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   image-rendering: pixelated;
   width: 100%;
   height: 100%;
+  max-width: 300px;
   object-fit: contain;
 }
 
@@ -165,7 +166,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   position: absolute;
   left: 24px;
   top: 88px;
-  width: 232px;
+  width: 292px;
   bottom: 110px;
   z-index: 3;
   display: flex;
@@ -263,7 +264,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   position: absolute;
   right: 24px;
   top: 88px;
-  width: 232px;
+  width: 292px;
   max-height: calc(100% - 200px);
   overflow-y: auto;
   scrollbar-width: none;
@@ -316,7 +317,7 @@ canvas.image-rendering { image-rendering: pixelated; }
 #centreCol {
   position: absolute;
   left: 50%;
-  bottom: 96px;
+  bottom: 112px;
   transform: translateX(-50%);
   z-index: 4;
   display: flex;
@@ -432,7 +433,6 @@ canvas.image-rendering { image-rendering: pixelated; }
     border-color: #fff #b87830 #b87830 #fff;
     box-shadow: 3px 3px 0 rgba(56, 34, 12, .45);
     padding: 10px;
-    padding-bottom: 74px;
     overflow: hidden;
   }
   #leftPanel {
@@ -445,20 +445,23 @@ canvas.image-rendering { image-rendering: pixelated; }
     gap: 8px;
   }
   #leftGrid {
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: 0 0 auto;
+    max-height: calc(64px * 3 + 68px);
     overflow-y: auto;
   }
   #rightPanel {
     position: static;
     width: auto;
     max-height: none;
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    overflow-y: auto;
   }
-  #centreCol { position: static; transform: none; align-self: center; }
+  #centreCol, #toast { display: none; }
+  #toast.show ~ #categoryBar #btnConfirmM { display: block; }
   #btnConfirm {
     font-size: 12px;
     padding: 10px 24px;
