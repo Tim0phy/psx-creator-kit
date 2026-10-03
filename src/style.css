@@ -267,6 +267,33 @@ canvas.image-rendering { image-rendering: pixelated; }
 
 #gridDots span span.on { background: var(--highlight); }
 
+/* sub-pill bar: per-slot sections (HEADWEAR/EYEWEAR/... or TOP/OUTER etc.) */
+.subPillBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.subPill {
+  flex: 1 1 auto;
+  border: 3px solid;
+  border-color: #fff #b87830 #b87830 #fff;
+  background: var(--wood);
+  color: var(--ink);
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 7px 4px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(56, 34, 12, .4);
+  white-space: nowrap;
+}
+
+.subPill.activeSection {
+  background: var(--highlight);
+  color: var(--ink);
+}
+
 .gridArrow {
   width: 26px;
   height: 26px;

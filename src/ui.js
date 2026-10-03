@@ -215,6 +215,10 @@ export function createUI(state, { onChange }) {
     const syncLeft = () => buildGrid(faceEntries, state, refresh);
     syncLeft();
     syncRight();
+    rebuildCurrent = () => {
+      syncLeft();
+      syncRight();
+    };
     refresh = () => {
       syncLeft();
       syncRight();
@@ -251,6 +255,10 @@ export function createUI(state, { onChange }) {
     const syncLeft = () => buildGrid(entries, state, refresh);
     syncLeft();
     syncRight();
+    rebuildCurrent = () => {
+      syncLeft();
+      syncRight();
+    };
     refresh = () => {
       syncLeft();
       syncRight();
@@ -278,40 +286,58 @@ export function createUI(state, { onChange }) {
   }
 
   // ---- cloth panels / accessories -------------------------------------------
-  function clothStateIn(slot) {
-    return state[slot];
-  }
-
+  // accessories: one sub-pill row per slot (HEADWEAR/EYEWEAR/...) so the grid
+  // shows only the active section, not everything at once
   function buildCloth(cat) {
     const sections = CLOTH_SECTIONS[cat];
-    let firstSectionTitle = sections[0][1];
-    setPill(firstSectionTitle);
-    const perSection = () => {
+    let activeSection = sections[0][0];
+    setPill(SLOT_PILL[activeSection] ?? sections[0][1]);
+
+    function buildSubPills() {
+      const old = document.getElementById("subPills");
+      if (old) old.remove();
+      if (sections.length < 2) return;
+      const bar = el("div", null, null);
+      bar.className = "subPillBar";
+      bar.id = "subPills";
+      // insert between pill title and grid inside #leftPanel
+      document.getElementById("leftPanel").insertBefore(
+        bar, document.getElementById("leftGrid")
+      );
+      sections.forEach(([slot, title]) => {
+        const b = el("button", "subPill", bar);
+        b.textContent = title;
+        b.classList.toggle("activeSection", activeSection === slot);
+        b.addEventListener("click", () => {
+          activeSection = slot;
+          rebuildCurrent();
+        });
+      });
+    }
+
+    const renderRight = () => {
       rightBody.replaceChildren();
       const syncs = [];
-      sections.forEach(([slot, title]) => {
-        const colors = state[slot]?.colors;
-        if (colors) {
-          const slots = catalog.items.find((i) => i.id === state[slot].id)
-            ?.colorSlots ?? ["main"];
-          slots.forEach((cs, ci) => {
-            const label = `${title} ${cs === "main" ? "COLOR" : cs.toUpperCase()}`
-            syncs.push(colourGroup(label, cs, colors, CLOTH_SWATCHES));
-            if (ci === 0) setPill(`ITEM COLOR`);
-          });
-        }
-      });
+      const slot = activeSection;
+      const title = sections.find(([s]) => s === slot)[1];
+      const colors = state[slot]?.colors;
+      if (colors) {
+        const slots = catalog.items.find((i) => i.id === state[slot].id)
+          ?.colorSlots ?? ["main"];
+        slots.forEach((cs) => {
+          const label = `${title} ${cs === "main" ? "COLOR" : cs.toUpperCase()}`;
+          syncs.push(colourGroup(label, cs, colors, CLOTH_SWATCHES));
+        });
+      }
       const syncRight = () => syncs.forEach((s) => s.sync());
       syncRight();
       refresh = () => syncRight();
     };
-    buildClothGrid(cat, sections, perSection);
-  }
 
-  function buildClothGrid(cat, sections, rebuildRight) {
-    const entries = [];
-    sections.forEach(([slot, title]) => {
-      entries.push({
+    const renderGrid = () => {
+      const [slot, title] = sections.find(([s]) => s === activeSection);
+      setPill(title);
+      const entries = [{
         label: `${title}: none`,
         draw: (c) => {
           const ctx = c.getContext("2d");
@@ -323,7 +349,7 @@ export function createUI(state, { onChange }) {
         },
         isActive: () => !state[slot],
         pick: () => (state[slot] = null),
-      });
+      }];
       itemsFor(slot).forEach((item, i) => {
         entries.push({
           label: item.label,
@@ -332,9 +358,15 @@ export function createUI(state, { onChange }) {
           pick: () => pickCloth(slot, item),
         });
       });
-    });
-    buildGrid(entries, state, refresh);
-    rebuildRight();
+      buildGrid(entries, state, refresh);
+      renderRight();
+    };
+
+    rebuildCurrent = () => {
+      buildSubPills();
+      renderGrid();
+    };
+    rebuildCurrent();
   }
 
   function pickCloth(slot, item) {
