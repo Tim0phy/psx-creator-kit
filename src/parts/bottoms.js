@@ -16,17 +16,17 @@ const HIGH = 1.02;    // shorts/skirt waistband top (navel height)
 const HIP = 0.6;      // low-rise waistband top (on the hips)
 
 // hips/pelvis block from y=0.5 up to waistY. Width from the profile
-// (female hem 0.56 half-w 0.28): narrower than any top shell (tee 1.06
-// half-w 0.297) so the two never intersect and z-fight. depth defaults
-// inside the tee shell (half 0.15); shorts use 0.36 so the front face sits
-// in front of the tee hem and the waist reads continuously.
+// (female hem 0.56 half-w 0.28, waist-side 0.48): narrower than any top
+// shell so the two never intersect and z-fight. depth defaults inside the
+// tee shell (half 0.15); shorts use 0.36 so the front face sits in front
+// of the tee hem and the waist reads continuously.
 function hipsMesh(mat, p, waistY, depth = 0.3) {
   const h = waistY - 0.5;
-  const g = new THREE.BoxGeometry(p.hips, h, depth).toNonIndexed();
+  const g = new THREE.BoxGeometry(p.hipsW, h, depth).toNonIndexed();
   const q = g.attributes.position;
   for (let i = 0; i < q.count; i++) {
     const t = (q.getY(i) + h / 2) / h; // 0 bottom -> 1 top
-    q.setX(i, q.getX(i) * ((p.hipsTopW + (p.hips - p.hipsTopW) * (1 - t)) / p.hips));
+    q.setX(i, q.getX(i) * ((p.hipsTopW + (p.hipsW - p.hipsTopW) * (1 - t)) / p.hipsW));
   }
   g.translate(0, 0.5 + h / 2, 0);
   g.computeVertexNormals();
@@ -143,8 +143,9 @@ function bot_tennis_skirt(g, m, f, fit) {
 function bot_lowrise_mini(g, m, f, fit) {
   const waist = f.lowRise ? HIP : WAIST;
   // rectangular waistband flush with the skirt box (a round cylinder band
-  // would float around the rectangle front/sides like a hoop)
-  const bandW = 0.68 * fit.hw;
+  // would float around the rectangle front/sides like a hoop); waist-anchored
+  // scale so it hugs the slim female waist / straight male waist
+  const bandW = 0.68 * fit.ww;
   const band = new THREE.BoxGeometry(bandW, 0.09, 0.4).toNonIndexed();
   band.translate(0, waist + 0.2, 0);
   band.computeVertexNormals();
@@ -153,7 +154,7 @@ function bot_lowrise_mini(g, m, f, fit) {
   // hula-hoop round profile from the side like the old 8-gon cylinder)
   const topY = waist + 0.2;
   const h = 0.38; // hem at waist - 0.18
-  const bg = new THREE.BoxGeometry(0.66 * fit.hw, h, 0.36).toNonIndexed();
+  const bg = new THREE.BoxGeometry(0.66 * fit.ww, h, 0.36).toNonIndexed();
   const q = bg.attributes.position;
   for (let i = 0; i < q.count; i++) {
     const t = (q.getY(i) + h / 2) / h; // 0 bottom -> 1 top

@@ -364,3 +364,32 @@
   colour-block 對比色（藍top+紅裙）。
 - 驗證：build 過；m6Shots.mjs 逐件 front/angle + 6 preset desktop/mobile
   截圖全過無 pageerror；tris 398-504 <= 800 預算（m6Probe 已刪）。
+
+## M6.5 身體選擇器（2026-10-04 male/female body）
+- `BODY_PROFILES`（character.js）兩個 profile + `getBodyProfile()` / `bodyFit()`；
+  `createCharacter(bodyType)`；`state.body`（state.js，?body= URL 參數），
+  RANDOM 會隨機 body、RESET 回 female；main.js `rebuildCharacter()` 整個
+  rig 重建 + 面部貼花/頭髮/衣物重掛；ui.js 新 BODY 分類（兩個圓縮圖）；
+  index.html/style.css 新 `.catBody`（#f07890 軀幹 icon）；uiWidgets.js
+  從 ui.js 機械式拆出。
+- 語義修正：brief 寫「female shoulders 0.56 / hip 0.66」，但現行美術是
+  軀幹下緣（髖）0.56 → 肩部外擴邊 0.66（tops.js 邊界註釋 + collar 鎖位
+  可證），profile 以解剖學鍵名記美術真值。首輪 female 保持 pixel-identical
+  （baseline pixel-diff 驗證：desktop/mobile 差異只落喺分類列）。
+- 第二輪（用戶要求加大差異）：女仔改真沙漏 — 軀幹改 5 行曲線取樣
+  `torsoW(t)`（hips 0.6 → waist 0.5 @ t 0.42 → shoulders 0.58），
+  手臂 0.27→0.22、腿 0.34→0.28（手/袖按原比例 1.111/0.794 縮放）；
+  男仔闊膊直身 — shoulders 0.66 / waist 0.6 / hips 0.62，手臂 0.3、
+  腿 0.34。全部服裝殼層共用同一條曲線（shellGeo→torsoGeo），殼/身每行
+  保持 enl% 邊距，無穿模；骨盆 block hipsTopW 0.5→0.48 避免同新幼腰
+  coplanar。body tris ~224 <= 800。
+- Bug fix 1：`rebuildCharacter` 誤將 character 物件（非 .root）傳入
+  `disposeGroup` → `root.traverse` 拋例外 → 切 body 後 applyAll 中止、
+  UI 全面失步（睇落似凍結+隨機跳頁）。
+- Bug fix 2（M2.5 遺留 latent bug，用 clickthrough 實錘）：grid 按鈕在
+  面板建立當下捕獲咗「當時的 refresh」= 上一個面板嘅 rebuild 函數 →
+  揀眼/髮型/衫後會隨機重建出上一個面板（18↔12 顆按鈕跳動）。修法：
+  所有 buildGrid 呼叫改傳 thunk `() => refresh()`，點選時先解析當前面板。
+- 驗證：clickthrough 8 個分類 x 4 次點選全部留喺原面板、0 pageerror；
+  female/male x default/jacket/vest+skirt/crop+jeans/shorts/bare 截圖
+  無破模無 sliver。

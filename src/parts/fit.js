@@ -1,23 +1,16 @@
 import * as THREE from "three";
-import { taperBox } from "../character.js";
+import { torsoGeo, taperBox } from "../character.js";
 import { makePSXMaterial } from "../psxRenderer.js";
 import { makeDecal } from "../patterns.js";
 
 // Garment fit helpers for tops/outers (M8 body selector): every torso envelope
-// dimension derives from the body profile instead of hard-coded numbers. The
-// female profile reproduces the previous hard-coded values exactly, so the
-// tuned female items stay visually identical.
+// dimension derives from the body profile instead of hard-coded numbers.
 
-// shell around the torso, flared like the body; hScale lets a cropped top
-// end higher. open front for outerwear keeps the top visible underneath.
+// shell around the torso: profile-curved envelope (torsoGeo in character.js
+// guarantees the shell encloses the body row by row); hScale lets a cropped
+// top end higher. open front for outerwear keeps the top visible underneath.
 export function shellGeo(p, enl, hScale = 1, open = false) {
-  const lo = p.hips * enl, hi = p.shoulders * enl, d = p.depth * enl;
-  const h = p.torsoH * hScale;
-  const g = taperBox(lo, h, d, lo, hi).toNonIndexed();
-  if (hScale < 1) {
-    // move the shortened shell up so it hangs from the shoulders down
-    g.translate(0, (p.torsoH - h) / 2, 0);
-  }
+  const g = torsoGeo(p, enl, hScale);
   if (!open) return g;
   // open front: drop the front plate (normals facing +z) so the top shows
   g.computeVertexNormals();
@@ -34,12 +27,14 @@ export function shellGeo(p, enl, hScale = 1, open = false) {
   return out;
 }
 
-// sleeve: tapered box around the arm. len 1 = upper arm to elbow,
-// len 1.75 = full sleeve to the wrist. Arms rotate z +/-0.2 rad about their
-// group pivot at (±armX, 1.18) — pivot x follows the body profile.
-function sleeveMesh(len, mat, enl = 1.08) {
+// sleeve: tapered box around the arm; cross-section scales with the profile
+// arm thickness (old art ratio: sleeve 0.3 / arm 0.27 -> 1.111). len 1 =
+// upper arm to elbow, len 1.75 = full sleeve to the wrist. Arms rotate z
+// +/-0.2 rad about their group pivot at (±armX, 1.18).
+function sleeveMesh(len, mat, p, enl = 1.08) {
   const l = 0.6 * len;
-  const g = taperBox(0.3 * enl, l, 0.3 * enl, 0.3 * enl, 0.24 * enl)
+  const sw = (p.armW ?? 0.27) * 1.111;
+  const g = taperBox(sw * enl, l, sw * enl, sw * enl, sw * 0.8 * enl)
     .toNonIndexed();
   const m = new THREE.Mesh(g, mat);
   // hang from the shoulder joint (same pivot as the arm group)
@@ -53,7 +48,7 @@ function sleeveMesh(len, mat, enl = 1.08) {
 
 export function addSleeves(root, mat, len, enl, p) {
   for (const side of [-1, 1]) {
-    const s = sleeveMesh(len, mat, enl);
+    const s = sleeveMesh(len, mat, p, enl);
     s.position.set(side * (p.armX ?? 0.36), 0.3, 0);
     s.rotation.z = side * 0.2;
     root.add(s);

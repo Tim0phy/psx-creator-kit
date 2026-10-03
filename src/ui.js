@@ -136,7 +136,9 @@ export function createUI(state, { onChange }) {
     const syncRight = buildRight(rightBody, [
       { title: "SKIN TONE", key: "skin", owner: state, swatches: SKIN_PRESETS },
     ], hooks);
-    const syncLeft = () => buildGrid(faceEntries, state, refresh);
+    // thunk: resolve the CURRENT panel refresh when a grid item is picked
+    // (a captured function would rebuild the previous panel -> random jumps)
+    const syncLeft = () => buildGrid(faceEntries, state, () => refresh());
     syncLeft();
     syncRight();
     rebuildCurrent = () => {
@@ -176,7 +178,7 @@ export function createUI(state, { onChange }) {
       { title: "SKIN TONE", key: "skin", owner: state, swatches: SKIN_PRESETS },
       { title: "HAIR COLOR", key: "color", owner: state.hair, swatches: HAIR_SWATCHES },
     ], hooks);
-    const syncLeft = () => buildGrid(entries, state, refresh);
+    const syncLeft = () => buildGrid(entries, state, () => refresh());
     syncLeft();
     syncRight();
     rebuildCurrent = () => {
@@ -273,7 +275,7 @@ export function createUI(state, { onChange }) {
           pick: () => pickCloth(slot, item),
         });
       });
-      buildGrid(entries, state, refresh);
+      buildGrid(entries, state, () => refresh());
       renderRight();
     };
 
@@ -322,8 +324,8 @@ export function createUI(state, { onChange }) {
     ctx.fillRect(0, 0, 64, 14);
     ctx.fillStyle = "#38220c";
     if (type === "male") {
-      ctx.fillRect(14, 20, 36, 30); // straight rectangular torso
-      ctx.fillRect(18, 50, 28, 6);
+      ctx.fillRect(10, 20, 44, 10);  // broad straight chest
+      ctx.fillRect(14, 30, 36, 26);
     } else {
       ctx.fillRect(16, 20, 32, 8);  // hourglass: shoulders -> waist -> hips
       ctx.fillRect(22, 28, 20, 10);
@@ -339,7 +341,7 @@ export function createUI(state, { onChange }) {
       isActive: () => (state.body ?? "female") === id,
       pick: () => (state.body = id),
     }));
-    const syncLeft = () => buildGrid(entries, state, refresh);
+    const syncLeft = () => buildGrid(entries, state, () => refresh());
     syncLeft();
     rightBody.replaceChildren();
     pillRow(rightBody, "BODY TYPE", true);
@@ -403,7 +405,7 @@ export function createUI(state, { onChange }) {
       isActive: () => false,
       pick: () => applyColourBlock(state, onChange, null),
     });
-    const syncLeft = () => buildGrid(entries, state, refresh);
+    const syncLeft = () => buildGrid(entries, state, () => refresh());
     syncLeft();
     rightBody.replaceChildren();
     pillRow(rightBody, "STYLE PACKS", true);
