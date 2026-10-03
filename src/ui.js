@@ -409,15 +409,25 @@ export function createUI(state, { onChange }) {
       label: preset.label,
       draw: (c) => {
         const ctx = c.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
         ctx.fillStyle = "#fffdfa";
         ctx.fillRect(0, 0, 64, 64);
         ctx.fillStyle = "#e8a80c";
-        ctx.font = "12px monospace";
+        ctx.fillRect(0, 0, 64, 14);
+        // preset name in two lines of readable pixel text
+        ctx.fillStyle = "#38220c";
+        ctx.font = "8px 'Press Start 2P', monospace";
         ctx.textAlign = "center";
-        ctx.fillText(String(i + 1), 32, 20);
-        ctx.fillStyle = "#906020";
-        ctx.font = "6px monospace";
-        ctx.fillText(preset.label.slice(0, 6).toUpperCase(), 32, 44);
+        ctx.textBaseline = "middle";
+        const words = preset.label.toUpperCase().split(" ");
+        const line1 = words.slice(0, Math.ceil(words.length / 2)).join(" ");
+        const line2 = words.slice(Math.ceil(words.length / 2)).join(" ");
+        if (line2) {
+          ctx.fillText(line1, 32, 30);
+          ctx.fillText(line2, 32, 46);
+        } else {
+          ctx.fillText(line1, 32, 38);
+        }
       },
       isActive: () => last === i,
       pick: () => {
@@ -460,6 +470,8 @@ export function createUI(state, { onChange }) {
   let current = null;
 
   function rebuildCategory() {
+    // clear any per-category sub-pill bar before rebuilding
+    document.getElementById("subPills")?.remove();
     BUILDERS[current]?.();
   }
 
