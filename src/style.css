@@ -249,17 +249,45 @@ canvas.image-rendering { image-rendering: pixelated; }
 #gridDots {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
   min-height: 12px;
 }
 
-#gridDots span {
+#gridDots .dotWrap {
+  display: inline-flex;
+  gap: 8px;
+}
+
+#gridDots span span {
   width: 8px;
   height: 8px;
   background: var(--wood-dark);
 }
 
-#gridDots span.on { background: var(--highlight); }
+#gridDots span span.on { background: var(--highlight); }
+
+.gridArrow {
+  width: 26px;
+  height: 26px;
+  border: 3px solid;
+  border-color: #fff #b87830 #b87830 #fff;
+  background: var(--wood);
+  color: var(--ink);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 2px 0 rgba(56, 34, 12, .4);
+}
+
+.gridArrow:disabled {
+  opacity: .45;
+  cursor: default;
+  box-shadow: none;
+}
 
 /* ---- right panel: stacked colour groups ----------------------------------- */
 #rightPanel {
@@ -449,7 +477,9 @@ canvas.image-rendering { image-rendering: pixelated; }
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    grid-auto-rows: 56px;
   }
+  .gridBtn { width: 56px; height: 56px; }
   #rightPanel {
     position: static;
     width: auto;

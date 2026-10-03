@@ -87,15 +87,19 @@ export function createUI(state, { onChange }) {
   }
 
   // ---- left 3-col grid ------------------------------------------------------
-  // entries: [{ key, label, draw(c64) }] rendered per active category; pages
-  // of 9 with pixel dots below when > 9. Rebuild once per switchCat; label-only
+  // Show all entries when they fit the available height; otherwise page with
+  // pixel prev/next arrows below (9 per page, 3x3). entries: [{ label, draw,
+  // isActive, pick }]
   function buildGrid(entries, state, refreshAll) {
     leftGrid.replaceChildren();
     gridDots.replaceChildren();
-    const pages = Math.max(1, Math.ceil(entries.length / 9));
+    const rowH = 74; // 64px cell + 10px gap
+    const avail = leftGrid.clientHeight || leftGrid.parentElement.clientHeight - 60;
+    const perPage = Math.max(3, Math.floor((avail - 20) / rowH)) * 3;
+    const pages = Math.max(1, Math.ceil(entries.length / perPage));
     if (page >= pages) page = pages - 1;
-    const start = page * 9;
-    entries.slice(start, start + 9).forEach((ei, i) => {
+    const start = page * perPage;
+    entries.slice(start, start + perPage).forEach((ei) => {
       const btn = el("button", "gridBtn", leftGrid);
       btn.title = ei.label ?? "";
       const c = cell64();
@@ -107,17 +111,31 @@ export function createUI(state, { onChange }) {
         refreshAll();
         onChange();
       });
-      btn._idx = start + i;
     });
     if (pages > 1) {
+      const prev = el("button", "gridArrow", gridDots);
+      prev.innerHTML = "&#9664;";
+      prev.disabled = page === 0;
+      prev.addEventListener("click", () => {
+        page = Math.max(0, page - 1);
+        rebuildCategory();
+      });
+      const dotWrap = el("span", "dotWrap", gridDots);
       for (let p = 0; p < pages; p++) {
-        const dot = el("span", null, gridDots);
+        const dot = el("span", null, dotWrap);
         dot.classList.toggle("on", p === page);
         dot.addEventListener("click", () => {
           page = p;
           rebuildCategory();
         });
       }
+      const next = el("button", "gridArrow", gridDots);
+      next.innerHTML = "&#9654;";
+      next.disabled = page === pages - 1;
+      next.addEventListener("click", () => {
+        page = Math.min(pages - 1, page + 1);
+        rebuildCategory();
+      });
     }
   }
 
