@@ -393,3 +393,15 @@
 - 驗證：clickthrough 8 個分類 x 4 次點選全部留喺原面板、0 pageerror；
   female/male x default/jacket/vest+skirt/crop+jeans/shorts/bare 截圖
   無破模無 sliver。
+- Bug fix 3（用戶報「上衣與褲類重疊位穿模破面」）：
+  ① 幼褲管（0.34）嘅深度原本跟闊度（half-z 0.17），同 tee殼 hem 前後面
+  （0.1696）只差 0.0004 → coplanar 級閃爍，tee hem 底角喺褲管面上切出
+  斜向破面。加 profile `tubeD`（女 0.4 / 男 0.42 → fit.td），褲管深度
+  標準化罩住 hem。
+  ② 幼管中間唔再交疊，中縫露出正後方更深嘅 tee（紅直紋）→ 骨盆 block
+  向下延伸至 y 0.29 填縫；`hipsDepth` 女仔 0.36（half-z 0.18 >
+  shell hem +0.0104，同 M4 短褲「waist read continuously」同一設計）；
+  另發現 `hipsMesh` 嘅 depth 預設係 hardcode 0.3 冇讀 profile，
+  改為 `depth ?? p.hipsDepth`。
+  驗證：tee x 五件褲類（front + 0.5rad angle）腰線全部連續、無紋無
+  sliver；男仔（tw/td = 1）逐像素不變。
