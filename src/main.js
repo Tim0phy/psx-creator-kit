@@ -242,8 +242,8 @@ function rebuildCharacter() {
   for (const m of [eyesMesh, mouthMesh]) m.removeFromParent();
   character = createCharacter(state.body);
   if (old) {
-    scene.remove(old);
-    disposeGroup(old);
+    scene.remove(old.root);
+    disposeGroup(old.root);
   }
   scene.add(character.root);
   character.root.rotation.y = lastYaw;
