@@ -35,17 +35,20 @@ function hipsMesh(mat, p, waistY, depth = 0.3) {
 
 // two pant/tube legs: tapered boxes, narrower towards the ankle
 // (taper = fraction narrower at the bottom end; negative -> wider, "wide").
-// Tube x centring follows the profile leg pivot (±legX, identical bodies).
-function tubeMeshes(group, mat, opt, p) {
+// Width scales with fit.tw (profile tubeR) so tubes hug each body; the x
+// centring follows the profile leg pivot (±legX, identical bodies).
+function tubeMeshes(group, mat, opt, fit) {
+  const r = opt.r * fit.tw;
   const h = opt.top - opt.bottom;
   for (const side of [-1, 1]) {
-    const g = new THREE.BoxGeometry(opt.r, h, opt.r).toNonIndexed();
+    const g = new THREE.BoxGeometry(r, h, r).toNonIndexed();
     const q = g.attributes.position;
     for (let i = 0; i < q.count; i++) {
       const t = (q.getY(i) + h / 2) / h; // 0 at bottom, 1 at top
       const w = 1 - opt.taper * (1 - t); // top=1, bottom=1-taper
       const x =
-        q.getX(i) * w + side * (p.legX ?? 0.19) * (1 + (opt.splay ?? 0) * (1 - t));
+        q.getX(i) * w +
+        side * (fit.profile.legX ?? 0.19) * (1 + (opt.splay ?? 0) * (1 - t));
       q.setXYZ(i, x, q.getY(i), q.getZ(i) * w);
     }
     g.translate(0, opt.bottom + h / 2, 0);
@@ -91,17 +94,17 @@ const PATTERNED_BOTTOMS = new Set(["denim", "plaid", "stripes", "metallic", "sta
 function bot_lowrise_jeans(g, m, f, fit) {
   const waist = f.lowRise ? HIP : WAIST;
   g.add(hipsMesh(m, fit.profile, waist));
-  tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.3, taper: 0.03, splay: 0.03 }, fit.profile);
+  tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.3, taper: 0.03, splay: 0.03 }, fit);
 }
 
 // wide cargo: reversed taper (wider at the ankle) + front thigh pockets
 function bot_cargo_wide(g, m, f, fit) {
   const waist = f.lowRise ? HIP : WAIST;
   g.add(hipsMesh(m, fit.profile, waist));
-  tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.28, taper: -0.18, splay: 0.02 }, fit.profile);
+  tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.28, taper: -0.18, splay: 0.02 }, fit);
   for (const side of [-1, 1]) {
-    g.add(box(0.16, 0.2, 0.2, side * 0.36, 0.42, 0.16, m)); // front thigh pocket
-    g.add(box(0.18, 0.05, 0.22, side * 0.36, 0.53, 0.16, m)); // pocket flap
+    g.add(box(0.16 * fit.tw, 0.2, 0.2, side * 0.36 * fit.tw, 0.42, 0.16, m)); // front thigh pocket
+    g.add(box(0.18 * fit.tw, 0.05, 0.22, side * 0.36 * fit.tw, 0.53, 0.16, m)); // pocket flap
   }
 }
 
@@ -170,7 +173,7 @@ function bot_metallic_pants(g, m, f, fit) {
   const waist = f.lowRise ? HIP : WAIST;
   g.add(hipsMesh(m, fit.profile, waist));
   g.add(waistbandMesh(m, fit.profile, waist + 0.32)); // high-waist band
-  tubeMeshes(g, m, { r: 0.42, top: 0.66, bottom: 0.3, taper: 0.04, splay: 0.03 }, fit.profile);
+  tubeMeshes(g, m, { r: 0.42, top: 0.66, bottom: 0.3, taper: 0.04, splay: 0.03 }, fit);
 }
 
 const BOTTOM_BUILDER = {
@@ -179,7 +182,7 @@ const BOTTOM_BUILDER = {
     g.add(hipsMesh(m, fit.profile, waist));
     // hem 0.3 tucks into the shoe cuff (cuff lip 0.22..0.32 wraps the hem);
     // taper 0.05 keeps the two tubes overlapping at the centre (no slit)
-    tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.3, taper: 0.05, splay: 0.03 }, fit.profile);
+    tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.3, taper: 0.05, splay: 0.03 }, fit);
   },
   bot_shorts(g, m, f, fit) {
     // dungaree/overall shorts: bib + shoulder straps over the tee
@@ -195,7 +198,7 @@ const BOTTOM_BUILDER = {
     // straight tubes: r 0.4 stays 0.02 clear of the leg (z half 0.17), and
     // the tubes overlap at the centre (no slit); hem 0.43 reaches down to
     // the shoe cuff (top 0.25)
-    tubeMeshes(g, m, { r: 0.4, top: 0.66, bottom: 0.43, taper: 0, splay: 0.03 }, fit.profile);
+    tubeMeshes(g, m, { r: 0.4, top: 0.66, bottom: 0.43, taper: 0, splay: 0.03 }, fit);
   },
   bot_short_skirt(g, m, f, fit) {
     const waist = f.lowRise ? HIP : WAIST;
@@ -243,3 +246,4 @@ export function createBottom(id, colors, flags = {}, patternName = null, bodyTyp
   console.log(`[psxcc] ${id}: ${tris} tris (max 150)`);
   return { group, mat, pattern: builtPattern };
 }
+
