@@ -93,9 +93,12 @@ export function createUI(state, { onChange }) {
   function buildGrid(entries, state, refreshAll) {
     leftGrid.replaceChildren();
     gridDots.replaceChildren();
-    const rowH = 74; // 64px cell + 10px gap
-    const avail = leftGrid.clientHeight || leftGrid.parentElement.clientHeight - 60;
-    const perPage = Math.max(3, Math.floor((avail - 20) / rowH)) * 3;
+    const rowH = 64 + 10; // cell + gap
+    const panel = leftGrid.parentElement; // #leftPanel
+    const pillH = panel.querySelector("#leftPill")?.offsetHeight ?? 40;
+    const avail = (panel.clientHeight || 400) - pillH - 10 - 40; // gaps + padding
+    const rows = Math.max(3, Math.floor(avail / rowH));
+    const perPage = rows * 3;
     const pages = Math.max(1, Math.ceil(entries.length / perPage));
     if (page >= pages) page = pages - 1;
     const start = page * perPage;
