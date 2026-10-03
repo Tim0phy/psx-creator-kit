@@ -42,10 +42,10 @@ canvas.image-rendering { image-rendering: pixelated; }
 /* ---- centre 3D stage ------------------------------------------------------ */
 #stage {
   position: absolute;
-  left: 27%;
-  right: 27%;
-  top: 96px;
-  bottom: 176px;
+  left: 25%;
+  right: 25%;
+  top: 76px;
+  bottom: 140px;
   touch-action: none;
   z-index: 1;
 }
@@ -54,9 +54,12 @@ canvas.image-rendering { image-rendering: pixelated; }
   image-rendering: pixelated;
   width: 100%;
   height: 100%;
-  max-width: 300px;
   object-fit: contain;
 }
+
+/* wider side panels per mockup ratio */
+#leftPanel { left: 22px; width: 285px; }
+#rightPanel { right: 22px; width: 285px; }
 
 /* ---- shared pixel button language ---------------------------------------- */
 .pixBtn, .topIconBtn, .catBtn, #btnConfirm {
@@ -164,9 +167,8 @@ canvas.image-rendering { image-rendering: pixelated; }
 /* ---- left panel: pill title + 3-col thumbnail grid ------------------------ */
 #leftPanel {
   position: absolute;
-  left: 24px;
+  max-height: calc(100% - 200px);
   top: 88px;
-  width: 292px;
   bottom: 110px;
   z-index: 3;
   display: flex;
@@ -262,9 +264,7 @@ canvas.image-rendering { image-rendering: pixelated; }
 /* ---- right panel: stacked colour groups ----------------------------------- */
 #rightPanel {
   position: absolute;
-  right: 24px;
   top: 88px;
-  width: 292px;
   max-height: calc(100% - 200px);
   overflow-y: auto;
   scrollbar-width: none;
@@ -290,8 +290,8 @@ canvas.image-rendering { image-rendering: pixelated; }
 }
 
 .swatchBtn {
-  width: 42px;
-  height: 42px;
+  width: 52px;
+  height: 52px;
   border: 3px solid #906020;
   border-radius: 2px;
   cursor: pointer;
@@ -304,8 +304,8 @@ canvas.image-rendering { image-rendering: pixelated; }
 }
 
 .customSkin {
-  width: 42px;
-  height: 42px;
+  width: 52px;
+  height: 52px;
   padding: 0;
   border: 3px dashed #906020;
   border-radius: 2px;
@@ -317,7 +317,7 @@ canvas.image-rendering { image-rendering: pixelated; }
 #centreCol {
   position: absolute;
   left: 50%;
-  bottom: 112px;
+  bottom: 96px;
   transform: translateX(-50%);
   z-index: 4;
   display: flex;
@@ -433,6 +433,7 @@ canvas.image-rendering { image-rendering: pixelated; }
     border-color: #fff #b87830 #b87830 #fff;
     box-shadow: 3px 3px 0 rgba(56, 34, 12, .45);
     padding: 10px;
+    padding-bottom: 74px;
     overflow: hidden;
   }
   #leftPanel {
@@ -445,23 +446,20 @@ canvas.image-rendering { image-rendering: pixelated; }
     gap: 8px;
   }
   #leftGrid {
-    flex: 0 0 auto;
-    max-height: calc(64px * 3 + 68px);
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
   }
   #rightPanel {
     position: static;
     width: auto;
     max-height: none;
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    overflow-y: auto;
   }
-  #centreCol, #toast { display: none; }
-  #toast.show ~ #categoryBar #btnConfirmM { display: block; }
+  #centreCol { position: static; transform: none; align-self: center; }
   #btnConfirm {
     font-size: 12px;
     padding: 10px 24px;

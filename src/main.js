@@ -58,8 +58,8 @@ const { render } = createPSXRenderer(canvas);
 const scene = new THREE.Scene();
 scene.background = null;
 const camera = new THREE.PerspectiveCamera(42, 480 / 360, 0.1, 50);
-camera.position.set(0, 1.02, 3.35);
-camera.lookAt(0, 0.98, 0);
+camera.position.set(0, 1.05, 4.3);
+camera.lookAt(0, 0.95, 0);
 
 const ground = new THREE.Mesh(
   new THREE.CircleGeometry(1.4, 10),
