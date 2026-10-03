@@ -15,20 +15,21 @@ const WAIST = 0.74;   // normal waistband top (long pants)
 const HIGH = 1.02;    // shorts/skirt waistband top (navel height)
 const HIP = 0.6;      // low-rise waistband top (on the hips)
 
-// hips/pelvis block from y=0.5 up to waistY. Width from the profile
-// (female hem 0.56 half-w 0.28, waist-side 0.48): narrower than any top
-// shell so the two never intersect and z-fight. depth defaults inside the
-// tee shell (half 0.15); shorts use 0.36 so the front face sits in front
-// of the tee hem and the waist reads continuously.
-function hipsMesh(mat, p, waistY, depth = 0.3) {
-  const h = waistY - 0.5;
-  const g = new THREE.BoxGeometry(p.hipsW, h, depth).toNonIndexed();
+// hips/pelvis block from y=0.29 up to waistY: extending below the top-shell
+// hem lets it also fill the centre slit between two slim pant tubes and the
+// shell-hem overlap seam (hidden inside the tubes at every other facing).
+// Width/depth from the profile; shorts use 0.36 so the front face sits in
+// front of the tee hem and the waist reads continuously.
+function hipsMesh(mat, p, waistY, depth) {
+  const d = depth ?? p.hipsDepth;
+  const h = waistY - 0.29;
+  const g = new THREE.BoxGeometry(p.hipsW, h, d).toNonIndexed();
   const q = g.attributes.position;
   for (let i = 0; i < q.count; i++) {
     const t = (q.getY(i) + h / 2) / h; // 0 bottom -> 1 top
     q.setX(i, q.getX(i) * ((p.hipsTopW + (p.hipsW - p.hipsTopW) * (1 - t)) / p.hipsW));
   }
-  g.translate(0, 0.5 + h / 2, 0);
+  g.translate(0, 0.29 + h / 2, 0);
   g.computeVertexNormals();
   return new THREE.Mesh(g, mat);
 }
@@ -39,9 +40,12 @@ function hipsMesh(mat, p, waistY, depth = 0.3) {
 // centring follows the profile leg pivot (±legX, identical bodies).
 function tubeMeshes(group, mat, opt, fit) {
   const r = opt.r * fit.tw;
+  // depth standardized to enclose the top-shell hem on slim bodies
+  // (opt.d as a base over-ridden width in the opt, else r)
+  const d = (opt.d ?? opt.r) * fit.td;
   const h = opt.top - opt.bottom;
   for (const side of [-1, 1]) {
-    const g = new THREE.BoxGeometry(r, h, r).toNonIndexed();
+    const g = new THREE.BoxGeometry(r, h, d).toNonIndexed();
     const q = g.attributes.position;
     for (let i = 0; i < q.count; i++) {
       const t = (q.getY(i) + h / 2) / h; // 0 at bottom, 1 at top

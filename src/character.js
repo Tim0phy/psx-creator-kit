@@ -56,7 +56,9 @@ export const BODY_PROFILES = {
     hipsW: 0.5,        // pelvis block (bottoms.js) width at the hem
     hipsTopW: 0.44,    // block width at the waistband (inside the slim waist)
     tubeR: 0.34,       // pant-tube width (slim, hugs the hips silhouette)
-    hipsDepth: 0.3,    // block depth (inside the torso depth)
+    tubeD: 0.4,        // pant-tube depth (encloses the top shell hem)
+    hipsDepth: 0.36,   // block depth: deeper than the shell hem so the waist
+                       // reads continuously through the tube slit
     skirtR: 0.32,      // waistband / skirt mouth radius
   },
   male: {
@@ -75,7 +77,8 @@ export const BODY_PROFILES = {
     hipsW: 0.56,
     hipsTopW: 0.52,
     tubeR: 0.42,       // wide straight pant tubes
-    hipsDepth: 0.3,
+    tubeD: 0.42,       // pant-tube depth
+    hipsDepth: 0.3,    // block depth (inside the torso depth)
     skirtR: 0.32,
   },
 };
@@ -94,6 +97,7 @@ export function bodyFit(bodyType = "female") {
     sw: p.shoulders / 0.66,   // shoulder-edge trim scale (off-shoulder band)
     ww: p.waist / 0.56,       // waist-anchored trims (low-rise mini skirt)
     tw: p.tubeR / 0.42,       // pant-tube width scale (1 = male/old art)
+    td: p.tubeD / 0.42,       // pant-tube depth scale
     wr: p.skirtR / 0.32,      // skirt/waistband mouth scale
   };
 }
