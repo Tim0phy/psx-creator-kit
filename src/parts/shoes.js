@@ -15,9 +15,6 @@ function bx(g, m, w, h, d, x, y, z) {
 }
 
 // base sneaker reused by the white variant (main colour only)
-// M6.5: the ankle cuff is a shin (knee-joint) piece so it always hugs the
-// pant hem; only the body+sole ride the ankle joint (flat-sole tilt would
-// otherwise swing the cuff away and expose the bare ankle)
 function sneaker(g, m) {
   for (const side of [-1, 1]) {
     // body: x half 0.18 strictly covers the leg (0.142 at these heights,
@@ -25,18 +22,11 @@ function sneaker(g, m) {
     // (-0.17), front 0.28 just past the foot toe (0.22)
     bx(g, m, 0.36, 0.16, 0.47, side * 0.19, 0.09, 0.045);
     bx(g, m, 0.3, 0.07, 0.43, side * 0.19, 0.045, 0.05);
-    // slim ankle cuff: rides the shin (knee tag) so it always hugs the pant
-    // hem; x half 0.18 strictly covers the leg with margin (0.158 max) while
-    // inner edges (+-0.01) keep a gap between cuffs, z half 0.21 strictly
-    // covers the leg depth (0.17). Top 0.285 sits just under the long-pants
-    // hem (0.29) hiding the old bare-ankle ring; the tilt of the foot (flat
-    // sole) never separates it because it is not on the ankle joint.
-    const tag = side < 0 ? "L" : "R";
-    const cuff = new THREE.Group();
-    cuff.userData = { clothPart: "knee" + tag };
-    cuff.add(new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.115, 0.42).toNonIndexed(), m));
-    cuff.children[0].position.set(side * 0.19, 0.2275, 0);
-    g.add(cuff);
+    // slim ankle collar: x half 0.18 covers the leg (0.158 max), inner edges
+    // (±0.01) keep a gap between collars; spans 0.10..0.26 (taller than the
+    // shoe body top 0.17) so a -45 deg pitched body stays INSIDE the collar
+    // and the ankle opening can never show through; shin frame (untagged)
+    bx(g, m, 0.36, 0.16, 0.42, side * 0.19, 0.18, 0);
   }
 }
 
@@ -55,12 +45,7 @@ const SHOE_BUILDER = {
     for (const side of [-1, 1]) {
       bx(g, s, 0.38, 0.1, 0.5, side * 0.19, 0.055, 0.05); // platform sole
       bx(g, m, 0.38, 0.18, 0.5, side * 0.19, 0.16, 0.045); // taller body
-      const tag = side < 0 ? "L" : "R";
-      const cuff = new THREE.Group();
-      cuff.userData = { clothPart: "knee" + tag }; // cuff hugs the pant hem
-      cuff.add(new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.08, 0.44).toNonIndexed(), m));
-      cuff.children[0].position.set(side * 0.19, 0.25, 0);
-      g.add(cuff);
+      bx(g, m, 0.38, 0.14, 0.44, side * 0.19, 0.19, 0); // ankle collar (foot frame)
     }
   },
   // flat Mary Jane: thin sole, low body, strap across the instep
@@ -88,8 +73,10 @@ const SHOE_BUILDER = {
       thigh.children[1].position.set(side * 0.19, 0.59, 0); // fold-over cuff
       const shin = new THREE.Group();
       shin.userData = { clothPart: "knee" + tag };
-      shin.add(new THREE.Mesh(new THREE.BoxGeometry(0.384, 0.22, 0.384).toNonIndexed(), m));
-      shin.children[0].position.set(side * 0.19, 0.31, 0); // spans 0.2..0.42 (nested)
+      shin.add(new THREE.Mesh(new THREE.BoxGeometry(0.384, 0.26, 0.384).toNonIndexed(), m));
+      shin.children[0].position.set(side * 0.19, 0.33, 0); // spans 0.2..0.46
+      // (0.08 deep nest into the thigh band 0.38..0.62: a 38..58 deg knee
+      // fold never opens a shaft wedge that shows the leg)
       g.add(thigh, shin);
     }
   },
@@ -98,31 +85,41 @@ const SHOE_BUILDER = {
 export function createShoes(id, colors) {
   const raw = new THREE.Group();
   const main = colors.main ?? "#ffffff";
-  const mat = makePSXMaterial(main, { gradient: 0.12 });
+  // DoubleSide: single-sided boxes read as hollow from above (looking into a
+  // pitched shoe shows the culled interior = the skin foot appears to pierce
+  // the shoe); both faces make every shoe render as a solid volume
+  const mat = makePSXMaterial(main, { gradient: 0.12, side: THREE.DoubleSide });
   let secMat = null;
   if (SHOE_BUILDER[id]) {
-    if (colors.secondary) secMat = makePSXMaterial(colors.secondary, { gradient: 0.12 });
+    if (colors.secondary) {
+      secMat = makePSXMaterial(colors.secondary, { gradient: 0.12, side: THREE.DoubleSide });
+    }
     SHOE_BUILDER[id](raw, mat, secMat ?? mat);
   }
-  // M6.5: split the pair into per-FOOT groups (every shoe piece is a
-  // side-offset box) so each shoe rides the ankle joint with the bare foot
-  // (the ankle auto-levels the sole; a knee-parented shoe would be pierced
-  // by the rotating foot in run etc.). Pre-tagged pieces (knee-boot shaft
-  // halves) already carry their own joint (thigh/shin bands).
+  // M6.5: split the pair into per-foot groups (every shoe piece is a
+  // side-offset box). TWO frames per side: the shoe body/sole wraps the
+  // FOOT pivot (footL/footR joint) so the shoe stays glued to the foot at
+  // any ankle angle; the ankle cuff sits higher on the shin and rides the
+  // KNEE joint (kneeL/kneeR) instead — deep bends keep the cuff on the
+  // calf while the foot flexes inside it.
   const group = new THREE.Group();
   const wraps = {};
   for (const side of [-1, 1]) {
-    const wrap = new THREE.Group();
-    wrap.userData = { clothPart: side < 0 ? "footL" : "footR" };
-    wraps[side] = wrap;
-    group.add(wrap);
+    const tag = side < 0 ? "L" : "R";
+    const footWrap = new THREE.Group();
+    footWrap.userData = { clothPart: "foot" + tag };
+    const kneeWrap = new THREE.Group();
+    kneeWrap.userData = { clothPart: "knee" + tag };
+    wraps[side] = { footWrap, kneeWrap };
+    group.add(footWrap, kneeWrap);
   }
   for (const mesh of [...raw.children]) {
     if (mesh.userData?.clothPart) {
       group.add(mesh);
       continue;
     }
-    wraps[Math.sign(mesh.position.x || 1)].add(mesh);
+    const w = wraps[Math.sign(mesh.position.x || 1)];
+    (mesh.position.y >= 0.2 ? w.kneeWrap : w.footWrap).add(mesh);
   }
   let tris = 0;
   group.traverse((o) => {

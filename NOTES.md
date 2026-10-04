@@ -468,27 +468,78 @@
   server rather than trusting HMR, and verify on the USER'S server (ours may
   differ in cache state).
 
-### M6.5 follow-up 4 (user-reported): run pose - knee through pants, foot through shoe
-- ROOT CAUSE 1 (foot/shoe): shoe pieces were re-parented to the KNEE joint
-  while the ankle rests on the FOOT joint; the ankle auto-level (up to -92
-  deg in run) rotated the bare foot inside a knee-aligned shoe -> the foot
-  pierced the shoe. Shoes' per-side wraps now attach to footL/footR (new
-  PART_JOINT entries), so shoe and bare foot always co-rotate.
-- ROOT CAUSE 2 (bare-ankle band): sneaker/platform ankle cuffs now attach to
-  the shin (kneeL/kneeR tags) instead of the ankle - they hug the pant hem
-  forever and never swing away; the sneaker cuff top was raised 0.25 -> 0.285
-  (just under the long-pants hem 0.29, INVISIBLE at rest, closes the old
-  0.25..0.29 bare ring that opened up under foot tilt).
-- ROOT CAUSE 3 (knee gap): kneePieces now keeps the thigh piece's bottom edge
-  fixed (it sets the visible hem) while the hidden shin piece reaches
-  kneeCover = 0.14 above the knee (was kneeOver 0.05 both ways), so bent
-  knees keep the front covered without any rest-look change.
-- Ankle auto-level is now blended: sole stays ground-flat only for a forward
-  (weight-bearing) leg; a leg swung back keeps its natural push-off flex
-  (foot aligned with the shin) - no more -92 deg ankles, no shin/shoe tearing.
-- Verified with a magenta-skin pixel test (arms hidden) on run/sit/knee90/
-  fwd60: leg-region skin exposure eliminated after the fixes (only the
-  intended neck/face/hand skin remains). Remaining known extreme: a small hip
-  sliver at fwd>=60 + knee 90 deep crouch customs (not in any preset).
-- Note: with shorts + sneakers the collar is ~0.035 taller than before; with
-  mary janes the ankle stays bare by design (low shoe).
+### M6.5 follow-up 4 (user screenshot: knee pokes out of pants, foot pierces shoe)
+Two real geometry gaps in knee-bend poses:
+- KNEE WEDGE: pant/sock tube pieces overlapped only 0.05 around the knee cut,
+  so at deep folds the outer side opened a wedge and the knee showed through.
+  Fix: RIG.kneeOver 0.05 -> 0.09 (nested shin piece inside the thigh piece's
+  extension covers folds to ~90 deg; no new tris). Also clamped the thigh
+  piece's y0 to the garment's own hem (it previously bled up to 0.09 below
+  the hem for tubes whose bottom sat between the knee and k-over).
+- FOOT-THROUGH-SHOE: whole shoes hung on the SHIN (kneeL/R) while the skin
+  foot auto-levels (foot.rx = fwd - knee, up to +/-92 deg in run toes) ->
+  the skin foot rotated out of its shoe. Fix: every shoe's foot-fitting
+  pieces (body, sole, toe cap, instep strap, buckle) now tag footL/footR and
+  attach to the ANKLE joints; ankle cuffs and boot shafts stay on the shin.
+  Because the foot joint counter-rotates the shin's net tilt, shoes land
+  world-flat at run/sit and the toe-off pitch in walk reads correctly.
+  Rest look unchanged (foot rest rotation is 0). PART_JOINT gained footL/R.
+- Verified live on the user's 5173 (shorts+socks+sneakers sit/run), plus
+  full shot suite + build. STYLE.md 10 updated with both rules.
+
+### M6.5 follow-up 5: reconciled the parallel fix commits
+The user committed 2fce593 (their own shoes-follow-foot-joints + skin joint
+burying + ghost cleanup + polling vite watcher) while I was building the same
+fix; my 2ee7b6c stacked on top blindly and regressed parts of it. Reconciled:
+- KEPT theirs: vite.config.js polling watcher (usePolling 250ms - the E: drive
+  does not deliver reliable fs-change events: the actual root cause of the
+  stale-module episodes), kneeOver 0.12 + skin thigh/shin meshes reaching
+  PAST the knee/ankle (no bare-skin gap at any fold), generic shoe
+  foot-vs-shin auto-bucketing in createShoes (piece y >= 0.2 -> shin frame,
+  else ankle frame; builders stay pristine), ghost-piece release on un-equip
+  (applyCloth(null) -> attachCloth(slot, null)), resized footHits thigh box.
+- KEPT mine where better: kneePieces hem clamp (thigh piece y0 never below
+  the garment hem - with 0.12 overlap the unclamped version would bleed the
+  pant hem 8cm down; verified hem exactly 0.300 world).
+- Both verified live on 5173: rest pixel-identical to M1-M6, run preset shoe
+  glued to the ankle pitch, knee-90 clamp, ghost cleanup, hem fidelity.
+- LESSON for me: check git log BEFORE staging heavy edits; if a parallel
+  commit lands, rebase my mental model instead of stacking.
+
+### r4: user still reported knee-through-pants / foot-through-shoe
+- Found a test-methodology error on MY side: my "sock" verification used
+  acc_white_socks, an id that does NOT exist (the only sock item is
+  sock_knee_stripe) -> those tests actually rendered BARE legs and proved
+  nothing. Retested with the real item + the user's outfit: knitted sock
+  tubes (0.38) nest at the knee (0.12 overlap) and fully cover the skin;
+  shoe foot pieces ride the ankle joint. No skin shows at knee/ankle in
+  sit/run close-ups with shorts/jeans + sock + sneakers/boots.
+- The large pale mass in my earlier close-ups = the folded sit HANDS, not a
+  bare knee (hand 0.23 forearm + fist at the lap).
+- Added a build beacon: tab title now reads "PSX Character Creator . r4"
+  and window.PSXCC.build = "r4". Use it to detect a stale tab (one that
+  missed HMR / holds old modules): if the title lacks r4, CLOSE the tab
+  entirely and reopen the URL - a refresh is not always enough after a
+  watcher outage.
+- Verified screenshots kept: shots/verify_r4_sock_knee.png,
+  shots/verify_r4_knee_sit.png (pure skin leg close-up), verify_r4_run_boots.
+
+### r5: run pose - knee/shin/foot piercing the pant leg (user screenshot, long pants)
+Root causes found with close-up renders + a magenta skin dye test:
+1. "Foot through shoe" was THREE stacked issues:
+   - single-sided shoe material: looking into a pitched shoe showed the culled
+     interior = the skin appeared to pierce the shoe -> shoes are DoubleSide now.
+   - the skin shin burial (0.00, reaching deep inside the shoe) made the skin
+     tube poke out of the tilted shoe collar at run toe-off -> skin shin back
+     to 0.06..0.34, tapered 0.8 (always inside the shoe shell).
+   - the sneaker collar was a short band (0.17..0.25) that opened when the shoe
+     body pitched -> collar is now 0.10..0.26 (foot frame, wraps the body top);
+     the whole sneaker/platform now rides the ankle joint as one rigid unit.
+   - foot auto-level pitch capped at +-45 deg (was up to -92 in run).
+2. Bare ankle band between pant hem and shoe: pant hems dropped 0.30 -> 0.18
+   (all four pant bottoms): hem + skin live on the same shin frame so a pitched
+   foot can never separate them; hem now tucks into the collar.
+3. Boot shaft knee wedge: shin band 0.2..0.42 -> 0.2..0.46 (0.08 nest).
+Deliberate silhouette change: sneakers/platforms read slightly chunkier at rest
+(collar higher) - required so the ankle opening stays closed at any pitch.
+BUILD bumped to r5 (tab title beacon) so a stale tab is detectable.
