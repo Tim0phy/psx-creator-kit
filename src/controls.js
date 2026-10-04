@@ -15,7 +15,9 @@ export function createControls({ getAuto, setAuto }) {
   dom.addEventListener("pointerdown", (e) => {
     dragging = true;
     lastX = e.clientX;
-    dom.setPointerCapture(e.pointerId);
+    try {
+      dom.setPointerCapture(e.pointerId);
+    } catch { /* synthetic events carry no active pointer */ }
   });
   dom.addEventListener("pointermove", (e) => {
     if (!dragging) return;
@@ -23,9 +25,11 @@ export function createControls({ getAuto, setAuto }) {
     lastX = e.clientX;
     emit();
   });
-  const stop = (e) => {
+const stop = (e) => {
     dragging = false;
-    if (dom.hasPointerCapture(e.pointerId)) dom.releasePointerCapture(e.pointerId);
+    try {
+      if (dom.hasPointerCapture(e.pointerId)) dom.releasePointerCapture(e.pointerId);
+    } catch { /* synthetic / released pointer */ }
   };
   dom.addEventListener("pointerup", stop);
   dom.addEventListener("pointercancel", stop);

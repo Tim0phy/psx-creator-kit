@@ -19,10 +19,13 @@ import {
 } from "./uiStyle.js";
 import {
   ALL_SLOTS, defaultState, applyUrlState, resetInto, randomizeInto,
-  sanitizePose, restoreInto,
+  sanitizePose, applySaveConfig, toSaveConfig,
 } from "./state.js";
 import { createPoseEngine } from "./pose.js";
-import { load } from "./uiState.js";
+import {
+  load, initNameSave, initJsonTransfer, showSaved, saveNow, currentName,
+} from "./uiState.js";
+import { initStateInspector } from "./uiDebug.js";
 
 // M8 body selector: `state.body` ("female" | "male") rebuilds the whole
 // character root (rig, face decals, hair and every clothing item re-mount).
@@ -33,11 +36,15 @@ import { load } from "./uiState.js";
 const state = defaultState();
 // build beacon: the tab title carries the build tag so a stale tab (one that
 // missed HMR / kept old modules alive) is identifiable at a glance
-const BUILD = "r5";
+const BUILD = "r6";
 document.title = `PSX Character Creator \u00B7 ${BUILD}`;
-// a previously confirmed config restores on boot (pose included)
-restoreInto(state, load());
+// M7: the previous restoreInto() copied saved values raw; the boot restore
+// now runs through the same validation as JSON import (unknown ids, bad
+// colours, corrupt JSON and shape errors all fall back via applySaveConfig)
+const bootReport = applySaveConfig(state, load());
 sanitizePose(state);
+if (bootReport.warnings.length)
+  console.info("[psxcc] save restore warnings:", bootReport.warnings);
 
 const params = new URLSearchParams(location.search);
 applyUrlState(state, params);
@@ -241,11 +248,15 @@ const SLOT_ANCHOR = {
 };
 
 // M7: RANDOM/RESET via state.js
-function doReset() {
-  resetInto(state);
+function applyAfterChange() {
   sanitizePose(state);
   applyAll();
-  pose.sync({ animate: false }); // Reset returns to pose_default immediately
+  pose.sync({ animate: false });
+}
+
+function doReset() {
+  resetInto(state);
+  applyAfterChange();
 }
 
 document.getElementById("btnRandom").addEventListener("click", () => {
@@ -257,7 +268,29 @@ document.getElementById("btnRandom").addEventListener("click", () => {
 
 document.getElementById("btnReset").addEventListener("click", doReset);
 
-createUI(state, { onChange: applyAll });
+// last applySaveConfig warnings (boot restore / import) for the inspector
+let lastImportWarnings = [];
+
+// M7: JSON import (file) — validate, apply, write psxcc.v1 through so the
+// imported look survives a reload
+function importConfig(cfg, { persist = false } = {}) {
+  const report = applySaveConfig(state, cfg);
+  if (report.warnings.length)
+    console.info("[psxcc] config import warnings:", report.warnings);
+  lastImportWarnings = report.warnings;
+  applyAfterChange();
+  if (persist && report.ok) saveNow(state);
+  if (report.name !== null) {
+    const input = document.getElementById("nameInput");
+    if (input) input.value = report.name;
+  }
+  return report;
+}
+
+const ui = createUI(state, {
+  onChange: applyAll,
+  onImport: (cfg) => importConfig(cfg, { persist: true }),
+});
 
 // ?preset= applies a catalog preset on load (shot scripts / shareable links);
 // ?hue= makes the auto colour-block deterministic
@@ -407,7 +440,12 @@ window.PSXCC = {
   controls, state, setAuto: (v) => (auto = v), applyAll,
   scene, camera,
   pose: poseAPI,
+  ui: () => ui,
   build: BUILD,
+  save: () => toSaveConfig(state, currentName()),
+  saveNow: () => saveNow(state) && showSaved("SAVED"),
+  importJSON: (cfg) => importConfig(cfg, { persist: false }),
+  currentSave: () => load(),
   get character() {
     return character;
   },
@@ -422,3 +460,8 @@ window.PSXCC = {
     return t;
   },
 };
+
+initStateInspector({
+  state,
+  getWarnings: () => lastImportWarnings,
+});

@@ -1,5 +1,51 @@
 # NOTES.md
 
+## M7 状态系統 (2026-10-05)
+- 保存格式按 STYLE.md §8 重寫：runtime state 維持 colors.main/secondary 物件
+  （UI/建構器深度依賴），持久化一律經 `toSaveConfig()` → colors 變成按
+  colorSlots 順序的**陣列**（colors[0]=main, colors[1]=secondary）、hair 帶
+  {id,color}、pose 帶 {preset,custom}。`?`: §8 範例欠逗號且 top_jacket 其實
+  屬 outer slot——照它是示意而非 schema。
+- **額外欄位（documented deviation）**：save/config 內附加 body/blush/name
+  三個 top-level 鍵（§8 沒有）：body 唔 persist 嘅話 reload 會丟失身型選擇
+  （M8 已有嘅功能倒退），blush 同 name 係現有 UI 欄位。載入時不明鍵忽略。
+- 驗證邊界統一：`applySaveConfig(state, saved)` 係 localStorage / JSON import
+  共用入口，永不 throw，回傳 warnings：
+  - 未知 item id → 該 slot 變 null（hair 例外：回 default hair_01，因為
+    光頭睇落似壞檔而唔係選擇；明確 hair:null 仍然有效=無頭髮）
+  - 跨 slot id（例： Shoes id 放入 bottom）→ none（catalogItem 連 slot 齊驗）
+  - 顏色必須 #rgb/#rrggbb hex（isValidHex）；3位自動擴展；main 無效→#ffffff、
+    secondary 無效→唔寫（recolor 派生深色）；named colour ("red") 拒絕
+  - eyes/mouth 只收 1..12 / 1..6 整數；skin 同規則；body 只收 female/male
+  - pose 經 sanitizePose；colors 淨係接 §8 陣列 + 舊版 runtime {main,...} map
+    （pre-M7 已存在嘅 localStorage save 載入不斷裂）
+- select保存（selection preservation）：ui.js pickCloth 帶埋前一個 item 嘅
+  顏色（M5 修正保留）；M7 補上 category 切換/rebuild 無論邊條路徑都唔會掉色。
+- RANDOM 補強：secondary colorSlot 都隨機上色（knit vest/watch/sock 手帶）、
+  skin 由 catalog palettes.skin 隨機（之前只係唔郁）。RESET 照舊。
+- CONFIRM / EXPORT / import 都經 toSaveConfig 校 sanitize 先寫出，psxcc.v1
+  內容永遠係合法格式；import 之後 write-through localStorage（reload 保留）；
+  parse 失敗 → INVALID toast + state 唔郁。
+- dev-only inspector：?debug=state 先掛 #stateInspector（600ms poll，
+  顯示 warnings + 當前 §8 config，COPY 複製）；一般 boot 零額外 DOM。
+- 新模組拆分：state.js (266) / uiState.js (91) / uiDebug.js (39)；main.js
+  只剩 wiring。舊 restoreInto/SAVE_KEYS 刪除（未驗證嘅 raw copy 路線）。
+- Bug fix（history bug）：state.js applyUrlState 嘅 loop 從來唔包 hair，
+  所以 ?hair=hair_XX 一直係死參數；hairShots/accShots 全部截咗 default 髮。
+  M7 改 [ ...ALL_SLOTS, "hair"] + catalog 驗證 id。
+- BUILD beacon r5 → r6。
+- UI 與 /refs 對比後五項最大差異修正（STYLE §7）：
+  ① 三個 top-right 按鈕獨立成堆疊 + spec 色（粉 AUTO/紫 RANDOM/橙 RESET，
+    ref-hair.png 同款）；② grid 縮圖 + 右欄色板改圓角（round thumbnails）；
+  ③ 分類列底部加木 capsule 底（兩張 ref 圖都有）；④ 粉色「current selection」
+    直列（#leftSelection，active category 嘅已選項圓縮圖；手機隱藏）；
+  ⑤ 左 panel 顏色跟分類變（CAT_COLORS，mockup 綠框 HAIR；只染 pill+grid
+    兩張卡，唔染下面留白）。
+- 測試：tests/m7State.mjs（Playwright，34 項全部 PASS、0 pageerror）—
+  reload 持久化 / 非法 JSON / 未知 id / 缺欄位 / 色碼驗證 / 隨機+重置 /
+  選擇保留 / export+import round-trip / inspector 出現與否 / 手機拖拽轉。
+- GLB export 屬 M8，無依家實現。
+
 ## M3 修訂（2026-10-01 男生髮型修整）
 - `capGeo` 加 `shortY` / `backY` 選項：男仔髮型（06/08/10）兩旁同後面可以獨立收短，
   並會切走 cap 嘅底面平板，避免懸浮裙邊。female 款不傳參數，行為不變。

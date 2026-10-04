@@ -2,7 +2,7 @@ import catalog, { SLOT_LABELS } from "./catalog.js";
 import { renderThumb } from "./faceTexture.js";
 import { HAIR_IDS } from "./parts/hair.js";
 import { applyPreset, applyColourBlock } from "./uiStyle.js";
-import { initNameSave, showSaved } from "./uiState.js";
+import { initNameSave, initJsonTransfer, showSaved } from "./uiState.js";
 import { BODY_TYPES } from "./state.js";
 import { buildPosePanel } from "./uiPose.js";
 import {
@@ -37,7 +37,18 @@ const CLOTH_SECTIONS = {
   ],
 };
 
-export function createUI(state, { onChange }) {
+// STYLE.md section 7: the selection panel color follows the category
+const CAT_COLORS = {
+  face: "#9fd6ff", head: "#8fd8a8", body: "#f0a0b8", top: "#68b8e8",
+  bottom: "#b088d8", shoes: "#f090c8", accessories: "#e8b060",
+  pose: "#8fc8e8", style: "#e8d860",
+};
+
+export function createUI(state, uiHooks) {
+  const onChange = (...a) => {
+    renderSelection(); // keep the pink strip in sync on every state change
+    uiHooks.onChange?.(...a);
+  };
   const leftGrid = document.getElementById("leftGrid");
   const leftPillText = document.getElementById("leftPillText");
   const gridDots = document.getElementById("gridDots");
@@ -50,6 +61,8 @@ export function createUI(state, { onChange }) {
 
   // name / confirm / toast wiring; returns nothing but mounts handlers once
   initNameSave({ state, onConfirm: () => showSaved() });
+  // M7: JSON-file export/import (validated config via main.js onImport)
+  initJsonTransfer({ state, onImport: uiHooks.onImport ?? (() => {}) });
 
   let refresh = () => {};
   let page = 0;
@@ -432,6 +445,55 @@ export function createUI(state, { onChange }) {
     // clear any per-category sub-pill bar before rebuilding
     document.getElementById("subPills")?.remove();
     BUILDERS[current]?.();
+    // M7 comparison fix: panel colour follows the category (STYLE.md section 7).
+    // The tint wraps the pill + grid cards (like the mockup), not the empty
+    // column below, so a short grid never leaves a floating colour block.
+    const tint = CAT_COLORS[current] ?? "";
+    for (const id of ["leftPill", "leftGrid"])
+      document.getElementById(id).style.background = tint || "";
+    renderSelection();
+  }
+
+  // pink left column: round thumbnails of the ACTIVE category's selections
+  // (STYLE.md section 7). Cloths show the item colour; face/head/body show
+  // a numbered chip (the current eye/hair/body), matching the number tiles.
+  function renderSelection() {
+    const strip = document.getElementById("leftSelection");
+    strip.replaceChildren();
+    const paint = (ctx, col) => {
+      ctx.fillStyle = col;
+      ctx.fillRect(7, 7, 18, 18);
+      ctx.fillStyle = "#38220c";
+      ctx.fillRect(7, 7, 18, 4);
+    };
+    const add = (painter) => {
+      const c = document.createElement("canvas");
+      c.width = c.height = 32;
+      painter(c.getContext("2d"));
+      strip.appendChild(c);
+    };
+    const cloth = CLOTH_SECTIONS[current] ?? [];
+    // one chip per slot with a selection for the cloth/accessory categories
+    for (const [slot] of cloth) {
+      const st = state[slot];
+      if (!st) continue;
+      add((ctx) => paint(ctx, st.colors?.main ?? "#ffffff"));
+    }
+    if (current === "head") add((ctx) => paint(ctx, state.hair.color));
+    if (current === "face") {
+      add((ctx) => faceThumb(ctx, state.skin));
+    }
+  }
+
+  // face chip: skin dot (the skin row's own tone)
+  function faceThumb(ctx, col) {
+    ctx.fillStyle = col ?? "#f5d5bf";
+    ctx.beginPath();
+    ctx.arc(16, 16, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#38220c";
+    ctx.fillRect(11, 13, 3, 4);
+    ctx.fillRect(18, 13, 3, 4);
   }
 
   function switchCat(cat) {

@@ -21,14 +21,17 @@
         <button id="btnDice" class="pixIcon" title="Random name"></button>
         <span id="namePencil" class="pixIcon"></span>
       </div>
+    </div>
+
+    <div id="cornerStack">
+      <button id="btnRotate" class="pixBtn pixRotate" title="Auto rotation"></button>
       <button id="btnRandom" class="pixBtn pixDice" title="Random"></button>
       <button id="btnReset" class="pixBtn pixReset" title="Reset"></button>
     </div>
 
-    <button id="btnRotate" class="pixBtn pixRotate" title="Auto rotation"></button>
-
     <div id="sheet">
       <aside id="leftPanel">
+        <div id="leftSelection" title="current selections"></div>
         <div id="leftPill">
           <span class="pillStar"></span><span id="leftPillText">HAIR STYLE</span><span class="pillStar"></span>
         </div>
@@ -42,6 +45,11 @@
 
       <div id="centreCol">
         <button id="btnConfirm">CONFIRM</button>
+        <div id="transferRow">
+          <button id="btnExport" title="Export config as JSON">EXPORT</button>
+          <button id="btnImport" title="Import config from JSON">IMPORT</button>
+        </div>
+        <input type="file" id="fileImport" accept=".json,application/json" hidden />
         <div id="toast">SAVED</div>
       </div>
     </div>

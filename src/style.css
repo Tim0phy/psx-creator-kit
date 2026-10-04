@@ -57,9 +57,39 @@ canvas.image-rendering { image-rendering: pixelated; }
   object-fit: contain;
 }
 
-/* wider side panels per mockup ratio */
-#leftPanel { left: 22px; width: 285px; }
+/* wider side panels per mockup ratio (left shifted to make room for the
+   pink selection strip) */
+#leftPanel { left: 62px; width: 245px; }
 #rightPanel { right: 22px; width: 285px; }
+
+/* STYLE.md section 7: pink vertical column of round thumbnails = the
+   currently selected items of the active category */
+#leftSelection {
+  position: absolute;
+  left: -30px;
+  top: 4px;
+  width: 46px;
+  padding: 8px 0;
+  background: var(--pink);
+  border: 3px solid;
+  border-color: #fff #b85878 #b85878 #fff;
+  box-shadow: 3px 3px 0 rgba(56, 34, 12, .45);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 1;
+}
+
+#leftSelection canvas {
+  width: 30px;
+  height: 30px;
+  image-rendering: pixelated;
+  background: #fffdfa;
+  border: 2px solid #906020;
+  border-radius: 50%;
+}
 
 /* ---- shared pixel button language ---------------------------------------- */
 .pixBtn, .topIconBtn, .catBtn, #btnConfirm {
@@ -81,7 +111,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   translate: 2px 2px;
 }
 
-/* ---- top bar: name + dice + random + reset -------------------------------- */
+/* ---- top bar: name (mockup) ------------------------------------------------ */
 #topBar {
   position: absolute;
   top: 20px;
@@ -92,6 +122,21 @@ canvas.image-rendering { image-rendering: pixelated; }
   gap: 12px;
   z-index: 5;
 }
+
+/* STYLE.md section 7: top-right stack AUTO ROTATION (pink) / RANDOM (purple) /
+   RESET (orange), like ref-hair.png */
+#cornerStack {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 5;
+}
+
+.pixDice { background-color: #a86ad8; border-color: #fff #7848a8 #7848a8 #fff; }
+.pixReset { background-color: #f09048; border-color: #fff #b06028 #b06028 #fff; }
 
 #nameBox {
   display: flex;
@@ -167,11 +212,10 @@ canvas.image-rendering { image-rendering: pixelated; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='2' width='2' height='12' fill='%23fff'/%3E%3Cpath d='M14 2L6 8l8 6z' fill='%23fff'/%3E%3C/svg%3E");
 }
 
-/* AUTO ROTATION: two-arrow cycle with centre dot */
+/* AUTO ROTATION: two-arrow cycle with centre dot; pink per STYLE.md section 7 */
 .pixRotate {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  background-color: #f8a8bc;
+  border-color: #fff #c05878 #c05878 #fff;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2a6 6 0 0 1 5.7 4.2l-1.9.6A4 4 0 0 0 8 4V6L4.5 3 8 0z' fill='%23fff'/%3E%3Cpath d='M8 14a6 6 0 0 1-5.7-4.2l1.9-.6A4 4 0 0 0 8 12v-2l3.5 3L8 16z' fill='%23fff'/%3E%3Ccircle cx='8' cy='8' r='1.5' fill='%23fff'/%3E%3C/svg%3E");
 }
 
@@ -236,7 +280,7 @@ canvas.image-rendering { image-rendering: pixelated; }
 .gridBtn {
   width: 64px;
   height: 64px;
-  border-radius: 2px;
+  border-radius: 20px;
   border: 3px solid #906020;
   background: #fffdfa;
   padding: 2px;
@@ -251,7 +295,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   width: 100%;
   height: 100%;
   image-rendering: pixelated;
-  border-radius: 2px;
+  border-radius: 18px;
 }
 
 .gridBtn.active {
@@ -361,7 +405,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   width: 52px;
   height: 52px;
   border: 3px solid #906020;
-  border-radius: 2px;
+  border-radius: 14px;
   cursor: pointer;
   box-shadow: 2px 2px 0 rgba(56, 34, 12, .4);
 }
@@ -376,7 +420,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   height: 52px;
   padding: 0;
   border: 3px dashed #906020;
-  border-radius: 2px;
+  border-radius: 14px;
   background: conic-gradient(#e06060, #e8913a, #c8f56b, #9fd6ff, #d9c2ff, #e06060);
   cursor: pointer;
 }
@@ -416,6 +460,80 @@ canvas.image-rendering { image-rendering: pixelated; }
 
 #toast.show { opacity: 1; }
 
+/* ---- M7: JSON export/import row + dev-only state inspector ----------------- */
+#transferRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+#transferRow button {
+  cursor: pointer;
+  image-rendering: pixelated;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  border: 3px solid;
+  border-color: #fff #b87830 #b87830 #fff;
+  background: var(--wood);
+  box-shadow: 2px 2px 0 rgba(56, 34, 12, .45);
+  padding: 5px 10px;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, .35);
+}
+
+#transferRow button:active {
+  border-color: #b87830 #fff #fff #b87830;
+  box-shadow: none;
+  translate: 2px 2px;
+}
+
+#stateInspector {
+  position: fixed;
+  left: 8px;
+  top: 8px;
+  z-index: 50;
+  width: 300px;
+  max-height: 90vh;
+  overflow: auto;
+  background: rgba(255, 253, 250, .96);
+  border: 3px solid #906020;
+  box-shadow: 3px 3px 0 rgba(56, 34, 12, .45);
+  font-family: monospace;
+  font-size: 10px;
+}
+
+#stateInspector .inspHead {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--wood);
+  border-bottom: 3px solid #906020;
+  padding: 4px 6px;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--ink);
+}
+
+#stateInspector .inspHead button {
+  cursor: pointer;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  border: 2px solid #906020;
+  background: #fffdfa;
+  padding: 2px 6px;
+}
+
+#stateInspector .inspBody {
+  margin: 0;
+  padding: 6px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #402;
+}
+
 /* ---- bottom category bar --------------------------------------------------- */
 #categoryBar {
   position: absolute;
@@ -425,6 +543,12 @@ canvas.image-rendering { image-rendering: pixelated; }
   display: flex;
   gap: 14px;
   z-index: 4;
+  background: var(--wood);
+  border: 3px solid;
+  border-color: #fff #b87830 #b87830 #fff;
+  box-shadow: 3px 3px 0 rgba(56, 34, 12, .45);
+  padding: 10px 16px;
+  border-radius: 16px;
 }
 
 .catBtn {
@@ -522,6 +646,7 @@ canvas.image-rendering { image-rendering: pixelated; }
     grid-auto-rows: 56px;
   }
   .gridBtn { width: 56px; height: 56px; }
+  #leftSelection { display: none; }
   #rightPanel {
     position: static;
     width: auto;
@@ -532,6 +657,15 @@ canvas.image-rendering { image-rendering: pixelated; }
     gap: 8px;
   }
   #centreCol { position: static; transform: none; align-self: center; }
+  #transferRow {
+    position: fixed;
+    left: 50%;
+    bottom: 66px;
+    transform: translateX(-50%);
+    z-index: 7;
+    margin: 0;
+  }
+  #transferRow button { padding: 4px 12px; }
   #btnConfirm {
     font-size: 12px;
     padding: 10px 24px;

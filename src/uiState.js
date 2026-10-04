@@ -1,6 +1,10 @@
-// M7 state: name field, dice (random name), RANDOM / RESET top buttons,
-// CONFIRM -> localStorage psxcc.v1 + pixel SAVED toast.
-// Config format otherwise untouched (name is an extra optional field).
+// M7 state persistence: CONFIRM -> validated STYLE.md section-8 config in
+// localStorage psxcc.v1 + pixel toast; JSON-file EXPORT / IMPORT with the
+// same format (write-through on import so a reload keeps the loaded look).
+// Validation happens in state.js (applySaveConfig / toSaveConfig); invalid
+// files / configs show the INVALID toast and leave the character untouched.
+
+import { toSaveConfig } from "./state.js";
 
 const NAMES = [
   "MISO", "PEBBLE", "TOFU", "PCHAN", "MOCHI", "BEAN", "SODA",
@@ -11,50 +15,89 @@ function randName() {
   return NAMES[Math.floor(Math.random() * NAMES.length)];
 }
 
+export function currentName() {
+  const input = document.getElementById("nameInput");
+  return ((input?.value ?? "") || "").trim().slice(0, 12);
+}
+
+// persist the current config (CONFIRM button / import write-through)
+export function saveNow(state) {
+  const cfg = toSaveConfig(state, currentName());
+  try {
+    localStorage.setItem("psxcc.v1", JSON.stringify(cfg));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// last saved config (boot restore / name prefill). Invalid JSON -> {}
+export function load() {
+  try {
+    const v = localStorage.getItem("psxcc.v1");
+    if (!v) return {};
+    return JSON.parse(v) ?? {};
+  } catch {
+    console.warn("[psxcc] psxcc.v1 holds invalid JSON; ignored");
+    return {};
+  }
+}
+
+export function showSaved(text = "SAVED") {
+  const toast = document.getElementById("toast");
+  toast.textContent = text;
+  toast.classList.add("show");
+  clearTimeout(showSaved._t);
+  showSaved._t = setTimeout(() => toast.classList.remove("show"), 1400);
+}
+
+// name field + dice + CONFIRM (writes psxcc.v1)
 export function initNameSave({ state, onConfirm }) {
   const input = document.getElementById("nameInput");
   const dice = document.getElementById("btnDice");
   const confirm = document.getElementById("btnConfirm");
 
-  function currentName() {
-    return (input.value || "").slice(0, 12);
-  }
-
-  input.addEventListener("input", () => {
-    if (input.value.length > 12) input.value = input.value.slice(0, 12);
-  });
-
+  input.setAttribute("maxlength", "12");
   dice.addEventListener("click", () => {
     input.value = randName();
   });
 
   confirm.addEventListener("click", () => {
-    // M7-lite: CONFIRM snapshots the whole config (M6.5: pose included);
-    // main.js restores it on the next boot. JSON file import/export lands
-    // with the M8 exporter.
-    localStorage.setItem("psxcc.v1", JSON.stringify({
-      ...state,
-      name: currentName(),
-    }));
+    saveNow(state);
+    input.value = currentName(); // mirrors the trim applied on save
     onConfirm?.();
   });
 
   // prefill from any previous save
   const saved = load();
-  if (saved.name) input.value = saved.name;
+  if (typeof saved.name === "string") input.value = saved.name.slice(0, 12);
 }
 
-export function load() {
-  try {
-    return JSON.parse(localStorage.getItem("psxcc.v1") ?? "{}") ?? {};
-  } catch {
-    return {};
-  }
-}
-
-export function showSaved() {
-  const toast = document.getElementById("toast");
-  toast.classList.add("show");
-  clearTimeout(showSaved._t);
-  showSaved._t = setTimeout(() => toast.classList.remove("show"), 1400);
+// JSON-file export/import (STYLE.md section 8). onImport receives the
+// parsed object — main.js validates (applySaveConfig), applies and shows
+// warnings; a parse failure shows INVALID and changes nothing.
+export function initJsonTransfer({ state, onImport }) {
+  const file = document.getElementById("fileImport");
+  document.getElementById("btnExport").addEventListener("click", () => {
+    const data = JSON.stringify(toSaveConfig(state, currentName()), null, 2);
+    const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "psxcc-character.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    showSaved("EXPORTED");
+  });
+  document.getElementById("btnImport").addEventListener("click", () => file.click());
+  file.addEventListener("change", async () => {
+    const f = file.files?.[0];
+    file.value = ""; // allow re-importing the same file
+    if (!f) return;
+    try {
+      onImport(JSON.parse(await f.text()));
+      showSaved("LOADED");
+    } catch {
+      showSaved("INVALID");
+    }
+  });
 }

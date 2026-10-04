@@ -90,6 +90,7 @@ Saved to localStorage key `psxcc.v1`. Export/import as JSON file.
 - [ ] Triangle budgets respected (log counts in console in dev mode).
 - [ ] No copied assets, no real brand logos.
 - [x] (M6.5) Rendering low-res/pixelated ✓; head ~1/3 ✓; gradients ✓; face crisp ✓; paper hair ✓; colour options ✓; UI layout ✓; mobile portrait ✓; triangle budgets unchanged (rig split +12 tris/leg, sleeves unchanged) ✓; no copied assets ✓.
+- [x] (M7) State: STYLE.md §8 save format (colour arrays indexed by colorSlots) in localStorage psxcc.v1; validated import (unknown id -> none / default hair, invalid hex -> default, eyes/mouth range-checked, pose sanitized); RANDOM fills every colour slot + skin palette + random pose preset; RESET restores defaults; selection (colours) preserved on item switch; JSON file export/import; dev-only state inspector (?debug=state). Verified by tests/m7State.mjs (34 checks) + desktop/mobile shots.
 
 ## 10. Pose system (M6.5)
 - Joint hierarchy of THREE.Groups (root → hips → waist → chest → neck → head; chest → shoulder → elbow; hips → thigh → knee → foot). No skinning, no skeletal libraries.
