@@ -505,3 +505,21 @@ fix; my 2ee7b6c stacked on top blindly and regressed parts of it. Reconciled:
   glued to the ankle pitch, knee-90 clamp, ghost cleanup, hem fidelity.
 - LESSON for me: check git log BEFORE staging heavy edits; if a parallel
   commit lands, rebase my mental model instead of stacking.
+
+### r4: user still reported knee-through-pants / foot-through-shoe
+- Found a test-methodology error on MY side: my "sock" verification used
+  acc_white_socks, an id that does NOT exist (the only sock item is
+  sock_knee_stripe) -> those tests actually rendered BARE legs and proved
+  nothing. Retested with the real item + the user's outfit: knitted sock
+  tubes (0.38) nest at the knee (0.12 overlap) and fully cover the skin;
+  shoe foot pieces ride the ankle joint. No skin shows at knee/ankle in
+  sit/run close-ups with shorts/jeans + sock + sneakers/boots.
+- The large pale mass in my earlier close-ups = the folded sit HANDS, not a
+  bare knee (hand 0.23 forearm + fist at the lap).
+- Added a build beacon: tab title now reads "PSX Character Creator . r4"
+  and window.PSXCC.build = "r4". Use it to detect a stale tab (one that
+  missed HMR / holds old modules): if the title lacks r4, CLOSE the tab
+  entirely and reopen the URL - a refresh is not always enough after a
+  watcher outage.
+- Verified screenshots kept: shots/verify_r4_sock_knee.png,
+  shots/verify_r4_knee_sit.png (pure skin leg close-up), verify_r4_run_boots.
