@@ -1,5 +1,16 @@
 # NOTES.md
 
+## M7 修正第三輪（2026-10-05 用戶回報：CONFIRM 後 reload 姿勢回歸預設）
+- **真根因（M6.5 以來的視覺還原缺口）**：save/restore 圓圈無問題
+  （toSaveConfig 存 pose、applySaveConfig 讀返 state.pose 都啱），
+  但 pose engine 建構時 current=REST，而 pose.sync() 只喺 RANDOM/RESET/
+  import 等「user 路徑」先會由 state.pose 重套用 —— main.js boot 的
+  applyAll() 從來冇 sync → 存檔入面的 pose preset 永遠以 REST 渲染。
+  修法：applyAll() 尾部加 pose.sync({ animate: false })，令任何重建路徑
+  （boot 還原 / body 切換 / 每次揀色）都使引擎同 state.pose 保持同步。
+- 回歸測試（m7State 1b）：pose_wave → CONFIRM → reload → shoulderR
+  rotation.z = 2.783（wave 姿勢真渲染，唔係 REST 0.2）；全套 36 項 PASS。
+
 ## M7 修正第二輪（2026-10-05 用戶回報：面部貼圖消失 + 粉紅記錄條）
 - **面部貼圖「有時消失」真根因（早在 M6.5 面部拆分埋下的 latency bug）**：
   main.js applyHair() 換髮型時 `remove(character.hairAnchor.children[0])` —

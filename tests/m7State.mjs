@@ -83,6 +83,31 @@ const sleep = (t) => new Promise((r) => setTimeout(r, t));
   await page.close();
 }
 
+// ---- 1b. pose preset persists through CONFIRM + reload -------------------------
+{
+  const page = await newPage();
+  await page.goto(URL);
+  await sleep(500);
+  await page.evaluate(() => {
+    PSXCC.pose.preset("pose_wave"); // right arm raised
+    PSXCC.applyAll();
+  });
+  await sleep(300);
+  await page.click("#btnConfirm");
+  await sleep(200);
+  await page.reload();
+  await sleep(700);
+  const p = await page.evaluate(() => ({
+    preset: PSXCC.state.pose.preset,
+    // wave: armR raise 148deg -> shoulderR.rotation.z = 0.2 + 148*PI/180 ≈ 2.78
+    shoulderR: PSXCC.character.joints.shoulderR.rotation.z,
+  }));
+  check("pose persists: preset id", p.preset === "pose_wave", p.preset);
+  check("pose persists: rendered angle (not rest)",
+    Math.abs(p.shoulderR) > 2.2, `shoulderR=${p.shoulderR.toFixed(3)}`);
+  await page.close();
+}
+
 // ---- 2. invalid JSON ----------------------------------------------------------
 {
   const page = await newPage();

@@ -356,6 +356,11 @@ function applyAll() {
     applyCloth(slot);
     recolor(slot);
   }
+  // keep the engine's applied pose in step with state.pose on ANY rebuild
+  // path (boot restore / body switch) — pose_preset exists only visually via
+  // sync(); everything else left the engine frozen at REST angles, so a
+  // saved pose preset reverted to pose_default on every reload
+  pose.sync({ animate: false });
 }
 applyAll();
 
