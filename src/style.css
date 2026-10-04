@@ -111,7 +111,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   translate: 2px 2px;
 }
 
-/* ---- top bar: name (mockup) ------------------------------------------------ */
+/* ---- top bar: name + RANDOM/RESET (dice + skip icons, colour per §7) ------- */
 #topBar {
   position: absolute;
   top: 20px;
@@ -120,18 +120,6 @@ canvas.image-rendering { image-rendering: pixelated; }
   display: flex;
   align-items: center;
   gap: 12px;
-  z-index: 5;
-}
-
-/* STYLE.md section 7: top-right stack AUTO ROTATION (pink) / RANDOM (purple) /
-   RESET (orange), like ref-hair.png */
-#cornerStack {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   z-index: 5;
 }
 
@@ -214,6 +202,9 @@ canvas.image-rendering { image-rendering: pixelated; }
 
 /* AUTO ROTATION: two-arrow cycle with centre dot; pink per STYLE.md section 7 */
 .pixRotate {
+  position: absolute;
+  top: 20px;
+  right: 20px;
   background-color: #f8a8bc;
   border-color: #fff #c05878 #c05878 #fff;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2a6 6 0 0 1 5.7 4.2l-1.9.6A4 4 0 0 0 8 4V6L4.5 3 8 0z' fill='%23fff'/%3E%3Cpath d='M8 14a6 6 0 0 1-5.7-4.2l1.9-.6A4 4 0 0 0 8 12v-2l3.5 3L8 16z' fill='%23fff'/%3E%3Ccircle cx='8' cy='8' r='1.5' fill='%23fff'/%3E%3C/svg%3E");

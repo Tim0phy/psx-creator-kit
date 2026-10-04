@@ -459,7 +459,7 @@ export function createUI(state, uiHooks) {
   // a numbered chip (the current eye/hair/body), matching the number tiles.
   function renderSelection() {
     const strip = document.getElementById("leftSelection");
-    strip.replaceChildren();
+    if (!strip) return; // stale-HMR partial DOM: skip safely
     const paint = (ctx, col) => {
       ctx.fillStyle = col;
       ctx.fillRect(7, 7, 18, 18);

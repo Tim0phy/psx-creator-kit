@@ -1,5 +1,19 @@
 # NOTES.md
 
+## M7 後續修正（2026-10-05 用戶回報兩項）
+- **角堆疊重疊**：我第一輪把 AUTO RANDOM RESET 搬成頂右直排（ref-hair 樣式），
+  但右欄 colour panel 285px 直達右邊，purple/orange 按鈕壓住 SKIN TONE 藥丸
+  （bounding-rect 相交驗證 stackVsRight=true），手機上仲疊住 nameBox。已還原
+  mockup 式排列：RANDOM/RESET 回 #topBar（名稱框旁）、AUTO 回右上 absolute；
+  §7 規定色（粉 AUTO / 紫 RANDOM / 橙 RESET）保留。
+- **面部貼圖「不更新」**：pixel 級探針（auto-rotation 關閉、固定 yaw、真實
+  UI 點擊）挑眼 1/12、嘴 2、skin 第 5 格全部即時重繪
+  （renderEyes / mouthTex.needsUpdate / setSkin 路徑完好）；r6 全新 boot
+  無法重現。屬 NOTES r4 已記載嘅「stale tab」陷阱（長開 tab 混住舊 module
+  + 新 DOM）。加固：initNameSave / initJsonTransfer / renderSelection 對
+  缺失 DOM id 做 null guard，stale 混載唔再令 boot 中斷。用戶側處理：完全
+  關閉再重開 tab——標題顯示 `· r6` 先算新 build（HMR 之後 refresh 未必夠）。
+
 ## M7 状态系統 (2026-10-05)
 - 保存格式按 STYLE.md §8 重寫：runtime state 維持 colors.main/secondary 物件
   （UI/建構器深度依賴），持久化一律經 `toSaveConfig()` → colors 變成按

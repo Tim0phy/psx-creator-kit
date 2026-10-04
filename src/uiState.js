@@ -56,8 +56,12 @@ export function initNameSave({ state, onConfirm }) {
   const input = document.getElementById("nameInput");
   const dice = document.getElementById("btnDice");
   const confirm = document.getElementById("btnConfirm");
+  if (!input || !dice || !confirm) return; // stale-HMR partial DOM: skip safely
 
   input.setAttribute("maxlength", "12");
+  input.addEventListener("input", () => {
+    if (input.value.length > 12) input.value = input.value.slice(0, 12);
+  });
   dice.addEventListener("click", () => {
     input.value = randName();
   });
@@ -78,7 +82,10 @@ export function initNameSave({ state, onConfirm }) {
 // warnings; a parse failure shows INVALID and changes nothing.
 export function initJsonTransfer({ state, onImport }) {
   const file = document.getElementById("fileImport");
-  document.getElementById("btnExport").addEventListener("click", () => {
+  const btnExport = document.getElementById("btnExport");
+  const btnImport = document.getElementById("btnImport");
+  if (!file || !btnExport || !btnImport) return; // stale-HMR partial DOM: skip
+  btnExport.addEventListener("click", () => {
     const data = JSON.stringify(toSaveConfig(state, currentName()), null, 2);
     const url = URL.createObjectURL(new Blob([data], { type: "application/json" }));
     const a = document.createElement("a");
@@ -88,7 +95,7 @@ export function initJsonTransfer({ state, onImport }) {
     setTimeout(() => URL.revokeObjectURL(url), 2000);
     showSaved("EXPORTED");
   });
-  document.getElementById("btnImport").addEventListener("click", () => file.click());
+  btnImport.addEventListener("click", () => file.click());
   file.addEventListener("change", async () => {
     const f = file.files?.[0];
     file.value = ""; // allow re-importing the same file
