@@ -1,0 +1,247 @@
+/* M8 Photo Studio: PSX-styled capture modal. Same bevel/pill/checker token
+   language as style.css + poseUI.css; separate file keeps style.css lean. */
+
+#photoModal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 34, 12, .45);
+}
+
+/* the flex rule above overrides the UA [hidden] style -> re-assert */
+#photoModal[hidden] { display: none; }
+
+.psFrame {
+  --ps-checker: repeating-conic-gradient(#fce38b 0% 25%, #f8d466 0% 50%) 0 0 / 56px 56px;
+  background: var(--frame);
+  border: 3px solid;
+  border-color: #fff #b87830 #b87830 #fff;
+  box-shadow: 4px 4px 0 rgba(56, 34, 12, .5);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(92vw, 760px);
+  max-height: 92vh;
+}
+
+.psHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.psPill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--wood);
+  border: 3px solid;
+  border-color: #fff #b87830 #b87830 #fff;
+  box-shadow: 3px 3px 0 rgba(56, 34, 12, .45);
+  padding: 10px 14px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, .35);
+  white-space: nowrap;
+}
+
+.psClose {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background-color: #e85878 !important;
+  border-color: #fff #a03850 #a03850 #fff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 3l10 10M13 3L3 13' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E") !important;
+}
+
+.psPreviewWrap {
+  position: relative;
+  background: var(--ps-checker);
+  image-rendering: pixelated;
+  border: 3px solid;
+  border-color: #906020 #fff #fff #906020;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#psPreview {
+  width: min(100%, 432px);
+  max-height: 29vh;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background:
+    repeating-conic-gradient(rgba(0, 0, 0, .06) 0% 25%, transparent 0% 50%)
+    0 0 / 32px 32px; /* hints transparency in the preview pane */
+}
+
+#psBusy {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--highlight);
+  border: 2px solid #fff;
+  padding: 4px 10px;
+  font-size: 8px;
+  letter-spacing: 1px;
+  font-family: var(--pixel-font);
+}
+
+.psOpts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 37vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 4px;
+}
+
+.psRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.psLbl {
+  flex: 0 0 98px;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(56, 34, 12, .55);
+}
+
+.psSeg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+
+.psSeg button {
+  cursor: pointer;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  background: var(--wood);
+  border: 3px solid;
+  border-color: #fff #b87830 #b87830 #fff;
+  box-shadow: 2px 2px 0 rgba(56, 34, 12, .4);
+  padding: 8px 9px;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.psSeg button:active {
+  border-color: #b87830 #fff #fff #b87830;
+  box-shadow: none;
+  translate: 1px 1px;
+}
+
+.psSeg button.on {
+  background: var(--highlight);
+}
+
+.psSeg button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 1px;
+}
+
+.psSwatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+
+.psSwatches button {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #906020;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(56, 34, 12, .4);
+}
+
+.psColor {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 3px dashed #906020;
+  background: conic-gradient(#e06060, #e8913a, #c8f56b, #9fd6ff, #d9c2ff, #e06060);
+  cursor: pointer;
+}
+
+.psToggle {
+  min-width: 88px;
+}
+
+.psActions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.psActions button {
+  min-height: 40px;
+  min-width: 72px;
+}
+
+#psToast[hidden] { display: none; }
+
+#psToast {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto;
+  background: var(--ink);
+  color: var(--highlight);
+  border: 2px solid #fff;
+  padding: 6px 12px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  max-width: 96%;
+}
+
+#psToast.psErr { color: #ff9aa8; }
+
+.psRetry {
+  min-height: 28px;
+  padding: 2px 10px;
+}
+
+/* ---- mobile portrait: full-screen sheet ---------------------------------- */
+@media (max-aspect-ratio: 1/1) {
+  #photoModal {
+    align-items: stretch;
+    justify-content: stretch;
+    background: var(--frame-dark);
+    padding: 8px;
+  }
+  .psFrame {
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .psPreviewWrap { min-height: 0; flex: 0 1 auto; }
+  #psPreview { max-height: 30vh; width: 100%; }
+  .psOpts { max-height: none; flex: 1 1 auto; min-height: 0; }
+  .psLbl { flex-basis: 74px; font-size: 7px; }
+  .psActions button { flex: 1 1 40%; }
+}

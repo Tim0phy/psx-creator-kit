@@ -26,6 +26,14 @@ import {
   load, initNameSave, initJsonTransfer, showSaved, saveNow, currentName,
 } from "./uiState.js";
 import { initStateInspector } from "./uiDebug.js";
+import "./captureUI.css";
+import { initCaptureUI } from "./uiCapture.js";
+import {
+  captureCharacter, captureTurnaround, scaledDims, CAPTURE_MAX,
+} from "./capture.js";
+import {
+  exportCharacterGLB, glbFilename,
+} from "./exporter.js";
 
 // M8 body selector: `state.body` ("female" | "male") rebuilds the whole
 // character root (rig, face decals, hair and every clothing item re-mount).
@@ -36,7 +44,7 @@ import { initStateInspector } from "./uiDebug.js";
 const state = defaultState();
 // build beacon: the tab title carries the build tag so a stale tab (one that
 // missed HMR / kept old modules alive) is identifiable at a glance
-const BUILD = "r6";
+const BUILD = "r7";
 document.title = `PSX Character Creator \u00B7 ${BUILD}`;
 // M7: the previous restoreInto() copied saved values raw; the boot restore
 // now runs through the same validation as JSON import (unknown ids, bad
@@ -94,12 +102,22 @@ const mouthTex = makeFaceTexture(mouthPair.big);
 // eyes/mouth grow without drifting (anchor = eye-row centre / mouth centre)
 const eyesMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(0.75, 0.66),
-  makePSXMaterial("#ffffff", { map: eyesTex, gradient: 0.05 })
+  makePSXMaterial("#ffffff", {
+    map: eyesTex, gradient: 0.05,
+    // z-fight guard: the decal sits ~0.007 in front of the head shell but
+    // vertex-snap jitter (res 200) can invert that margin from some camera
+    // yaws (M8 capture bug). polygonOffset pulls the decal toward the camera
+    // in DEPTH ONLY - pixel look is unchanged.
+    polygonOffset: true, polygonOffsetFactor: -4,
+  })
 );
 eyesMesh.position.set(0, -0.0941, 0.368); // extra -0.05: keeps brows clear of the fringe
 const mouthMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(0.75, 0.66),
-  makePSXMaterial("#ffffff", { map: mouthTex, gradient: 0.05 })
+  makePSXMaterial("#ffffff", {
+    map: mouthTex, gradient: 0.05,
+    polygonOffset: true, polygonOffsetFactor: -4,
+  })
 );
 mouthMesh.position.set(0, -0.16, 0.371); // tiny offset: avoids vertex-snap shimmer
 character.hairAnchor.add(eyesMesh, mouthMesh);
@@ -299,6 +317,49 @@ const ui = createUI(state, {
   onImport: (cfg) => importConfig(cfg, { persist: true }),
 });
 
+// ---- M8 Photo Studio + GLB export -------------------------------------------
+// capture refs are resolved lazily (character may be rebuilt on body switch)
+const captureSetup = () => ({
+  scene,
+  character: () => character,
+  platform: ground,
+});
+
+// shared blob-downloader for GLB (Photo Studio owns its own PNG downloads)
+function saveBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+initCaptureUI({ getSetup: captureSetup, openEl: document.getElementById("btnCamera") });
+
+document.getElementById("btnGlb").addEventListener("click", async () => {
+  const btn = document.getElementById("btnGlb");
+  btn.disabled = true;
+  try {
+    const res = await exportCharacterGLB(
+      { character, platform: ground },
+      { includePlatform: false, name: currentName() }
+    );
+    if (res.ok) {
+      saveBlob(res.blob, glbFilename(currentName()));
+      showSaved("GLB SAVED");
+    } else {
+      showSaved("GLB FAILED");
+      console.warn("[psxcc] GLB export:", res.errors);
+    }
+  } catch (err) {
+    showSaved("GLB FAILED");
+    console.warn("[psxcc] GLB export error:", err);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 // ?preset= applies a catalog preset on load (shot scripts / shareable links);
 // ?hue= makes the auto colour-block deterministic
 const startPreset = params.get("preset");
@@ -459,6 +520,12 @@ window.PSXCC = {
   saveNow: () => saveNow(state) && showSaved("SAVED"),
   importJSON: (cfg) => importConfig(cfg, { persist: false }),
   currentSave: () => load(),
+  // M8: deterministic capture hooks for the Playwright suite
+  captureSetup,
+  capture: (opts) => captureCharacter(captureSetup(), opts),
+  captureTurnaround: (opts) => captureTurnaround(captureSetup(), opts),
+  captureDims: (aspect, scale, raw) => scaledDims(aspect, scale, raw),
+  captureMax: CAPTURE_MAX,
   get character() {
     return character;
   },

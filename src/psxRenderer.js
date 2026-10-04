@@ -51,8 +51,7 @@ export function makePSXMaterial(colorHex, opts = {}) {
   const vsrc = hasMap
     ? VERT.replace("varying vec3 vNormalV;", "varying vec2 vUv;\nvarying vec3 vNormalV;")
         .replace("void main() {", "void main() {\n  vUv = uv;")
-    : VERT;
-  const fsrc = hasMap
+    : VERT;  const fsrc = hasMap
     ? FRAG.replace(
         "uniform vec3 color;",
         "uniform sampler2D map;\nvarying vec2 vUv;\nuniform vec3 color;"
@@ -71,6 +70,10 @@ export function makePSXMaterial(colorHex, opts = {}) {
     : {};
   return new THREE.ShaderMaterial({
     side: opts.side ?? THREE.FrontSide,
+    // optional z-fight guard (decals): pull toward the camera in depth only
+    polygonOffset: opts.polygonOffset ?? false,
+    polygonOffsetFactor: opts.polygonOffsetFactor ?? 0,
+    polygonOffsetUnits: opts.polygonOffsetUnits ?? -1,
     uniforms: {
       color: { value: new THREE.Color(colorHex) },
       lightDir: { value: new THREE.Vector3(0.4, 1.0, 0.7).normalize() },

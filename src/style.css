@@ -146,7 +146,50 @@ canvas.image-rendering { image-rendering: pixelated; }
   image-rendering: pixelated;
 }
 
-/* random-name dice: small icon inside the name box */
+/* M8: PHOTO STUDIO camera button (topBar, beside RANDOM/RESET) */
+.pixCamera {
+  background-color: #58c8a8;
+  border-color: #fff #208060 #208060 #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='5' width='12' height='9' fill='%23fff'/%3E%3Cpath d='M5 5V3h5v2z' fill='%23fff'/%3E%3Crect x='6' y='7' width='4' height='4' fill='%2338220c'/%3E%3C/svg%3E");
+}
+
+.pixCamera:active {
+  border-color: #208060 #fff #fff #208060;
+}
+
+/* M8 GLB note next to GLB in the transfer row (pixel small print) */
+#glbNote {
+  align-self: center;
+  align-self: center;
+  font-size: 7px;
+  letter-spacing: 0px;
+  color: #fffdfa;
+  text-shadow: 1px 1px 0 rgba(56, 34, 12, .65);
+  white-space: nowrap;
+}
+
+/* M8 polish: visible keyboard focus everywhere (contrast-safe) */
+.pixBtn:focus-visible, .catBtn:focus-visible, .gridBtn:focus-visible,
+.swatchBtn:focus-visible, .gridArrow:focus-visible, .subPill:focus-visible,
+.poseBtn:focus-visible, #btnConfirm:focus-visible, #btnGlb:focus-visible,
+#btnExport:focus-visible, #btnImport:focus-visible {
+  outline: 3px solid var(--highlight);
+  outline-offset: 2px;
+}
+
+/* M8 polish: invisible +6px hit pocket so every small button clears the
+   >=44px touch target, without changing the visual size/layout */
+@media (pointer: coarse) {
+  .pixBtn::after, .catBtn::after, .topIconBtn::after, .gridArrow::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+  }
+  .gridBtn::after { content: ""; position: absolute; inset: -5px; }
+  .gridBtn { position: relative; }
+}
+
+/* RANDOM name dice: small icon inside the name box */
 #btnDice {
   width: 18px;
   height: 18px;
@@ -422,10 +465,20 @@ canvas.image-rendering { image-rendering: pixelated; }
 #toast.show { opacity: 1; }
 
 /* ---- M7: JSON export/import row + dev-only state inspector ----------------- */
+#transferWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 #transferRow {
   display: flex;
   gap: 8px;
   margin-top: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: 2px;
 }
 
 #transferRow button {
@@ -617,14 +670,15 @@ canvas.image-rendering { image-rendering: pixelated; }
     gap: 8px;
   }
   #centreCol { position: static; transform: none; align-self: center; }
-  #transferRow {
+  #transferWrap {
     position: fixed;
     left: 50%;
-    bottom: 66px;
+    bottom: 64px;
     transform: translateX(-50%);
     z-index: 7;
-    margin: 0;
+    gap: 2px;
   }
+  #transferRow { margin-top: 0; }
   #transferRow button { padding: 4px 12px; }
   #btnConfirm {
     font-size: 12px;

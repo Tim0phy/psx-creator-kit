@@ -91,6 +91,37 @@ Saved to localStorage key `psxcc.v1`. Export/import as JSON file.
 - [ ] No copied assets, no real brand logos.
 - [x] (M6.5) Rendering low-res/pixelated ✓; head ~1/3 ✓; gradients ✓; face crisp ✓; paper hair ✓; colour options ✓; UI layout ✓; mobile portrait ✓; triangle budgets unchanged (rig split +12 tris/leg, sleeves unchanged) ✓; no copied assets ✓.
 - [x] (M7) State: STYLE.md §8 save format (colour arrays indexed by colorSlots) in localStorage psxcc.v1; validated import (unknown id -> none / default hair, invalid hex -> default, eyes/mouth range-checked, pose sanitized); RANDOM fills every colour slot + skin palette + random pose preset; RESET restores defaults; selection (colours) preserved on item switch; JSON file export/import; dev-only state inspector (?debug=state). Verified by tests/m7State.mjs (34 checks) + desktop/mobile shots.
+- [x] (M8) Photo Studio + GLB export: PSX/Clean captures through a dedicated offscreen render pipeline (never the DOM); nearest upscale proven by pixel-identity test (4x ds == 1x); real alpha (corner 0); PSX/Clean/aspect/scale matrix exact; 4096 cap + clamp; turnaround with one shared scale; GLB = baked unlit vertex colours + embedded decal textures + posed joint hierarchy, loads back via GLTFLoader (36 meshes); capture prefs in psxcc.capture.v1; P/Esc; clipboard blocked -> toast + fallback download; 20 repeated captures heap-stable; mobile full-screen sheet. Verified by tests/m8Capture.mjs (34 checks) + shots.
+
+## 11. M8 Photo Studio / captures / GLB (final state)
+- Camera button (#btnCamera) sits in the top bar beside RANDOM/RESET; the Photo
+  Studio modal shares the wood/bevel/pill UI language; mobile = full-screen
+  sheet with the options list scrollable. P opens, Esc closes, focus returns.
+- CAPTURES ARE NEVER TAKEN FROM THE VISIBLE UI: a dedicated offscreen
+  WebGLRenderer renders the same scene; DOM overlays can not leak in. PSX look
+  = base 480-wide low-res buffer + nearest (proven by the 4x-ds == 1x pixel
+  identity test); Clean look = same scene straight at full output res
+  (vertex-snap uniform raised during the pass and restored). Alpha is real:
+  clear colour (0,0,0,0), no AA, opaque/discarded decals, so PNG corners read
+  alpha 0 exactly.
+- Auto-framing uses Box3 of the visible set (character + optional platform +
+  optional shadow blob) with ~7% margin (+16% bottom band when the name text
+  is on); front yaws the root to 0, side +-90, back 180 (saved + restored
+  synchronously, the live loop never sees the mutation).
+- Sizes: base width 480 x per-aspect height, x1/2/4 (nearest); client-requested
+  scales outside 1/2/4 clamp to the nearest step; the longest side hard-caps
+  at 4096 with a pixel toast when reduced. Turnaround renders all three views
+  at ONE shared distance (max of per-view fits) so the sheet keeps a
+  consistent scale.
+- GLB export bakes a one-off flat clone: uniform colour x world-Y gradient x
+  Lambert lighting is written into vertex colours, materials become unlit
+  MeshBasicMaterial (KHR_materials_unlit), decal/pattern canvases ride along
+  as embedded textures (alphaMode BLEND), stage platform only when toggled.
+  The runtime pixel shader / post pipeline is NOT stored in the GLB (UI note).
+- Capture preferences live in localStorage psxcc.capture.v1 (background/solid/
+  look/scale/aspect), sanitized with defaults; they never enter psxcc.v1.
+- Exports stay local: no upload, no clipboard network; blocked clipboard falls
+  back to a download with a pixel error toast + RETRY.
 
 ## 10. Pose system (M6.5)
 - Joint hierarchy of THREE.Groups (root → hips → waist → chest → neck → head; chest → shoulder → elbow; hips → thigh → knee → foot). No skinning, no skeletal libraries.

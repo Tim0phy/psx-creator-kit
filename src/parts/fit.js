@@ -72,7 +72,11 @@ export function neckTrim(mat) {
 // square chest decal (transparent 32x32 canvas on a thin plate)
 export function chestDecal(g, kind, w = 0.2, h = 0.2, x = 0, y = 0.06, z = 0.19) {
   const tex = makeDecal(kind);
-  const mat = makePSXMaterial("#ffffff", { map: tex, gradient: 0.1 });
+  const mat = makePSXMaterial("#ffffff", {
+    map: tex, gradient: 0.1,
+    // same z-fight guard as the face decals (plate mode sits on the shell)
+    polygonOffset: true, polygonOffsetFactor: -4,
+  });
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.012).toNonIndexed(), mat);
   m.position.set(x, y, z);
   g.add(m);

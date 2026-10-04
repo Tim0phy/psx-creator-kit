@@ -24,6 +24,10 @@ for (const [w, h, name] of sizes) {
   });
   await page.waitForTimeout(200);
   await page.screenshot({ path: `shots/${name}` });
+  // M8: Photo Studio modal open (same viewport, one shot each)
+  await page.click("#btnCamera");
+  await page.waitForTimeout(700); // preview render (debounced)
+  await page.screenshot({ path: `shots/m8_photo_studio_${name}` });
   await page.close();
 }
 await browser.close();

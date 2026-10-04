@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "shots": "node tests/shots.mjs"
+    "shots": "node tests/shots.mjs",
+    "m8": "node tests/m8Capture.mjs"
   },
   "keywords": [],
   "author": "",

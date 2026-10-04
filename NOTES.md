@@ -1,5 +1,41 @@
 # NOTES.md
 
+## M8 Photo Studio + GLB + polish (2026-10-05)
+- **M8 完成范围**：GLB 导出、Photo Studio（离屏截图 + 下载/复制/三视图）、
+  psxcc.capture.v1 偏好、focus/hit-area/错误状态 polish。config 格式、catalog
+  ids、pose 系统、PSX renderer、视觉方向零改动。
+- **关键决策**（详见已在 STYLE.md §11 落字）：
+  1. 抓图走**独立离屏 renderer**（DOM overlay 结构性不可能入图）；PSX look =
+     480 宽低清缓冲 + nearest 上采样；Clean look = 全分辨率直渲（渲染前后
+     临时抬高/还原 vertex-snap uniform）。
+  2. 相机禁 UI overlay 之外还要**auto-frame**：Box3(角色 + 可选平台 + 可选
+     阴影) + 7% margin + 名字 band；front/side/back 临时旋 root y、同步保存
+     还原（主循环看不到改动）。
+  3. GLB：自建 ShaderMaterial 无法被 GLTFExporter 直接带色 —— 做**烘焙 clone**
+     （顶点色 = uniform 色 × 世界Y渐变 × Lambert 光照 → KHR_materials_unlit，
+     decal/pattern 纹理内嵌 PNG、BLEND alpha）。hair 纸片条本来就无 normal
+     属性 → 烘焙时零向量（与运行时 ambient-only 渲染一致）。平台默认剔除。
+     UI 小注 "GLB = UNLIT COLOURS · NO PSX SHADER FX"。
+  4. 偏好独立 key `psxcc.capture.v1`（background/solid/look/scale/aspect）。
+  5. turn-around 三面板统一取 **max(dist)** 的固定距离取景（不同 yaw 下
+     Box3 宽深互换会令缩放漂移）。
+- **修过的真 bug**：
+  - fitCamera 曾把 VIEW_DIR（相机→目标）当"目标→相机"用：capture 相机落在
+    -Z（= 背面渲染），面部永远不可见。修正为 `center - dir*dist`。
+  - `#photoModal` 的 `display:flex` 覆盖 `hidden` UA 规则 → 隐形 overlay
+    拦截全页点击（GLB 按钮点不到）；`#psToast` 同一坑。各自补
+    `[hidden]{display:none}`。
+  - snapUniforms 的 restore 迭代错数组（材质而非快照）→ psx look 首拍抛
+    TypeError；改为先存快照再改。
+  - glbFilename 多了 "-character-" 段 → 按规格 `psx-character-<name>-<stamp>.glb`。
+- **验收工具**：tests/m8Capture.mjs（34 项全 PASS：尺寸/上限矩阵、alpha=0、
+  4x-ds==1x 的 nearest 证明、checker/solid 色值、GLTFLoader 回读 36 mesh +
+  vertexColors、P/Esc、下载命名、剪贴板 fallback、20 次重复 capture 堆内存
+  平稳、mobile modal、0 pageerror）。shots：desktop/mobile + modal 开启 +
+  default/front/side/back/clean/9:16/name/platform/shadow/alpha/tall/turnaround。
+- **GLB 数值**：默认装束 ~110KB、带 pose/颜色/纹理解剖（j_ 命名链保留）。
+- BUILD beacon r6 -> r7。
+
 ## M7 修正第三輪（2026-10-05 用戶回報：CONFIRM 後 reload 姿勢回歸預設）
 - **真根因（M6.5 以來的視覺還原缺口）**：save/restore 圓圈無問題
   （toSaveConfig 存 pose、applySaveConfig 讀返 state.pose 都啱），

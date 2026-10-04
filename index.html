@@ -23,6 +23,7 @@
       </div>
       <button id="btnRandom" class="pixBtn pixDice" title="Random"></button>
       <button id="btnReset" class="pixBtn pixReset" title="Reset"></button>
+      <button id="btnCamera" class="pixBtn pixCamera" title="Photo Studio (P)" aria-label="Open Photo Studio"></button>
     </div>
 
     <button id="btnRotate" class="pixBtn pixRotate" title="Auto rotation"></button>
@@ -42,9 +43,13 @@
 
       <div id="centreCol">
         <button id="btnConfirm">CONFIRM</button>
-        <div id="transferRow">
-          <button id="btnExport" title="Export config as JSON">EXPORT</button>
-          <button id="btnImport" title="Import config from JSON">IMPORT</button>
+        <div id="transferWrap">
+          <div id="transferRow">
+            <button id="btnExport" title="Export config as JSON">EXPORT</button>
+            <button id="btnImport" title="Import config from JSON">IMPORT</button>
+            <button id="btnGlb" title="Export the posed character as .glb">GLB</button>
+            <span id="glbNote" title="The exported GLB keeps flat unlit colours; the PSX pixel shader / post pipeline is not stored in the file">GLB = UNLIT COLOURS · NO PSX SHADER FX</span>
+          </div>
         </div>
         <input type="file" id="fileImport" accept=".json,application/json" hidden />
         <div id="toast">SAVED</div>
