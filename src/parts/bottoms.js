@@ -115,13 +115,18 @@ function bot_lowrise_jeans(g, m, f, fit) {
 }
 
 // wide cargo: reversed taper (wider at the ankle) + front thigh pockets
+// M6.5: pockets ride the thigh -> tagged so attachCloth moves them onto the
+// thigh joints with the tube wraps (they'd float otherwise when legs bend)
 function bot_cargo_wide(g, m, f, fit) {
   const waist = f.lowRise ? HIP : WAIST;
   g.add(hipsMesh(m, fit.profile, waist));
   tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.28, taper: -0.18, splay: 0.02 }, fit);
   for (const side of [-1, 1]) {
-    g.add(box(0.16 * fit.tw, 0.2, 0.2, side * 0.36 * fit.tw, 0.42, 0.16, m)); // front thigh pocket
-    g.add(box(0.18 * fit.tw, 0.05, 0.22, side * 0.36 * fit.tw, 0.53, 0.16, m)); // pocket flap
+    const wrap = new THREE.Group();
+    wrap.userData = { clothPart: side < 0 ? "thighL" : "thighR" };
+    wrap.add(box(0.16 * fit.tw, 0.2, 0.2, side * 0.36 * fit.tw, 0.42, 0.16, m)); // pocket
+    wrap.add(box(0.18 * fit.tw, 0.05, 0.22, side * 0.36 * fit.tw, 0.53, 0.16, m)); // flap
+    g.add(wrap);
   }
 }
 

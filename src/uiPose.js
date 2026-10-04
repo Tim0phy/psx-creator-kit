@@ -230,5 +230,11 @@ export function buildPosePanel({ state, onChange, setPill, buildGrid }) {
     syncSliders();
   };
   refresh();
+  // pose changes through ANY path (RANDOM / RESET / API / another tab's
+  // restore) re-sync this panel while its DOM is alive
+  pose.onChange = () => {
+    if (rows[0]?.input.isConnected) refresh();
+    else pose.onChange = null;
+  };
   return refresh;
 }

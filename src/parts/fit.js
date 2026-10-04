@@ -46,7 +46,10 @@ function sleeveMesh(len, mat, p, enl = 1.08, side = 1) {
   const container = new THREE.Group();
   container.add(m);
   container.position.set(0, 0, 0);
-  container.userData = { clothPart: "shoulder", side };
+  // M6.5: tag with the EXACT joint name (PART_JOINT key); the old static
+  // A-pose tilt baked in the container is zeroed by pose.attachCloth so the
+  // joint's own rest rotation (side * 0.2) supplies it after re-parenting
+  container.userData = { clothPart: "shoulder" + (side < 0 ? "L" : "R"), side };
   return container;
 }
 

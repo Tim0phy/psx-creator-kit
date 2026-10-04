@@ -417,3 +417,19 @@
 - Collision guard: palm tip vs head box + torso core; shrink raise/forward/elbow x0.35.
 - CONFIRM now saves the full config (name + pose) to psxcc.v1; JSON-file import/export deferred to M8 (needs a file picker, out of scope here).
 - Debug: ?debug=poses cycles 9 presets x 4 outfits; window.PSXCC.pose API (list/preset/custom/debugNext...).
+
+### M6.5 follow-up (user-reported): clothes stayed put when posing
+- ROOT CAUSE: fit.js tagged sleeve containers clothPart:"shoulder" (no side
+  letter) -> PART_JOINT lookup failed -> sleeves were NEVER re-parented onto
+  the shoulder joints and stayed in root space while arms posed. Tags are now
+  "shoulderL"/"shoulderR" (exact joint names like every other part tag).
+- attachCloth: after attach(), sleeve containers zero their baked local rz
+  (the old static A-pose tilt); the shoulder joint supplies side*0.2 itself,
+  so rest pixels are unchanged and sleeves follow every pose/slider change.
+- cargo side pockets now ride the thigh (tagged thighL/R wrap groups).
+- Pose engine sync() dispatches onChange -> the open Pose panel re-syncs
+  thumbs + slider readouts for ANY path (RANDOM/RESET/API), fixing stale
+  0-degree slider displays.
+- Verified in a live browser through the REAL UI path: preset thumb clicks
+  (wave/run/sit) and slider drags (arm raise 120, leg fwd 60) move sleeves,
+  pant tubes and boots with the limbs; rest regression shots unchanged.

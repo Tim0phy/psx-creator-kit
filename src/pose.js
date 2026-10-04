@@ -102,6 +102,7 @@ class PoseEngine {
     this.animT = 0;
     this.animating = false;
     this.hairLong = false;
+    this.onChange = null;              // UI hook (Pose panel re-sync)
     this.pieces = new Map(); // slot -> pieces redistributed onto joints
   }
 
@@ -138,6 +139,9 @@ class PoseEngine {
       this.current = safe;
       this.applyPose(this.current);
     }
+    // pose changed through any path (preset pick / RANDOM / RESET / API):
+    // let the open Pose panel re-sync its thumbs + slider readouts
+    if (this.onChange) this.onChange();
   }
 
   update(dt) {
@@ -237,8 +241,15 @@ class PoseEngine {
     this.applyPose(REST_ANGLES);
     ch.root.updateMatrixWorld(true); // attach() needs fresh matrixWorld
     for (const o of tagged) {
-      const j = PART_JOINT[o.userData.clothPart];
-      if (j) ch.joints[j].attach(o);
+      const part = o.userData.clothPart;
+      const j = PART_JOINT[part];
+      if (!j) continue;
+      ch.joints[j].attach(o);
+      // sleeve containers carry the old static A-pose tilt (rz side * 0.2)
+      // baked from root space; after re-parenting the shoulder joint supplies
+      // that rest rotation itself, so drop the baked local one -> the sleeve
+      // tilts with the joint and follows every pose change
+      if (part.startsWith("shoulder")) o.rotation.set(0, 0, 0);
     }
     let attached = "";
     if (group.userData?.clothPart) {
