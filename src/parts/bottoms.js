@@ -111,7 +111,7 @@ const PATTERNED_BOTTOMS = new Set(["denim", "plaid", "stripes", "metallic", "sta
 function bot_lowrise_jeans(g, m, f, fit) {
   const waist = f.lowRise ? HIP : WAIST;
   g.add(hipsMesh(m, fit.profile, waist));
-  tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.3, taper: 0.03, splay: 0.03 }, fit);
+  tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.18, taper: 0.03, splay: 0.03 }, fit);
 }
 
 // wide cargo: reversed taper (wider at the ankle) + front thigh pockets
@@ -120,7 +120,7 @@ function bot_lowrise_jeans(g, m, f, fit) {
 function bot_cargo_wide(g, m, f, fit) {
   const waist = f.lowRise ? HIP : WAIST;
   g.add(hipsMesh(m, fit.profile, waist));
-  tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.28, taper: -0.18, splay: 0.02 }, fit);
+  tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.18, taper: -0.18, splay: 0.02 }, fit);
   for (const side of [-1, 1]) {
     const wrap = new THREE.Group();
     wrap.userData = { clothPart: side < 0 ? "thighL" : "thighR" };
@@ -198,16 +198,17 @@ function bot_metallic_pants(g, m, f, fit) {
   const waist = f.lowRise ? HIP : WAIST;
   g.add(hipsMesh(m, fit.profile, waist));
   g.add(waistbandMesh(m, fit.profile, waist + 0.32)); // high-waist band
-  tubeMeshes(g, m, { r: 0.42, top: 0.66, bottom: 0.3, taper: 0.04, splay: 0.03 }, fit);
+  tubeMeshes(g, m, { r: 0.42, top: 0.66, bottom: 0.18, taper: 0.04, splay: 0.03 }, fit);
 }
 
 const BOTTOM_BUILDER = {
   bot_long_pants(g, m, f, fit) {
     const waist = f.lowRise ? HIP : WAIST;
     g.add(hipsMesh(m, fit.profile, waist));
-    // hem 0.3 tucks into the shoe cuff (cuff lip 0.22..0.32 wraps the hem);
-    // taper 0.05 keeps the two tubes overlapping at the centre (no slit)
-    tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.3, taper: 0.05, splay: 0.03 }, fit);
+    // hem 0.22 tucks INTO the shoe collar (cuff 0.17..0.25): both hem and
+    // skin shin live on the same shin joint, so a pitched foot (run toe-off)
+    // can never open a bare-ankle band between hem and shoe
+    tubeMeshes(g, m, { r: 0.42, top: 0.64, bottom: 0.18, taper: 0.05, splay: 0.03 }, fit);
   },
   bot_shorts(g, m, f, fit) {
     // dungaree/overall shorts: bib + shoulder straps over the tee

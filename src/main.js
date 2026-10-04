@@ -33,7 +33,7 @@ import { load } from "./uiState.js";
 const state = defaultState();
 // build beacon: the tab title carries the build tag so a stale tab (one that
 // missed HMR / kept old modules alive) is identifiable at a glance
-const BUILD = "r4";
+const BUILD = "r5";
 document.title = `PSX Character Creator \u00B7 ${BUILD}`;
 // a previously confirmed config restores on boot (pose included)
 restoreInto(state, load());

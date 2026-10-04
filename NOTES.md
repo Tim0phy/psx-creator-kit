@@ -523,3 +523,23 @@ fix; my 2ee7b6c stacked on top blindly and regressed parts of it. Reconciled:
   watcher outage.
 - Verified screenshots kept: shots/verify_r4_sock_knee.png,
   shots/verify_r4_knee_sit.png (pure skin leg close-up), verify_r4_run_boots.
+
+### r5: run pose - knee/shin/foot piercing the pant leg (user screenshot, long pants)
+Root causes found with close-up renders + a magenta skin dye test:
+1. "Foot through shoe" was THREE stacked issues:
+   - single-sided shoe material: looking into a pitched shoe showed the culled
+     interior = the skin appeared to pierce the shoe -> shoes are DoubleSide now.
+   - the skin shin burial (0.00, reaching deep inside the shoe) made the skin
+     tube poke out of the tilted shoe collar at run toe-off -> skin shin back
+     to 0.06..0.34, tapered 0.8 (always inside the shoe shell).
+   - the sneaker collar was a short band (0.17..0.25) that opened when the shoe
+     body pitched -> collar is now 0.10..0.26 (foot frame, wraps the body top);
+     the whole sneaker/platform now rides the ankle joint as one rigid unit.
+   - foot auto-level pitch capped at +-45 deg (was up to -92 in run).
+2. Bare ankle band between pant hem and shoe: pant hems dropped 0.30 -> 0.18
+   (all four pant bottoms): hem + skin live on the same shin frame so a pitched
+   foot can never separate them; hem now tucks into the collar.
+3. Boot shaft knee wedge: shin band 0.2..0.42 -> 0.2..0.46 (0.08 nest).
+Deliberate silhouette change: sneakers/platforms read slightly chunkier at rest
+(collar higher) - required so the ankle opening stays closed at any pitch.
+BUILD bumped to r5 (tab title beacon) so a stale tab is detectable.

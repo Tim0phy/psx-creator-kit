@@ -192,8 +192,10 @@ class PoseEngine {
     th.rotation.x = -L.forward * D2R;
     kn.rotation.x = L.knee * D2R;
     // no ankle slider: keep the foot flat (ground-parallel) by counter-
-    // rotating the ankle pivot against thigh tilt + knee fold
-    ft.rotation.x = (L.forward - L.knee) * D2R;
+    // rotating the ankle pivot against thigh tilt + knee fold; capped at
+    // 45 deg so a trailing run foot never rolls the shoe wide open
+    const pitch = (L.forward - L.knee) * D2R;
+    ft.rotation.x = Math.max(-0.785, Math.min(0.785, pitch));
   }
 
   // skirts/hips shells widen slightly in x&z, pant tubes in x (spec E);

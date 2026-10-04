@@ -22,11 +22,11 @@ function sneaker(g, m) {
     // (-0.17), front 0.28 just past the foot toe (0.22)
     bx(g, m, 0.36, 0.16, 0.47, side * 0.19, 0.09, 0.045);
     bx(g, m, 0.3, 0.07, 0.43, side * 0.19, 0.045, 0.05);
-    // slim ankle cuff: x half 0.18 strictly covers the leg with margin
-    // (0.158 max) while inner edges (±0.01) keep a gap between cuffs,
-    // z half 0.21 strictly covers the leg depth (0.17), top 0.25 under
-    // the pant hem (0.43)
-    bx(g, m, 0.36, 0.08, 0.42, side * 0.19, 0.21, 0);
+    // slim ankle collar: x half 0.18 covers the leg (0.158 max), inner edges
+    // (±0.01) keep a gap between collars; spans 0.10..0.26 (taller than the
+    // shoe body top 0.17) so a -45 deg pitched body stays INSIDE the collar
+    // and the ankle opening can never show through; shin frame (untagged)
+    bx(g, m, 0.36, 0.16, 0.42, side * 0.19, 0.18, 0);
   }
 }
 
@@ -45,7 +45,7 @@ const SHOE_BUILDER = {
     for (const side of [-1, 1]) {
       bx(g, s, 0.38, 0.1, 0.5, side * 0.19, 0.055, 0.05); // platform sole
       bx(g, m, 0.38, 0.18, 0.5, side * 0.19, 0.16, 0.045); // taller body
-      bx(g, m, 0.38, 0.08, 0.44, side * 0.19, 0.25, 0); // ankle cuff
+      bx(g, m, 0.38, 0.14, 0.44, side * 0.19, 0.19, 0); // ankle collar (foot frame)
     }
   },
   // flat Mary Jane: thin sole, low body, strap across the instep
@@ -73,8 +73,10 @@ const SHOE_BUILDER = {
       thigh.children[1].position.set(side * 0.19, 0.59, 0); // fold-over cuff
       const shin = new THREE.Group();
       shin.userData = { clothPart: "knee" + tag };
-      shin.add(new THREE.Mesh(new THREE.BoxGeometry(0.384, 0.22, 0.384).toNonIndexed(), m));
-      shin.children[0].position.set(side * 0.19, 0.31, 0); // spans 0.2..0.42 (nested)
+      shin.add(new THREE.Mesh(new THREE.BoxGeometry(0.384, 0.26, 0.384).toNonIndexed(), m));
+      shin.children[0].position.set(side * 0.19, 0.33, 0); // spans 0.2..0.46
+      // (0.08 deep nest into the thigh band 0.38..0.62: a 38..58 deg knee
+      // fold never opens a shaft wedge that shows the leg)
       g.add(thigh, shin);
     }
   },
@@ -83,10 +85,15 @@ const SHOE_BUILDER = {
 export function createShoes(id, colors) {
   const raw = new THREE.Group();
   const main = colors.main ?? "#ffffff";
-  const mat = makePSXMaterial(main, { gradient: 0.12 });
+  // DoubleSide: single-sided boxes read as hollow from above (looking into a
+  // pitched shoe shows the culled interior = the skin foot appears to pierce
+  // the shoe); both faces make every shoe render as a solid volume
+  const mat = makePSXMaterial(main, { gradient: 0.12, side: THREE.DoubleSide });
   let secMat = null;
   if (SHOE_BUILDER[id]) {
-    if (colors.secondary) secMat = makePSXMaterial(colors.secondary, { gradient: 0.12 });
+    if (colors.secondary) {
+      secMat = makePSXMaterial(colors.secondary, { gradient: 0.12, side: THREE.DoubleSide });
+    }
     SHOE_BUILDER[id](raw, mat, secMat ?? mat);
   }
   // M6.5: split the pair into per-foot groups (every shoe piece is a

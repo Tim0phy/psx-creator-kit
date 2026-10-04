@@ -233,7 +233,10 @@ export function createCharacter(bodyType = "female") {
   // triangle count +12 per leg (body budget stays <= 800)
   const halfT = 0.897; // taper width factor at the knee (0.5 of the old run)
   const thighGeo = taperBox(p.legW, 0.32, p.legW, p.legW * 0.882, p.legW * 0.765);
-  const shinGeo = taperBox(p.legW, 0.34, p.legW, p.legW, p.legW * 0.875);
+  // shin stops at the shoe collar (0.06) and tapers tighter (0.8) than the
+  // shoe opening: when the ankle pitches (run toe-off) the skin tube stays
+  // inside the tilted shoe shell instead of poking out of its collar
+  const shinGeo = taperBox(p.legW, 0.28, p.legW, p.legW, p.legW * 0.8);
   const footGeo = new THREE.BoxGeometry(0.2, 0.13, 0.32).toNonIndexed();
   for (const side of [-1, 1]) {
     const n = side < 0 ? "L" : "R";
@@ -244,8 +247,7 @@ export function createCharacter(bodyType = "female") {
     thigh.add(tm);
     const kneeG = joint("knee" + n, thigh, 0, -0.28, 0, "ZXY");
     const sm = new THREE.Mesh(shinGeo, skinMat);
-    sm.position.y = -0.17; // spans world 0.00..0.34: reaches PAST the ankle
-                           // so the end face stays buried inside the shoe/foot
+    sm.position.y = -0.14; // spans world 0.06..0.34 (inside the shoe collar)
     kneeG.add(sm);
     const foot = joint("foot" + n, kneeG, 0, -0.28, 0);
     const fm = new THREE.Mesh(footGeo, footMat);
