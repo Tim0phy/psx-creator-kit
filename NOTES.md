@@ -467,3 +467,26 @@
 - Lesson for future milestones: after editing part builders, restart the dev
   server rather than trusting HMR, and verify on the USER'S server (ours may
   differ in cache state).
+
+### M6.5 follow-up 4 (user): knee pokes out of the pant tube, foot through the shoe
+- Zoomed (deviceScaleFactor 2) run-pose probes isolated the break: the shoe
+  per-side wrap was re-parented to the KNEE joint while the skin foot pivot
+  sits at knee - 0.28 and auto-levels against knee folds -> at deep bends
+  shoe and foot diverged by the full fold angle (foot stabbed out of the
+  shoe; the pant hem band tilted with the shin while the foot stayed flat).
+- Fixed in two frames per side: shoe body+sole -> FOOT joints (new tags
+  footL/footR + PART_JOINT entries), ankle cuff -> KNEE joint (rides the
+  shin like a real cuff). Verified: foot-skin and shoe-body world bases are
+  IDENTICAL in the run pose.
+- Leg skin pieces extended past the next pivot (thigh 0.34..0.62 -> 0.30..0.62,
+  shin 0.06..0.34 -> 0.00..0.34, tapers continued) so end faces stay buried at
+  bends; clothes overlap raised (kneeOver 0.05 -> 0.12, shin piece nests up to
+  knee+0.05). footHits guard box widened to the new thigh extents (y -0.34).
+- REAL BUG found by the bare-leg probe: un-equipping a slot skipped the
+  pieces cleanup -> ghost tubes/shoes stayed welded to the joints and kept
+  rendering. applyCloth(null slot) now calls pose.attachCloth(slot, null).
+- ROOT CAUSE of "fixes not appearing": this machine's E: drive does not
+  deliver fs-change events reliably, so vite's watcher misses edits even
+  after a restart. vite.config.js now uses usePolling (250ms) - editing is
+  visible live again. (This also explains yesterday's stale fit.js.)
+- All rest renders unchanged (desktop/mobile regression identical).

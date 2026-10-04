@@ -159,7 +159,13 @@ function mount(slot, built) {
 
 function applyCloth(slot) {
   const item = catalogItem(slot);
-  if (!item) return mount(slot, null);
+  if (!item) {
+    mount(slot, null);
+    // release pieces re-parented onto joints (they are not children of the
+    // slot group any more, so removing the group alone leaves ghosts)
+    pose.attachCloth(slot, null);
+    return;
+  }
   const colors = state[slot].colors;
   let built;
   const flags = {

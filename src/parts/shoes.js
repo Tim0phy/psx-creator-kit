@@ -90,22 +90,29 @@ export function createShoes(id, colors) {
     SHOE_BUILDER[id](raw, mat, secMat ?? mat);
   }
   // M6.5: split the pair into per-foot groups (every shoe piece is a
-  // side-offset box) so each foot follows its shin/knee joint when posing;
-  // pre-tagged pieces (knee-boot shaft halves) already carry their joint
+  // side-offset box). TWO frames per side: the shoe body/sole wraps the
+  // FOOT pivot (footL/footR joint) so the shoe stays glued to the foot at
+  // any ankle angle; the ankle cuff sits higher on the shin and rides the
+  // KNEE joint (kneeL/kneeR) instead — deep bends keep the cuff on the
+  // calf while the foot flexes inside it.
   const group = new THREE.Group();
   const wraps = {};
   for (const side of [-1, 1]) {
-    const wrap = new THREE.Group();
-    wrap.userData = { clothPart: side < 0 ? "kneeL" : "kneeR" };
-    wraps[side] = wrap;
-    group.add(wrap);
+    const tag = side < 0 ? "L" : "R";
+    const footWrap = new THREE.Group();
+    footWrap.userData = { clothPart: "foot" + tag };
+    const kneeWrap = new THREE.Group();
+    kneeWrap.userData = { clothPart: "knee" + tag };
+    wraps[side] = { footWrap, kneeWrap };
+    group.add(footWrap, kneeWrap);
   }
   for (const mesh of [...raw.children]) {
     if (mesh.userData?.clothPart) {
       group.add(mesh);
       continue;
     }
-    wraps[Math.sign(mesh.position.x || 1)].add(mesh);
+    const w = wraps[Math.sign(mesh.position.x || 1)];
+    (mesh.position.y >= 0.2 ? w.kneeWrap : w.footWrap).add(mesh);
   }
   let tris = 0;
   group.traverse((o) => {
