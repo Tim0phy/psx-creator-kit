@@ -452,3 +452,18 @@
 - Extreme customs verified clamped: elbow 120 -> hand rides beside the hip
   (x 0.33, y -0.45); knee 90 -> unfolds to ~59 deg, toe exits the tube;
   spread -10 -> converges to ~-1 deg, feet hug at rest-like separation.
+
+### M6.5 follow-up 3 (user still saw broken sleeves): STALE VITE, not code
+- Probed the user's long-running vite (localhost:5173, started BEFORE every
+  fix): /src/pose.js source served was current (fetch), but the PAGE's module
+  graph still held the PRE-FIX fit.js - live traverse showed sleeves tagged
+  clothPart:"shoulder" (old tag) instead of "shoulderL/R" -> sleeves never
+  attached, matching the report exactly. Their fs-watcher had silently lost
+  track of fit.js (pose.js invalidations did arrive, fit.js did not).
+- Restarted the dev server (new pid on 5173) and re-verified IN THEIR
+  ENVIRONMENT: sleeve tags now shoulderL/R, containers are children of the
+  shoulder joints, real-UI slider Raise 130 rotates the sleeve with the arm
+  (rz -2.47), wave preset 2.78, extreme knee 90 renders clamped at 59.
+- Lesson for future milestones: after editing part builders, restart the dev
+  server rather than trusting HMR, and verify on the USER'S server (ours may
+  differ in cache state).
