@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
 import { bodyFit } from "../character.js";
 import { PatternTexture } from "../patterns.js";
+import { kneePieces } from "./geo.js";
 
 // M4 bottoms (base set) + M6 style packs: tapered pants, shorts, faceted
 // (low-poly 8-sided) skirts, pleats, denim/plaid/metallic maps. Dimensions
@@ -38,26 +39,38 @@ function hipsMesh(mat, p, waistY, depth) {
 // (taper = fraction narrower at the bottom end; negative -> wider, "wide").
 // Width scales with fit.tw (profile tubeR) so tubes hug each body; the x
 // centring follows the profile leg pivot (±legX, identical bodies).
+// M6.5: each side is split at the true knee joint (thigh piece + shin piece,
+// seamless taper) and wrapped in tagged groups; pose.js re-parents them to
+// the thigh/knee joints so bent knees carry the lower tube with the leg.
+// flare:"x" -> slight x widening with leg spread (spec E).
 function tubeMeshes(group, mat, opt, fit) {
   const r = opt.r * fit.tw;
   // depth standardized to enclose the top-shell hem on slim bodies
   // (opt.d as a base over-ridden width in the opt, else r)
   const d = (opt.d ?? opt.r) * fit.td;
-  const h = opt.top - opt.bottom;
+  const H = opt.top - opt.bottom;
   for (const side of [-1, 1]) {
-    const g = new THREE.BoxGeometry(r, h, d).toNonIndexed();
-    const q = g.attributes.position;
-    for (let i = 0; i < q.count; i++) {
-      const t = (q.getY(i) + h / 2) / h; // 0 at bottom, 1 at top
-      const w = 1 - opt.taper * (1 - t); // top=1, bottom=1-taper
-      const x =
-        q.getX(i) * w +
-        side * (fit.profile.legX ?? 0.19) * (1 + (opt.splay ?? 0) * (1 - t));
-      q.setXYZ(i, x, q.getY(i), q.getZ(i) * w);
+    const tag = side < 0 ? "L" : "R";
+    for (const pc of kneePieces(opt.bottom, opt.top)) {
+      const h = pc.y1 - pc.y0;
+      const slim = pc.slim ? 0.96 : 1; // shin piece nests inside the thigh tube
+      const g = new THREE.BoxGeometry(r * slim, h, d * slim).toNonIndexed();
+      const q = g.attributes.position;
+      for (let i = 0; i < q.count; i++) {
+        const t = ((q.getY(i) + h / 2 + pc.y0) - opt.bottom) / H; // 0..1 full tube
+        const w = 1 - opt.taper * (1 - t); // top=1, bottom=1-taper
+        const x =
+          q.getX(i) * w +
+          side * (fit.profile.legX ?? 0.19) * (1 + (opt.splay ?? 0) * (1 - t));
+        q.setXYZ(i, x, q.getY(i), q.getZ(i) * w);
+      }
+      g.translate(0, pc.y0 + h / 2, 0);
+      g.computeVertexNormals();
+      const wrap = new THREE.Group();
+      wrap.userData = { clothPart: pc.part + tag, flare: "x" };
+      wrap.add(new THREE.Mesh(g, mat));
+      group.add(wrap);
     }
-    g.translate(0, opt.bottom + h / 2, 0);
-    g.computeVertexNormals();
-    group.add(new THREE.Mesh(g, mat));
   }
 }
 
@@ -136,18 +149,21 @@ function pleatSkirt(g, mat, pleats, rTop, rBot, topY, botY) {
 }
 
 function bot_plaid_pleated(g, m, f, fit) {
+  g.userData.flare = "xz"; // skirt: slight flare scale with leg spread
   const waist = f.lowRise ? HIP : WAIST;
   g.add(waistbandMesh(m, fit.profile, waist + 0.3));
   pleatSkirt(g, m, 8, 0.33 * fit.wr, 0.5 * fit.wr, waist + 0.28, waist - 0.24);
 }
 
 function bot_tennis_skirt(g, m, f, fit) {
+  g.userData.flare = "xz";
   const waist = f.lowRise ? HIP : WAIST;
   g.add(waistbandMesh(m, fit.profile, waist + 0.3));
   pleatSkirt(g, m, 6, 0.32 * fit.wr, 0.46 * fit.wr, waist + 0.3, waist - 0.22);
 }
 
 function bot_lowrise_mini(g, m, f, fit) {
+  g.userData.flare = "xz";
   const waist = f.lowRise ? HIP : WAIST;
   // rectangular waistband flush with the skirt box (a round cylinder band
   // would float around the rectangle front/sides like a hoop); waist-anchored
@@ -205,11 +221,13 @@ const BOTTOM_BUILDER = {
     tubeMeshes(g, m, { r: 0.4, top: 0.66, bottom: 0.43, taper: 0, splay: 0.03 }, fit);
   },
   bot_short_skirt(g, m, f, fit) {
+    g.userData.flare = "xz";
     const waist = f.lowRise ? HIP : WAIST;
     g.add(waistbandMesh(m, fit.profile, waist + 0.3));
     g.add(skirtMesh(m, fit.wr, 0.32, 0.5, waist + 0.3, waist - 0.28));
   },
   bot_long_skirt(g, m, f, fit) {
+    g.userData.flare = "xz";
     const waist = f.lowRise ? HIP : WAIST;
     g.add(waistbandMesh(m, fit.profile, waist + 0.3));
     g.add(skirtMesh(m, fit.wr, 0.34, 0.62, waist + 0.28, 0.14));
@@ -225,6 +243,9 @@ const BOTTOM_BUILDER = {
 export function createBottom(id, colors, flags = {}, patternName = null, bodyType = "female") {
   const fit = bodyFit(bodyType);
   const group = new THREE.Group();
+  // M6.5: the group (hips block / waistband / skirt shells) follows the hips
+  // joint; tagged tube pieces get re-parented per leg by pose.attachCloth
+  group.userData.clothPart = "hips";
   const main = colors.main ?? "#ffffff";
   let mat;
   let builtPattern = null;

@@ -57,27 +57,55 @@ const SHOE_BUILDER = {
       bx(g, s, 0.05, 0.03, 0.03, side * 0.19, 0.145, -0.05); // buckle
     }
   },
-  // knee-high boots: sneaker foot + tall shaft wrapping the leg up to y 0.62
+  // knee-high boots: sneaker foot + tall shaft wrapping the leg up to y 0.62;
+  // M6.5: the shaft is split at the true knee (thigh band + nested shin band)
+  // so bent knees don't rip the shaft off the thigh
   shoe_knee_boots(g, m, s) {
     for (const side of [-1, 1]) {
       bx(g, m, 0.36, 0.16, 0.47, side * 0.19, 0.09, 0.045);
       bx(g, s, 0.3, 0.07, 0.43, side * 0.19, 0.045, 0.05);
-      // shaft: covers the leg (half 0.2 > 0.17) up to the knee top (0.62)
-      bx(g, m, 0.4, 0.4, 0.4, side * 0.19, 0.4, 0);
-      // fold-over cuff band at the top of the shaft
-      bx(g, s, 0.42, 0.08, 0.42, side * 0.19, 0.59, 0);
+      const tag = side < 0 ? "L" : "R";
+      const thigh = new THREE.Group();
+      thigh.userData = { clothPart: "thigh" + tag };
+      thigh.add(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.24, 0.4).toNonIndexed(), m));
+      thigh.children[0].position.set(side * 0.19, 0.5, 0); // spans 0.38..0.62
+      thigh.add(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.42).toNonIndexed(), s));
+      thigh.children[1].position.set(side * 0.19, 0.59, 0); // fold-over cuff
+      const shin = new THREE.Group();
+      shin.userData = { clothPart: "knee" + tag };
+      shin.add(new THREE.Mesh(new THREE.BoxGeometry(0.384, 0.22, 0.384).toNonIndexed(), m));
+      shin.children[0].position.set(side * 0.19, 0.31, 0); // spans 0.2..0.42 (nested)
+      g.add(thigh, shin);
     }
   },
 };
 
 export function createShoes(id, colors) {
-  const group = new THREE.Group();
+  const raw = new THREE.Group();
   const main = colors.main ?? "#ffffff";
   const mat = makePSXMaterial(main, { gradient: 0.12 });
   let secMat = null;
   if (SHOE_BUILDER[id]) {
     if (colors.secondary) secMat = makePSXMaterial(colors.secondary, { gradient: 0.12 });
-    SHOE_BUILDER[id](group, mat, secMat ?? mat);
+    SHOE_BUILDER[id](raw, mat, secMat ?? mat);
+  }
+  // M6.5: split the pair into per-foot groups (every shoe piece is a
+  // side-offset box) so each foot follows its shin/knee joint when posing;
+  // pre-tagged pieces (knee-boot shaft halves) already carry their joint
+  const group = new THREE.Group();
+  const wraps = {};
+  for (const side of [-1, 1]) {
+    const wrap = new THREE.Group();
+    wrap.userData = { clothPart: side < 0 ? "kneeL" : "kneeR" };
+    wraps[side] = wrap;
+    group.add(wrap);
+  }
+  for (const mesh of [...raw.children]) {
+    if (mesh.userData?.clothPart) {
+      group.add(mesh);
+      continue;
+    }
+    wraps[Math.sign(mesh.position.x || 1)].add(mesh);
   }
   let tris = 0;
   group.traverse((o) => {

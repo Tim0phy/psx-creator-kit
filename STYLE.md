@@ -89,3 +89,15 @@ Saved to localStorage key `psxcc.v1`. Export/import as JSON file.
 - [ ] Works on mobile portrait; keyboard/mouse/touch rotation OK.
 - [ ] Triangle budgets respected (log counts in console in dev mode).
 - [ ] No copied assets, no real brand logos.
+- [x] (M6.5) Rendering low-res/pixelated ✓; head ~1/3 ✓; gradients ✓; face crisp ✓; paper hair ✓; colour options ✓; UI layout ✓; mobile portrait ✓; triangle budgets unchanged (rig split +12 tris/leg, sleeves unchanged) ✓; no copied assets ✓.
+
+## 10. Pose system (M6.5)
+- Joint hierarchy of THREE.Groups (root → hips → waist → chest → neck → head; chest → shoulder → elbow; hips → thigh → knee → foot). No skinning, no skeletal libraries.
+- Pivots at true joints; fixed rotation order (root YXZ, joints ZXY); all angles clamped to LIMITS.
+- 9 presets in catalog.json ("poses"): default, wave, hands on hips, peace, walk, run, salute, arms up, sit. Interpolated over ~0.25 s at 12-15 fps steps on switch; sliders apply immediately.
+- Pose tab: preset grid with cached 64x64 chibi stick-figure thumbs; manual sliders grouped (Body / L arm / R arm / L leg / R leg) with numeric readout + reset dot; MIRROR / SYMMETRY / RESET pose buttons.
+- Slider edits switch config to preset "custom" seeded from the last preset; MIRROR copies one arm/leg to the other (twist sign flipped).
+- Collision guard (analytic, no physics): palm tip tested against head box and torso core; offending raise/forward/elbow shrunk iteratively. Feet auto-level: `foot.rotation.x = (forward − knee)` keeps soles flat in walk/run/sit.
+- Clothing follows the rig: tagged pieces re-parented to joints at rest with world-preserving `attach()` (sleeves → shoulder, pant tubes + socks + boot shafts split at the knee, skirts/shoe pairs → hips/shin). Skirt cones and pant tubes flare (scale x/xz up to ~1.25) with leg spread AND forward lean; long hair shifts back when arms are raised.
+- Sit preset folds legs within slider clamps + internal `drop` 0.12 (keeps feet on the ground; long skirt hides the fold).
+- Preset "custom" saved in config; old saves (no pose key) load as pose_default. RANDOM picks a random preset (not random sliders); RESET returns to pose_default.

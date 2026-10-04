@@ -2,6 +2,9 @@ import catalogJson from "../catalog.json";
 
 export default catalogJson;
 
+// M6.5: pose presets live in catalog.json ("poses" array)
+export const POSE_PRESETS = catalogJson.poses ?? [];
+
 export const SLOT_LABELS = {
   face: "EYES",
   head: "HAIR",
@@ -10,6 +13,7 @@ export const SLOT_LABELS = {
   bottom: "BOTTOM",
   shoes: "SHOES",
   accessories: "ACCESSORIES",
+  pose: "POSE",
   style: "STYLE",
 };
 

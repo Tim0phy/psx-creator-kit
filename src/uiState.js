@@ -11,7 +11,7 @@ function randName() {
   return NAMES[Math.floor(Math.random() * NAMES.length)];
 }
 
-export function initNameSave({ onConfirm }) {
+export function initNameSave({ state, onConfirm }) {
   const input = document.getElementById("nameInput");
   const dice = document.getElementById("btnDice");
   const confirm = document.getElementById("btnConfirm");
@@ -29,9 +29,13 @@ export function initNameSave({ onConfirm }) {
   });
 
   confirm.addEventListener("click", () => {
-    const cfg = load();
-    cfg.name = currentName();
-    localStorage.setItem("psxcc.v1", JSON.stringify(cfg));
+    // M7-lite: CONFIRM snapshots the whole config (M6.5: pose included);
+    // main.js restores it on the next boot. JSON file import/export lands
+    // with the M8 exporter.
+    localStorage.setItem("psxcc.v1", JSON.stringify({
+      ...state,
+      name: currentName(),
+    }));
     onConfirm?.();
   });
 

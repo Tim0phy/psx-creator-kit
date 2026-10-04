@@ -7,6 +7,25 @@ import { makePSXMaterial, SHARED_GRAD } from "./psxRenderer.js";
 // arms/legs), male = broad straight chest with chunkier arms/legs. Head size,
 // arm/leg length, feet and the overall chibi proportions stay identical
 // (body triangle budget still <= 800).
+// M6.5: every part hangs from a named THREE.Group pivot chain (no skinning):
+//   root -> hips -> waist -> chest -> neck -> head
+//   chest -> shoulderL/R -> elbowL/R (hand)   |   hips -> thighL/R -> kneeL/R
+// -> footL/R. Rest transforms reproduce the old static layout exactly; pose.js
+// only ever rotates these pivots (fixed order, clamped).
+
+// rig constants shared with the clothing builders (parts/* split tubes/socks
+// at the knee so garments follow the limbs)
+export const RIG = {
+  hipsY: 0.58,     // hip/pelvis line (bottoms hips block, skirts)
+  waistY: 0.88,    // torso centre = waist twist pivot
+  chestY: 1.18,    // shoulder line (torso top)
+  shoulderY: 1.18,
+  thighTopY: 0.62, // top of the thigh (true hip joint)
+  kneeY: 0.34,     // true knee joint (leg pieces cut here)
+  kneeOver: 0.05,  // clothes overlap margin around the knee cut
+  armRest: 0.2,    // A-pose shoulder rest (rad, per side)
+  topY: 1.9,       // gradient ceiling (SHARED_GRAD)
+};
 
 // torso width curve, shared with the clothing shells so garments always
 // enclose the body exactly: t = 0 at the hip/hem line (y 0.58), 1 at the
@@ -140,17 +159,18 @@ function roundedHead() {
 
 export const DEFAULT_SKIN = "#f5d5bf";
 
-function anchorAt(root, name, x, y, z) {
+function anchorAt(parent, name, x, y, z) {
   const a = new THREE.Group();
   a.name = name;
   a.position.set(x, y, z);
-  root.add(a);
+  parent.add(a);
   return a;
 }
 
 export function createCharacter(bodyType = "female") {
   const p = getBodyProfile(bodyType);
   const root = new THREE.Group();
+  root.rotation.order = "YXZ"; // fixed order: yaw (controls) then tilt (pose)
 
   const skinMat = makePSXMaterial(DEFAULT_SKIN);
   // torso shares the skin material so cropped tops (M6) expose skin,
@@ -158,67 +178,116 @@ export function createCharacter(bodyType = "female") {
   const footMat = makePSXMaterial("#e6d3c4", { gradient: 0.05 });
   const mats = { skin: skinMat, shirt: skinMat, feet: footMat };
 
-  // head ~1/3 of total height (~1.9 units)
-  const head = new THREE.Mesh(roundedHead(), skinMat);
-  head.position.y = 1.48;
-  root.add(head);
+  // named joint pivots (M6.5): plain groups, no skinning, clamped by pose.js
+  const joints = {};
+  function joint(name, parent, x, y, z, order) {
+    const g = new THREE.Group();
+    g.name = "j_" + name;
+    g.position.set(x, y, z);
+    if (order) g.rotation.order = order;
+    parent.add(g);
+    joints[name] = g;
+    return g;
+  }
 
-  // torso: profile-curved trapezoid box (hourglass / straight)
+  const hips = joint("hips", root, 0, RIG.hipsY, 0);
+  const waist = joint("waist", hips, 0, 0.30, 0, "ZXY");
+  const chest = joint("chest", waist, 0, 0.30, 0);
+  const neck = joint("neck", chest, 0, -0.02, 0, "ZXY");
+  const head = joint("head", neck, 0, 0.32, 0);
+
+  // torso mesh: waist-local -0.30 -> world 0.88 exactly as before
   const torso = new THREE.Mesh(torsoGeo(p), skinMat);
-  torso.position.y = 0.88;
-  root.add(torso);
+  torso.position.y = -0.30;
+  waist.add(torso);
 
-  // arms: A-pose ~25 degrees; thickness from the profile, pivot unchanged
+  // head + anchor_head: rest world (0,1.48,0) unchanged; hair / face decals /
+  // headwear / eyewear keep their head-centred coordinate space untouched
+  const headMesh = new THREE.Mesh(roundedHead(), skinMat);
+  head.add(headMesh);
+  const hairAnchor = new THREE.Group();
+  hairAnchor.name = "anchor_head";
+  head.add(hairAnchor);
+
+  // arms: shoulder pivot = true shoulder joint (world ±armX, 1.18); elbow
+  // pivot at the arm/hand seam (world y 0.60 at rest, under the sleeve hem)
   const armGeo = taperBox(p.armW, 0.6, p.armW, p.armW, p.armW * 0.777);
   const handW = p.armW * 1.111; // old art ratio: hand 0.3 / arm 0.27
   const handGeo = new THREE.BoxGeometry(handW, 0.26, handW).toNonIndexed();
   for (const side of [-1, 1]) {
-    const arm = new THREE.Group();
+    const n = side < 0 ? "L" : "R";
+    const sh = joint("shoulder" + n, chest, side * p.armX, 0, 0, "ZXY");
+    sh.rotation.z = side * RIG.armRest; // rest A-pose ~12 deg (unchanged M1)
     const upper = new THREE.Mesh(armGeo, skinMat);
     upper.position.y = -0.29;
+    sh.add(upper);
+    const elbow = joint("elbow" + n, sh, 0, -0.58, 0, "ZXY");
     const hand = new THREE.Mesh(handGeo, skinMat);
-    hand.position.y = -0.68;
-    arm.add(upper, hand);
-    arm.position.set(side * p.armX, 1.18, 0);
-    arm.rotation.z = side * 0.2; // ~12 deg outward
-    root.add(arm);
+    hand.position.y = -0.10; // old hand offset (-0.68) relative the elbow
+    elbow.add(hand);
   }
 
-  // legs: thickness from the profile; pivots stay at ±legX for shoes/socks
-  const legGeo = taperBox(p.legW, 0.56, p.legW, p.legW, p.legW * 0.794);
+  // legs: single 0.56 taper split at the true knee (y 0.34) into thigh+shin;
+  // both pieces share the continuous taper profile -> seamless at rest,
+  // triangle count +12 per leg (body budget stays <= 800)
+  const halfT = 0.897; // taper width factor at the knee (0.5 of the old run)
+  const thighGeo = taperBox(p.legW, 0.28, p.legW, p.legW * halfT, p.legW * 0.794);
+  const shinGeo = taperBox(p.legW, 0.28, p.legW, p.legW, p.legW * halfT);
+  const footGeo = new THREE.BoxGeometry(0.2, 0.13, 0.32).toNonIndexed();
   for (const side of [-1, 1]) {
-    const leg = new THREE.Mesh(legGeo, skinMat);
-    leg.position.set(side * p.legX, 0.34, 0);
-    const foot = new THREE.Mesh(
-      new THREE.BoxGeometry(0.2, 0.13, 0.32).toNonIndexed(),
-      footMat
-    );
-    foot.position.set(side * p.legX, 0.065, 0.06);
-    root.add(leg, foot);
+    const n = side < 0 ? "L" : "R";
+    const thigh = joint("thigh" + n, hips, side * p.legX, 0.04, 0, "ZXY");
+    const tm = new THREE.Mesh(thighGeo, skinMat);
+    tm.position.y = -0.14; // spans world 0.34..0.62 (old upper half)
+    thigh.add(tm);
+    const kneeG = joint("knee" + n, thigh, 0, -0.28, 0, "ZXY");
+    const sm = new THREE.Mesh(shinGeo, skinMat);
+    sm.position.y = -0.14; // spans world 0.06..0.34 (old lower half)
+    kneeG.add(sm);
+    const foot = joint("foot" + n, kneeG, 0, -0.28, 0);
+    const fm = new THREE.Mesh(footGeo, footMat);
+    fm.position.set(0, 0.005, 0.06);
+    foot.add(fm);
   }
 
   root.traverse((o) => {
     if (o.isMesh) o.geometry.computeBoundingSphere();
   });
-  SHARED_GRAD.max = root.userData.topY = 1.9;
+  SHARED_GRAD.max = root.userData.topY = RIG.topY;
 
-  // named anchors (M5): accessory slot attachment points
-  const hairAnchor = new THREE.Group();
-  hairAnchor.position.set(0, 1.48, 0);
-  hairAnchor.name = "anchor_head";
-  root.add(hairAnchor);
-
-  const neckAnchor = anchorAt(root, "anchor_neck", 0, 1.16, 0);
-  // wrists: at the arm/en-hand joint (arm pivot y1.18 - 0.6 down, tilted)
+  // named anchors (M5), now children of the matching joints so accessories
+  // follow the pose; local offsets reproduce the old root-space positions:
+  // neck world 1.16 (below the head-turn pivot), bag world (0,1.0,0.05)
+  const neckAnchor = anchorAt(chest, "anchor_neck", 0, -0.02, 0);
+  const bagAnchor = anchorAt(chest, "anchor_bag", 0, -0.18, 0.05);
+  // wrist: keep the old root-space rest transform (0,0.59,0) but parent it
+  // to the left elbow via attach() -> rest-identical, follows the forearm.
+  // The +0.2 local counter-rotation (from attach) cancels the elbow's rest
+  // tilt so the watch builder's baked -0.2 frame renders exactly as before.
   const wristAnchor = anchorAt(root, "anchor_wrist", 0, 0.59, 0);
-  const bagAnchor = anchorAt(root, "anchor_bag", 0, 1.0, 0.05);
+  root.updateMatrixWorld(true);
+  joints.elbowL.attach(wristAnchor);
 
   function setSkin(hex) {
     skinMat.uniforms.color.value.set(hex);
   }
 
+  function resetRest() {
+    // pose.js calls this before (re)attaching garments: exact M1/M8 rest
+    root.rotation.x = 0;
+    hips.position.y = RIG.hipsY;
+    for (const n of [
+      "waist", "neck", "shoulderL", "shoulderR",
+      "elbowL", "elbowR", "thighL", "thighR", "kneeL", "kneeR",
+    ]) {
+      joints[n].rotation.set(0, 0, 0);
+    }
+    joints.shoulderL.rotation.z = -RIG.armRest;
+    joints.shoulderR.rotation.z = RIG.armRest;
+  }
+
   return {
-    root, mats, setSkin, hairAnchor, profile: p,
+    root, mats, setSkin, hairAnchor, profile: p, joints, resetRest,
     anchors: {
       head: hairAnchor, neck: neckAnchor,
       wrist: wristAnchor, bag: bagAnchor,

@@ -783,5 +783,95 @@
     "shoes": "shoe_sneaker"
    }
   }
+ ],
+ "poses": [
+  {
+   "id": "pose_default",
+   "label": "Default",
+   "angles": {}
+  },
+  {
+   "id": "pose_wave",
+   "label": "Wave",
+   "angles": {
+    "tilt": -4,
+    "headTurn": -8,
+    "armR": { "raise": 148, "forward": -6, "twist": 0, "elbow": 26 }
+   }
+  },
+  {
+   "id": "pose_hands_on_hips",
+   "label": "Hands on Hips",
+   "angles": {
+    "tilt": 3,
+    "waistTwist": -5,
+    "armL": { "raise": 26, "forward": 4, "twist": 10, "elbow": 114 },
+    "armR": { "raise": 26, "forward": 4, "twist": -10, "elbow": 114 }
+   }
+  },
+  {
+   "id": "pose_peace",
+   "label": "Peace",
+   "angles": {
+    "tilt": -3,
+    "headTurn": 5,
+    "armR": { "raise": 145, "forward": -8, "twist": -14, "elbow": 108 }
+   }
+  },
+  {
+   "id": "pose_walk",
+   "label": "Walk",
+   "angles": {
+    "tilt": 3,
+    "waistTwist": 6,
+    "armL": { "raise": 6, "forward": 24, "twist": 0, "elbow": 14 },
+    "armR": { "raise": 6, "forward": -24, "twist": 0, "elbow": 18 },
+    "legL": { "spread": 2, "forward": -22, "knee": 12 },
+    "legR": { "spread": 2, "forward": 20, "knee": 4 }
+   }
+  },
+  {
+   "id": "pose_run",
+   "label": "Run",
+   "angles": {
+    "tilt": 8,
+    "waistTwist": 10,
+    "headTurn": -4,
+    "armL": { "raise": 8, "forward": 50, "twist": 0, "elbow": 22 },
+    "armR": { "raise": 8, "forward": -44, "twist": 0, "elbow": 30 },
+    "legL": { "spread": 3, "forward": -34, "knee": 58 },
+    "legR": { "spread": 3, "forward": 44, "knee": 6 }
+   }
+  },
+  {
+   "id": "pose_salute",
+   "label": "Salute",
+   "angles": {
+    "tilt": -2,
+    "headTurn": 4,
+    "armR": { "raise": 105, "forward": 25, "twist": -8, "elbow": 112 }
+   }
+  },
+  {
+   "id": "pose_arms_up",
+   "label": "Arms Up",
+   "angles": {
+    "tilt": -5,
+    "armL": { "raise": 158, "forward": 4, "twist": 0, "elbow": 8 },
+    "armR": { "raise": 158, "forward": 4, "twist": 0, "elbow": 8 }
+   }
+  },
+  {
+   "id": "pose_sit",
+   "label": "Sit",
+   "angles": {
+    "tilt": 6,
+    "drop": 0.12,
+    "armL": { "raise": 4, "forward": 12, "twist": 0, "elbow": 16 },
+    "armR": { "raise": 4, "forward": 12, "twist": 0, "elbow": 16 },
+    "legL": { "spread": 4, "forward": 52, "knee": 58 },
+    "legR": { "spread": 4, "forward": 52, "knee": 58 }
+   }
+  }
  ]
 }

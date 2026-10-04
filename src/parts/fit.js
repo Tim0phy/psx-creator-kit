@@ -31,7 +31,11 @@ export function shellGeo(p, enl, hScale = 1, open = false) {
 // arm thickness (old art ratio: sleeve 0.3 / arm 0.27 -> 1.111). len 1 =
 // upper arm to elbow, len 1.75 = full sleeve to the wrist. Arms rotate z
 // +/-0.2 rad about their group pivot at (±armX, 1.18).
-function sleeveMesh(len, mat, p, enl = 1.08) {
+// M6.5: each sleeve container is tagged (clothPart "shoulder" + side) so
+// pose.attachCloth re-parents it onto the shoulder joint; the joint's rest
+// A-pose (+-0.2) reproduces the old static tilt exactly, so long sleeves
+// stop at the elbow and never need splitting.
+function sleeveMesh(len, mat, p, enl = 1.08, side = 1) {
   const l = 0.6 * len;
   const sw = (p.armW ?? 0.27) * 1.111;
   const g = taperBox(sw * enl, l, sw * enl, sw * enl, sw * 0.8 * enl)
@@ -42,13 +46,13 @@ function sleeveMesh(len, mat, p, enl = 1.08) {
   const container = new THREE.Group();
   container.add(m);
   container.position.set(0, 0, 0);
-  container.userData.spin = true;
+  container.userData = { clothPart: "shoulder", side };
   return container;
 }
 
 export function addSleeves(root, mat, len, enl, p) {
   for (const side of [-1, 1]) {
-    const s = sleeveMesh(len, mat, p, enl);
+    const s = sleeveMesh(len, mat, p, enl, side);
     s.position.set(side * (p.armX ?? 0.36), 0.3, 0);
     s.rotation.z = side * 0.2;
     root.add(s);

@@ -4,6 +4,7 @@ import { HAIR_IDS } from "./parts/hair.js";
 import { applyPreset, applyColourBlock } from "./uiStyle.js";
 import { initNameSave, showSaved } from "./uiState.js";
 import { BODY_TYPES } from "./state.js";
+import { buildPosePanel } from "./uiPose.js";
 import {
   el, cell64, pillRow, itemsFor, drawNum, colourGroup, buildRight,
 } from "./uiWidgets.js";
@@ -48,7 +49,7 @@ export function createUI(state, { onChange }) {
   };
 
   // name / confirm / toast wiring; returns nothing but mounts handlers once
-  initNameSave({ onConfirm: () => showSaved() });
+  initNameSave({ state, onConfirm: () => showSaved() });
 
   let refresh = () => {};
   let page = 0;
@@ -420,6 +421,8 @@ export function createUI(state, { onChange }) {
     bottom: () => buildCloth("bottom"),
     shoes: () => buildCloth("shoes"),
     accessories: () => buildCloth("accessories"),
+    // M6.5 pose tab: preset grid + manual sliders (built in uiPose.js)
+    pose: () => buildPosePanel({ state, onChange, setPill, buildGrid }),
     style: () => buildStylePanel(),
   };
 

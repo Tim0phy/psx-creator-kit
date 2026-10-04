@@ -405,3 +405,15 @@
   改為 `depth ?? p.hipsDepth`。
   驗證：tee x 五件褲類（front + 0.5rad angle）腰線全部連續、無紋無
   sliver；男仔（tw/td = 1）逐像素不變。
+
+## M6.5 Pose system
+- Joint hierarchy in character.js (RIG constants, pivots reproduce rest layout exactly; thigh/shin split with taper 0.897, +12 tris/leg). Root order YXZ, joints ZXY.
+- Elbow bend axis: chose Z-fold (inward, in the shoulder coronal plane, el.rotation.z = -side*e) over X-fold: X-fold cannot bring the forearm inward, hands-on-hips became a T-pose. Z-fold reads akimbo/wave/peace/salute acceptably.
+- Clothing->joint attachment via Object3D.attach() at REST with root.updateMatrixWorld(true) before it (stale-matrix bug found+fixed). Pieces tagged userData.clothPart by builders; pose.attachCloth tracks per-slot pieces so item rebuilds remove stale pieces from joints.
+- Knee-split pieces nested: shin piece width x0.96 spans past the knee under the thigh piece extension -> no wedge gap when bent, no coplanar z-fight; shoe pairs split per-foot kneeL/R; knee boots' shaft split into thigh band + nested shin band.
+- Skirt cones flare 'xz', pant/sock tubes flare 'x'; factor includes leg spread AND |forward| so bent thighs don't open a crotch slit.
+- Foot auto-level: foot.rotation.x = (forward - knee) keeps soles flat (run/sit no longer dig into the floor plate).
+- Sit preset uses internal preset-only 'drop' 0.12 (clamped 0..0.42, carried into custom seeds) so feet stay grounded while matching slider-legible angles.
+- Collision guard: palm tip vs head box + torso core; shrink raise/forward/elbow x0.35.
+- CONFIRM now saves the full config (name + pose) to psxcc.v1; JSON-file import/export deferred to M8 (needs a file picker, out of scope here).
+- Debug: ?debug=poses cycles 9 presets x 4 outfits; window.PSXCC.pose API (list/preset/custom/debugNext...).
