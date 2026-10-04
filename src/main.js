@@ -31,10 +31,6 @@ import { load } from "./uiState.js";
 // onto their joints after every mount.
 
 const state = defaultState();
-// build beacon: the tab title carries the build tag so a stale tab (one that
-// missed HMR / kept old modules alive) is identifiable at a glance
-const BUILD = "r5";
-document.title = `PSX Character Creator \u00B7 ${BUILD}`;
 // a previously confirmed config restores on boot (pose included)
 restoreInto(state, load());
 sanitizePose(state);
@@ -163,13 +159,7 @@ function mount(slot, built) {
 
 function applyCloth(slot) {
   const item = catalogItem(slot);
-  if (!item) {
-    mount(slot, null);
-    // release pieces re-parented onto joints (they are not children of the
-    // slot group any more, so removing the group alone leaves ghosts)
-    pose.attachCloth(slot, null);
-    return;
-  }
+  if (!item) return mount(slot, null);
   const colors = state[slot].colors;
   let built;
   const flags = {
@@ -401,7 +391,6 @@ window.PSXCC = {
   controls, state, setAuto: (v) => (auto = v), applyAll,
   scene, camera,
   pose: poseAPI,
-  build: BUILD,
   get character() {
     return character;
   },

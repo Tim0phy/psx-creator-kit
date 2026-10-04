@@ -22,8 +22,8 @@ export const RIG = {
   shoulderY: 1.18,
   thighTopY: 0.62, // top of the thigh (true hip joint)
   kneeY: 0.34,     // true knee joint (leg pieces cut here)
-  kneeOver: 0.12,  // clothes overlap: thigh piece reaches past the knee,
-                   // shin piece nests up to knee+0.05 -> deep bends stay shut
+  kneeOver: 0.05,  // thigh-piece edge below the knee (sets the visible hem)
+  kneeCover: 0.14, // shin-piece hidden top above the knee (bend coverage)
   armRest: 0.2,    // A-pose shoulder rest (rad, per side)
   topY: 1.9,       // gradient ceiling (SHARED_GRAD)
 };
@@ -232,22 +232,18 @@ export function createCharacter(bodyType = "female") {
   // both pieces share the continuous taper profile -> seamless at rest,
   // triangle count +12 per leg (body budget stays <= 800)
   const halfT = 0.897; // taper width factor at the knee (0.5 of the old run)
-  const thighGeo = taperBox(p.legW, 0.32, p.legW, p.legW * 0.882, p.legW * 0.765);
-  // shin stops at the shoe collar (0.06) and tapers tighter (0.8) than the
-  // shoe opening: when the ankle pitches (run toe-off) the skin tube stays
-  // inside the tilted shoe shell instead of poking out of its collar
-  const shinGeo = taperBox(p.legW, 0.28, p.legW, p.legW, p.legW * 0.8);
+  const thighGeo = taperBox(p.legW, 0.28, p.legW, p.legW * halfT, p.legW * 0.794);
+  const shinGeo = taperBox(p.legW, 0.28, p.legW, p.legW, p.legW * halfT);
   const footGeo = new THREE.BoxGeometry(0.2, 0.13, 0.32).toNonIndexed();
   for (const side of [-1, 1]) {
     const n = side < 0 ? "L" : "R";
     const thigh = joint("thigh" + n, hips, side * p.legX, 0.04, 0, "ZXY");
     const tm = new THREE.Mesh(thighGeo, skinMat);
-    tm.position.y = -0.16; // spans world 0.30..0.62: reaches PAST the knee so
-                           // the end face stays buried when the knee bends
+    tm.position.y = -0.14; // spans world 0.34..0.62 (old upper half)
     thigh.add(tm);
     const kneeG = joint("knee" + n, thigh, 0, -0.28, 0, "ZXY");
     const sm = new THREE.Mesh(shinGeo, skinMat);
-    sm.position.y = -0.14; // spans world 0.06..0.34 (inside the shoe collar)
+    sm.position.y = -0.14; // spans world 0.06..0.34 (old lower half)
     kneeG.add(sm);
     const foot = joint("foot" + n, kneeG, 0, -0.28, 0);
     const fm = new THREE.Mesh(footGeo, footMat);

@@ -191,11 +191,11 @@ class PoseEngine {
     th.rotation.z = side * L.spread * D2R;
     th.rotation.x = -L.forward * D2R;
     kn.rotation.x = L.knee * D2R;
-    // no ankle slider: keep the foot flat (ground-parallel) by counter-
-    // rotating the ankle pivot against thigh tilt + knee fold; capped at
-    // 45 deg so a trailing run foot never rolls the shoe wide open
-    const pitch = (L.forward - L.knee) * D2R;
-    ft.rotation.x = Math.max(-0.785, Math.min(0.785, pitch));
+    // sole kept ground-flat only for a forward (weight-bearing) leg; a leg
+    // swung back keeps its natural push-off flex (foot aligned with the shin)
+    // -> avoids absurd ankle angles (and shoe/shin tearing) in run etc.
+    const blend = Math.min(1, Math.max(0, (L.forward - 5) / 15));
+    ft.rotation.x = (L.forward - L.knee) * D2R * blend;
   }
 
   // skirts/hips shells widen slightly in x&z, pant tubes in x (spec E);
@@ -229,11 +229,6 @@ class PoseEngine {
     // drop this slot's previous redistribution (they live under joints now)
     for (const o of this.pieces.get(slot) ?? []) {
       if (o.parent) o.parent.remove(o);
-    }
-    // un-equip (group == null): pieces released above, nothing to attach
-    if (!group) {
-      this.pieces.delete(slot);
-      return "";
     }
     // collect tagged descendants first (children re-parent out, then the
     // group itself if tagged)
@@ -328,15 +323,15 @@ class PoseEngine {
     return false;
   }
 
-  // foot toe/heel vs the thigh tube (thigh-local; the skin mesh spans y
-  // -0.32..0, half-x ~0.19, half-z ~0.18) -> catches knee-90 toe stabs
+  // foot toe/heel vs the thigh tube (thigh-local; the mesh spans y
+  // -0.28..0, half-x 0.2, half-z 0.17) -> catches knee-90 toe stabs
   footHits(key) {
     const ch = this.ch, J = ch.joints;
     const s = key.slice(3);
     const foot = J["foot" + s], thigh = J["thigh" + s];
     for (const p of [[0, 0.03, 0.2], [0, 0.03, -0.2]]) {
       const q = thigh.worldToLocal(foot.localToWorld(new THREE.Vector3(...p)));
-      if (Math.abs(q.x) < 0.22 && Math.abs(q.z) < 0.19 && q.y > -0.34 && q.y < 0.03)
+      if (Math.abs(q.x) < 0.22 && Math.abs(q.z) < 0.19 && q.y > -0.30 && q.y < 0.03)
         return true;
     }
     return false;

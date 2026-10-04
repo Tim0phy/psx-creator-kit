@@ -19,14 +19,16 @@ export function bx(g, m, w, h, d, x, y, z, r = {}) {
 // the knee and the shin piece nests (0.96 width) inside the thigh piece's
 // extension -> no gap when bent, no coplanar z-fighting at rest.
 // part names get the side letter appended by the caller (thighL/kneeR/...).
+// The thigh piece's bottom edge sets the visible hem (kneeY - kneeOver, the
+// M6 designed hem) and must NOT move; the shin piece's hidden top runs
+// kneeCover above the knee so bent knees keep the front covered.
 export function kneePieces(y0, y1) {
-  const k = RIG.kneeY, over = RIG.kneeOver;
+  const k = RIG.kneeY, over = RIG.kneeOver, cover = RIG.kneeCover;
   if (y1 <= k - over) return [{ y0, y1, part: "knee", slim: true }];
   if (y0 >= k) return [{ y0, y1, part: "thigh" }];
-  // straddles the knee: thigh piece reaches past the knee (never below the
-  // garment's own hem), shin piece nests inside its extension
+  // straddles the knee: thigh piece reaches past the knee, shin piece nests
   return [
-    { y0: Math.max(y0, k - over), y1, part: "thigh" },
-    { y0, y1: Math.min(y1, k + over), part: "knee", slim: true },
+    { y0: k - over, y1, part: "thigh" },
+    { y0, y1: Math.min(y1, k + cover), part: "knee", slim: true },
   ];
 }
