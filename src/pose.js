@@ -191,11 +191,14 @@ class PoseEngine {
     th.rotation.z = side * L.spread * D2R;
     th.rotation.x = -L.forward * D2R;
     kn.rotation.x = L.knee * D2R;
-    // no ankle slider: keep the foot flat (ground-parallel) by counter-
-    // rotating the ankle pivot against thigh tilt + knee fold; capped at
-    // 45 deg so a trailing run foot never rolls the shoe wide open
-    const pitch = (L.forward - L.knee) * D2R;
-    ft.rotation.x = Math.max(-0.785, Math.min(0.785, pitch));
+    // ANKLE: the foot (and every shoe piece riding the foot joint) is a rigid
+    // continuation of the shin. The old "ground-parallel" counter-rotation
+    // tilted the shoe away from the folding shin (up to 92 deg in run), so the
+    // shin's square end ring sliced through the foot plate, the collar and
+    // the sole (ring corners sweep 0.14·sin(tilt) below the ankle). Coaxial
+    // foot+shin can never slice, pointed-toe steps read naturally, and rest
+    // is identical (all rotations 0).
+    ft.rotation.x = 0;
   }
 
   // skirts/hips shells widen slightly in x&z, pant tubes in x (spec E);

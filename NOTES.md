@@ -600,3 +600,24 @@ OBB 測距）逐個姿勢(9) x outfit(褲/短褲+靴/長裙/男仔) 掃描，歸
   canvas）、tests/poseProbe.mjs（per-vertex OBB 暴露標尺 >12/>50/>150mm），
   作為以後衣著改動嘅 regression 檢查。
 
+### M6.5 follow-up 7 (user-reported: shin slices through foot plate + sole
+### because the foot stays ground-parallel while the shin bends)
+- 成因：applyLeg 嘅 ankle auto-level「腳板保持水平」（(fwd−knee)±45° cap）喺
+  小腿世界傾斜 θ 時，鞋/腳板軸同小腿軸錯開 θ：小腿末端方形 ring 嘅角位
+  （±0.14）以 0.14·sin θ 掃過鞋腔外，walk θ≈34° 已掃穿 sole/collar
+  （probe 見 28mm 暴露），run θ≈92° 穿得更多。coutner-rotation 幾多都
+  改變唔到 shin ring 同鞋腔嘅交角（交角 = 小腿世界傾斜，同 foot pitch
+  無關），所以「加 cap」及「鞋子 relocate」都唔會根治。
+- 修法（用戶方向：腳板跟住小腿行）：`ft.rotation.x = 0` — 腳板、鞋身、
+  collar 統一喺 shin frame 內同軸。任何膝彎角度 ring 都喺鞋腔內（腔
+  0.47x0.36 > ring 0.28x0.28），零衣着穿模。Rest 完全不變（所有腿角
+  係 0）。腳尖/腳跟指向上疆態（walk/run 自然步伐）。
+- 探針覆核：全 9 姿勢 x 褲/短褲+靴/長裙/男仔，所有 w0.28/w0.34 (shin)
+  暴露 cluster 消失（原本 walk/run/sit 各 9/36）。剩低手臂/手掌裸露
+  （設計）同 sit 場景 head 底邊 sliver。
+- 已知取捨：鞋底唔再永遠貼地 - 沿小腿傾斜（walk 前後腳 toe/heel 啱啱
+  擦地或腳跟微浮，姿勢角度本來就用 follow 幾何調教；顧 camera 喺地上方
+  拍攝，under-floor 部分被 opaque ground disc 遮住）。
+- STYLE.md 10 更新 ankle 規則描述。
+
+
