@@ -15,20 +15,18 @@ export function bx(g, m, w, h, d, x, y, z, r = {}) {
 }
 
 // M6.5: split a clothing tube's y-range at the true knee joint so the lower
-// piece follows the shin when the knee bends. The thigh piece reaches well
-// past the knee (kneeOver + kneeCover) so the pivot stays buried even when
-// bent deeply; the shin piece nests (0.96 width) inside that extension up to
-// knee+NestBack -> no wedge gap at any bend, no coplanar z-fight at rest.
+// piece follows the shin when the knee bends. The two pieces overlap around
+// the knee and the shin piece nests (0.96 width) inside the thigh piece's
+// extension -> no gap when bent, no coplanar z-fighting at rest.
 // part names get the side letter appended by the caller (thighL/kneeR/...).
 export function kneePieces(y0, y1) {
   const k = RIG.kneeY, over = RIG.kneeOver;
   if (y1 <= k - over) return [{ y0, y1, part: "knee", slim: true }];
   if (y0 >= k) return [{ y0, y1, part: "thigh" }];
-  // straddles the knee: thigh piece reaches past the knee (deeper into the
-  // shin side), shin piece nests inside that extension with a slightly
-  // longer overlap so no wedge opens at deep bends
+  // straddles the knee: thigh piece reaches past the knee (never below the
+  // garment's own hem), shin piece nests inside its extension
   return [
-    { y0: k - over, y1, part: "thigh" },
-    { y0, y1: Math.min(y1, k + 0.05), part: "knee", slim: true },
+    { y0: Math.max(y0, k - over), y1, part: "thigh" },
+    { y0, y1: Math.min(y1, k + over), part: "knee", slim: true },
   ];
 }
