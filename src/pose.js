@@ -228,6 +228,11 @@ class PoseEngine {
     for (const o of this.pieces.get(slot) ?? []) {
       if (o.parent) o.parent.remove(o);
     }
+    // un-equip (group == null): pieces released above, nothing to attach
+    if (!group) {
+      this.pieces.delete(slot);
+      return "";
+    }
     // collect tagged descendants first (children re-parent out, then the
     // group itself if tagged)
     const tagged = [];
@@ -321,15 +326,15 @@ class PoseEngine {
     return false;
   }
 
-  // foot toe/heel vs the thigh tube (thigh-local; the mesh spans y
-  // -0.28..0, half-x 0.2, half-z 0.17) -> catches knee-90 toe stabs
+  // foot toe/heel vs the thigh tube (thigh-local; the skin mesh spans y
+  // -0.32..0, half-x ~0.19, half-z ~0.18) -> catches knee-90 toe stabs
   footHits(key) {
     const ch = this.ch, J = ch.joints;
     const s = key.slice(3);
     const foot = J["foot" + s], thigh = J["thigh" + s];
     for (const p of [[0, 0.03, 0.2], [0, 0.03, -0.2]]) {
       const q = thigh.worldToLocal(foot.localToWorld(new THREE.Vector3(...p)));
-      if (Math.abs(q.x) < 0.22 && Math.abs(q.z) < 0.19 && q.y > -0.30 && q.y < 0.03)
+      if (Math.abs(q.x) < 0.22 && Math.abs(q.z) < 0.19 && q.y > -0.34 && q.y < 0.03)
         return true;
     }
     return false;

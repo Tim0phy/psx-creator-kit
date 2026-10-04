@@ -486,3 +486,22 @@ Two real geometry gaps in knee-bend poses:
   Rest look unchanged (foot rest rotation is 0). PART_JOINT gained footL/R.
 - Verified live on the user's 5173 (shorts+socks+sneakers sit/run), plus
   full shot suite + build. STYLE.md 10 updated with both rules.
+
+### M6.5 follow-up 5: reconciled the parallel fix commits
+The user committed 2fce593 (their own shoes-follow-foot-joints + skin joint
+burying + ghost cleanup + polling vite watcher) while I was building the same
+fix; my 2ee7b6c stacked on top blindly and regressed parts of it. Reconciled:
+- KEPT theirs: vite.config.js polling watcher (usePolling 250ms - the E: drive
+  does not deliver reliable fs-change events: the actual root cause of the
+  stale-module episodes), kneeOver 0.12 + skin thigh/shin meshes reaching
+  PAST the knee/ankle (no bare-skin gap at any fold), generic shoe
+  foot-vs-shin auto-bucketing in createShoes (piece y >= 0.2 -> shin frame,
+  else ankle frame; builders stay pristine), ghost-piece release on un-equip
+  (applyCloth(null) -> attachCloth(slot, null)), resized footHits thigh box.
+- KEPT mine where better: kneePieces hem clamp (thigh piece y0 never below
+  the garment hem - with 0.12 overlap the unclamped version would bleed the
+  pant hem 8cm down; verified hem exactly 0.300 world).
+- Both verified live on 5173: rest pixel-identical to M1-M6, run preset shoe
+  glued to the ankle pitch, knee-90 clamp, ghost cleanup, hem fidelity.
+- LESSON for me: check git log BEFORE staging heavy edits; if a parallel
+  commit lands, rebase my mental model instead of stacking.
