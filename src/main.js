@@ -118,11 +118,16 @@ function applyFace() {
 const CLOTH = {};
 let hairCurrent = null;
 let hairMat = null;
+// the hair GROUP reference — the decal planes (eyes/mouth) live in
+// hairAnchor too, so the old "remove children[0]" habit was deleting the
+// eyes decal on every hairstyle switch (face then looked wiped/blank)
+let hairGroup = null;
 
 function applyHair() {
   if (!state.hair) {
-    if (hairMat) {
-      character.hairAnchor.remove(character.hairAnchor.children[0]);
+    if (hairGroup) {
+      character.hairAnchor.remove(hairGroup);
+      hairGroup = null;
       hairMat = null;
       hairCurrent = null;
     }
@@ -131,14 +136,16 @@ function applyHair() {
   }
   const { id, color } = state.hair;
   if (id !== hairCurrent) {
-    if (hairMat) character.hairAnchor.remove(character.hairAnchor.children[0]);
+    if (hairGroup) character.hairAnchor.remove(hairGroup);
     hairCurrent = id;
     const built = createHair(id, color);
     if (built.mat) {
       character.hairAnchor.add(built.group);
       hairMat = built.mat;
+      hairGroup = built.group;
     } else {
       hairMat = null;
+      hairGroup = null;
     }
   }
   if (hairMat) hairMat.uniforms.color.value.set(color);
@@ -338,6 +345,7 @@ function rebuildCharacter() {
   // force hair + items to re-mount onto the fresh anchors
   hairCurrent = null;
   hairMat = null;
+  hairGroup = null;
 }
 
 function applyAll() {

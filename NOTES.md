@@ -1,5 +1,25 @@
 # NOTES.md
 
+## M7 修正第二輪（2026-10-05 用戶回報：面部貼圖消失 + 粉紅記錄條）
+- **面部貼圖「有時消失」真根因（早在 M6.5 面部拆分埋下的 latency bug）**：
+  main.js applyHair() 換髮型時 `remove(character.hairAnchor.children[0])` —
+  但 eyes/mouth decal 是頭面部拆分改版後先 add 進 hairAnchor，children[0]
+  = eyes plane → 一次換髮型就會把眼睛貼圖刪走（探針實錄：anchor 由
+  [Plane, Plane, Group] 變 [Plane, Group…]；第二次換就吃到 mouth）。之前
+  的 stale-tab 判斷不成立，此為可重現真 bug。
+  修法：明確跟蹤 hairGroup（let hairGroup），applyHair 換/空髮都只 remove
+  自己的 group；rebuildCharacter() 重設 hairGroup = null。探針驗證：12+
+  次換髮 + hair_none + 再換，faceDecals 永遠 = 2。
+- **粉紅「選擇記錄條」移除（用戶要求）**：上一輪我加嘅 #leftSelection 直列
+  因 stale-guard 編輯誤吞 `strip.replaceChildren()` → 只加不清、隨操作
+  無限增長（1→11→23→35 chips、高 1276px）。既然用戶當佢係誤加嘅記錄條
+  要求清除，整個功能撤掉：index.html 移除 #leftSelection、ui.js 移除
+  renderSelection/faceThumb（onChange wrapper 還原為 applyAll 直通）、
+  CSS 移除兩個 block；#leftPanel 闊度還原 285px（唔再為粉條讓位）。
+  分類變色的 panel tint / 圓角縮圖 / 分類列 capsule 底保留。
+- 測試回歸：m7State 34 項全部 PASS、0 pageerror；build + desktop/mobile
+  shots 重拍正常的。
+
 ## M7 後續修正（2026-10-05 用戶回報兩項）
 - **角堆疊重疊**：我第一輪把 AUTO RANDOM RESET 搬成頂右直排（ref-hair 樣式），
   但右欄 colour panel 285px 直達右邊，purple/orange 按鈕壓住 SKIN TONE 藥丸

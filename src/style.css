@@ -57,39 +57,9 @@ canvas.image-rendering { image-rendering: pixelated; }
   object-fit: contain;
 }
 
-/* wider side panels per mockup ratio (left shifted to make room for the
-   pink selection strip) */
-#leftPanel { left: 62px; width: 245px; }
+/* wider side panels per mockup ratio */
+#leftPanel { left: 22px; width: 285px; }
 #rightPanel { right: 22px; width: 285px; }
-
-/* STYLE.md section 7: pink vertical column of round thumbnails = the
-   currently selected items of the active category */
-#leftSelection {
-  position: absolute;
-  left: -30px;
-  top: 4px;
-  width: 46px;
-  padding: 8px 0;
-  background: var(--pink);
-  border: 3px solid;
-  border-color: #fff #b85878 #b85878 #fff;
-  box-shadow: 3px 3px 0 rgba(56, 34, 12, .45);
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  z-index: 1;
-}
-
-#leftSelection canvas {
-  width: 30px;
-  height: 30px;
-  image-rendering: pixelated;
-  background: #fffdfa;
-  border: 2px solid #906020;
-  border-radius: 50%;
-}
 
 /* ---- shared pixel button language ---------------------------------------- */
 .pixBtn, .topIconBtn, .catBtn, #btnConfirm {
@@ -637,7 +607,6 @@ canvas.image-rendering { image-rendering: pixelated; }
     grid-auto-rows: 56px;
   }
   .gridBtn { width: 56px; height: 56px; }
-  #leftSelection { display: none; }
   #rightPanel {
     position: static;
     width: auto;

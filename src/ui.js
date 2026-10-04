@@ -45,10 +45,7 @@ const CAT_COLORS = {
 };
 
 export function createUI(state, uiHooks) {
-  const onChange = (...a) => {
-    renderSelection(); // keep the pink strip in sync on every state change
-    uiHooks.onChange?.(...a);
-  };
+  const onChange = uiHooks.onChange;
   const leftGrid = document.getElementById("leftGrid");
   const leftPillText = document.getElementById("leftPillText");
   const gridDots = document.getElementById("gridDots");
@@ -451,49 +448,6 @@ export function createUI(state, uiHooks) {
     const tint = CAT_COLORS[current] ?? "";
     for (const id of ["leftPill", "leftGrid"])
       document.getElementById(id).style.background = tint || "";
-    renderSelection();
-  }
-
-  // pink left column: round thumbnails of the ACTIVE category's selections
-  // (STYLE.md section 7). Cloths show the item colour; face/head/body show
-  // a numbered chip (the current eye/hair/body), matching the number tiles.
-  function renderSelection() {
-    const strip = document.getElementById("leftSelection");
-    if (!strip) return; // stale-HMR partial DOM: skip safely
-    const paint = (ctx, col) => {
-      ctx.fillStyle = col;
-      ctx.fillRect(7, 7, 18, 18);
-      ctx.fillStyle = "#38220c";
-      ctx.fillRect(7, 7, 18, 4);
-    };
-    const add = (painter) => {
-      const c = document.createElement("canvas");
-      c.width = c.height = 32;
-      painter(c.getContext("2d"));
-      strip.appendChild(c);
-    };
-    const cloth = CLOTH_SECTIONS[current] ?? [];
-    // one chip per slot with a selection for the cloth/accessory categories
-    for (const [slot] of cloth) {
-      const st = state[slot];
-      if (!st) continue;
-      add((ctx) => paint(ctx, st.colors?.main ?? "#ffffff"));
-    }
-    if (current === "head") add((ctx) => paint(ctx, state.hair.color));
-    if (current === "face") {
-      add((ctx) => faceThumb(ctx, state.skin));
-    }
-  }
-
-  // face chip: skin dot (the skin row's own tone)
-  function faceThumb(ctx, col) {
-    ctx.fillStyle = col ?? "#f5d5bf";
-    ctx.beginPath();
-    ctx.arc(16, 16, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#38220c";
-    ctx.fillRect(11, 13, 3, 4);
-    ctx.fillRect(18, 13, 3, 4);
   }
 
   function switchCat(cat) {
