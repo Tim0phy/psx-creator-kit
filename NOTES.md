@@ -433,3 +433,22 @@
 - Verified in a live browser through the REAL UI path: preset thumb clicks
   (wave/run/sit) and slider drags (arm raise 120, leg fwd 60) move sleeves,
   pant tubes and boots with the limbs; rest regression shots unchanged.
+
+### M6.5 follow-up 2 (user-reported): hands/feet still pierce in some poses
+- Measured on the live rig (world/local probes through PSXCC): the old guard
+  sampled ONLY the palm tip against a narrow torso core (|x|<0.26) that
+  missed the elbow-120 hand stab (palm reached x 0.26, y -0.36) and had no
+  leg guards at all (knee 90 stabbed the toe into the thigh tube; negative
+  spread crossed the two feet into each other, sep -0.19).
+- Guard upgraded (still analytic, no physics):
+  - arms: palm tip AND forearm mid vs head box + torso volume (|x|<0.34,
+    |z|<0.19, y -0.42..0.26 waist-local), shrink raise/forward/elbow x0.35.
+  - legs: toe (0,0.03,+0.2) + heel (0,0.03,-0.2) in thigh-local box
+    (|x|<0.22, |z|<0.19, y -0.30..0.03) -> knee *= 0.65 unfolds the foot.
+  - feet: root-space separation |dx| < 0.36 (two ~0.42-wide shoes) while a
+    spread is negative -> shrink spread x0.65 (both negative sides).
+- All 9 catalog presets verified UNTOUCHED by the guard (live probe: rendered
+  angles equal catalog values; palms >= 0.44 x, sits outside every box).
+- Extreme customs verified clamped: elbow 120 -> hand rides beside the hip
+  (x 0.33, y -0.45); knee 90 -> unfolds to ~59 deg, toe exits the tube;
+  spread -10 -> converges to ~-1 deg, feet hug at rest-like separation.

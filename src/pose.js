@@ -263,15 +263,16 @@ class PoseEngine {
     return attached;
   }
 
-  // ---- analytic hand guard (no physics) -------------------------------------
-  // Shrink raise/forward toward rest until the palm tip leaves the head and
-  // torso core volumes. Deterministic, a few matrix ops per call.
+  // ---- analytic collision guard (no physics) --------------------------------
+  // Shrink the offending angles toward rest until the sampled points leave
+  // the occupied volumes (measured on the real rig, poses verified safe).
+  // Deterministic, a few matrix ops per call.
   solveClamp(t) {
     const a = cloneAngles(t);
     if (!this.ch) return a;
     this.applyPose(a);
-    for (const [key, side] of [["armL", -1], ["armR", 1]]) {
-      if (!this.handHits(side)) continue;
+    for (const key of ["armL", "armR"]) {
+      if (!this.armHits(key)) continue;
       let guard = 40;
       while (guard-- > 0) {
         const A = a[key];
@@ -279,24 +280,66 @@ class PoseEngine {
         A.forward += (0 - A.forward) * 0.35;
         A.elbow += (0 - A.elbow) * 0.35;
         this.applyPose(a);
-        if (!this.handHits(side)) break;
+        if (!this.armHits(key)) break;
       }
+    }
+    // deep knee folds stab the toe/heel into the thigh tube -> unfold
+    for (const key of ["legL", "legR"]) {
+      let guard = 20;
+      while (guard-- > 0 && a[key].knee > 1 && this.footHits(key)) {
+        a[key].knee *= 0.65;
+        this.applyPose(a);
+      }
+    }
+    // negative spread crosses the feet into each other -> close back to rest
+    let guard = 20;
+    while (guard-- > 0 && this.feetOverlap()
+      && (a.legL.spread < -0.5 || a.legR.spread < -0.5)) {
+      if (a.legL.spread < -0.5) a.legL.spread *= 0.65;
+      if (a.legR.spread < -0.5) a.legR.spread *= 0.65;
+      this.applyPose(a);
     }
     return a;
   }
 
-  handHits(side) {
+  // palm tip + forearm mid vs head box and torso volume (waist-local)
+  armHits(key) {
     const ch = this.ch, J = ch.joints;
-    const elbow = J[side < 0 ? "elbowL" : "elbowR"];
-    elbow.updateWorldMatrix(true, false);
-    ch.joints.head.updateWorldMatrix(true, false);
-    const tip = elbow.localToWorld(new THREE.Vector3(0, -0.23, 0)); // palm
-    const hl = ch.joints.head.worldToLocal(tip.clone());
-    if (Math.abs(hl.x) < 0.48 && Math.abs(hl.y) < 0.46 && Math.abs(hl.z) < 0.44)
-      return true;
-    const wl = J.waist.worldToLocal(tip); // torso core
-    return Math.abs(wl.x) < 0.26 && Math.abs(wl.z) < 0.19
-      && wl.y > -0.35 && wl.y < 0.24;
+    const elbow = J["elbow" + key.slice(3)];
+    const pts = [[0, -0.23, 0], [0, -0.115, 0]].map(
+      (p) => elbow.localToWorld(new THREE.Vector3(...p))
+    );
+    for (const p of pts) {
+      const hl = J.head.worldToLocal(p.clone());
+      if (Math.abs(hl.x) < 0.48 && Math.abs(hl.y) < 0.46 && Math.abs(hl.z) < 0.44)
+        return true;
+      const wl = J.waist.worldToLocal(p); // torso: waist/hips shell volume
+      if (Math.abs(wl.x) < 0.34 && Math.abs(wl.z) < 0.19
+        && wl.y > -0.42 && wl.y < 0.26) return true;
+    }
+    return false;
+  }
+
+  // foot toe/heel vs the thigh tube (thigh-local; the mesh spans y
+  // -0.28..0, half-x 0.2, half-z 0.17) -> catches knee-90 toe stabs
+  footHits(key) {
+    const ch = this.ch, J = ch.joints;
+    const s = key.slice(3);
+    const foot = J["foot" + s], thigh = J["thigh" + s];
+    for (const p of [[0, 0.03, 0.2], [0, 0.03, -0.2]]) {
+      const q = thigh.worldToLocal(foot.localToWorld(new THREE.Vector3(...p)));
+      if (Math.abs(q.x) < 0.22 && Math.abs(q.z) < 0.19 && q.y > -0.30 && q.y < 0.03)
+        return true;
+    }
+    return false;
+  }
+
+  // the pair of feet boxes (about 0.42 wide each) must not overcross
+  feetOverlap() {
+    const ch = this.ch, J = ch.joints;
+    const l = J.footL.getWorldPosition(new THREE.Vector3());
+    const r = J.footR.getWorldPosition(new THREE.Vector3());
+    return Math.abs(l.x - r.x) < 0.36;
   }
 }
 
