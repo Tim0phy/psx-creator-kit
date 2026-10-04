@@ -3,7 +3,9 @@ import { makePSXMaterial } from "../psxRenderer.js";
 
 // M4 shoes (base sneaker) + M6 style packs. Shoes are compact boxes over the
 // base feet plus a sole plate and a slim ankle cuff.
-// Feet: 0.20 x 0.13 x 0.32 box at (±0.19, 0.065, 0.06) so top y=0.13.
+// Feet: 0.20 x 0.13 x 0.32 box at (±0.19, 0.085, 0.06) -> skin spans y
+// 0.02..0.15 (bottom inside the sole slab so a tilted shoe never shows skin
+// under its sole); sole plates reach down to 0.005 as the ground contact.
 // Legs: y 0.06..0.62, z half 0.17 -> shoe walls must strictly enclose that
 // envelope (no coplanar back faces).
 
@@ -48,13 +50,16 @@ const SHOE_BUILDER = {
       bx(g, m, 0.38, 0.14, 0.44, side * 0.19, 0.19, 0); // ankle collar (foot frame)
     }
   },
-  // flat Mary Jane: thin sole, low body, strap across the instep
+  // flat Mary Jane: thin sole, low body, strap across the instep. Body
+  // extended to 0.15 tall so the raised foot skin (top 0.15) stays inside;
+  // strap/buckle sit 0.17 (5mm above the instep skin) so they lay over the
+  // foot, never slice through it
   shoe_mary_jane(g, m, s) {
     for (const side of [-1, 1]) {
-      bx(g, m, 0.34, 0.12, 0.46, side * 0.19, 0.08, 0.04);
+      bx(g, m, 0.34, 0.15, 0.46, side * 0.19, 0.09, 0.04);
       bx(g, s, 0.28, 0.05, 0.44, side * 0.19, 0.03, 0.05); // slim sole
-      bx(g, s, 0.36, 0.03, 0.08, side * 0.19, 0.145, 0.02); // instep strap
-      bx(g, s, 0.05, 0.03, 0.03, side * 0.19, 0.145, -0.05); // buckle
+      bx(g, s, 0.36, 0.03, 0.08, side * 0.19, 0.17, 0.02); // instep strap
+      bx(g, s, 0.05, 0.03, 0.03, side * 0.19, 0.17, -0.05); // buckle
     }
   },
   // knee-high boots: sneaker foot + tall shaft wrapping the leg up to y 0.62;

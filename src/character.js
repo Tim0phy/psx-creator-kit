@@ -233,13 +233,12 @@ export function createCharacter(bodyType = "female") {
   // legs: single 0.56 taper split at the true knee (y 0.34) into thigh+shin;
   // both pieces share the continuous taper profile -> seamless at rest,
   // triangle count +12 per leg (body budget stays <= 800)
+  const halfT = 0.897; // taper width factor at the knee (0.5 of the old run)
   const thighGeo = taperBox(p.legW, 0.32, p.legW, p.legW * 0.882, p.legW * 0.765);
-  // shin: WIDE at the knee (0.882 = the thigh's knee band, seamless), NARROW
-  // at the ankle (0.8, inside the shoe sole/body envelope 0.3/0.36) and
-  // 0.04 SHORTER: the mesh ends at world y 0.11, above the sole plate (top
-  // 0.08) and inside the foot box + shoe body/collar, so the skin shin ring
-  // can never reach into the sole's band at any pose (foot follows shin).
-  const shinGeo = taperBox(p.legW, 0.24, p.legW, p.legW * 0.8, p.legW * 0.882);
+  // shin stops at the shoe collar (0.06) and tapers tighter (0.8) than the
+  // shoe opening: when the ankle pitches (run toe-off) the skin tube stays
+  // inside the tilted shoe shell instead of poking out of its collar
+  const shinGeo = taperBox(p.legW, 0.28, p.legW, p.legW, p.legW * 0.8);
   const footGeo = new THREE.BoxGeometry(0.2, 0.13, 0.32).toNonIndexed();
   for (const side of [-1, 1]) {
     const n = side < 0 ? "L" : "R";
@@ -250,11 +249,17 @@ export function createCharacter(bodyType = "female") {
     thigh.add(tm);
     const kneeG = joint("knee" + n, thigh, 0, -0.28, 0, "ZXY");
     const sm = new THREE.Mesh(shinGeo, skinMat);
-    sm.position.y = -0.12; // spans knee-local -0.24..0 (world 0.10..0.34)
+    sm.position.y = -0.14; // spans world 0.06..0.34 (inside the shoe collar)
     kneeG.add(sm);
     const foot = joint("foot" + n, kneeG, 0, -0.28, 0);
     const fm = new THREE.Mesh(footGeo, footMat);
-    fm.position.set(0, 0.005, 0.06);
+    // foot skin lifted so its underside sits INSIDE the shoe's sole slab
+    // (sneaker/boots sole spans 0.01..0.08, MJ flat-sole 0.005..0.055): a
+    // ground-touching underside (old +0.005) showed skin under the tilted
+    // sole once feet follow the shin. Raised top stays 0.15 <= every shoe
+    // cavity top; bare state risks nothing visible (2 cm of sole-thickness
+    // cushion reads as the ankle's natural inset).
+    fm.position.set(0, 0.025, 0.06);
     foot.add(fm);
   }
 

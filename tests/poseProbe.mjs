@@ -80,11 +80,11 @@ const OUTFITS = [
         const d = depthBox(tmp, c.bb);
         if (d < dmin) dmin = d;
       }
-      if (dmin > 0.012) {
+      if (dmin > 0.005) {
         d12++;
-        if (dmin > 0.05) {
+        if (dmin > 0.02) {
           d50++;
-          if (dmin > 0.15) d150++;
+          if (dmin > 0.05) d150++;
           if (worst50.length < 6) {
             worst50.push({ d: +dmin.toFixed(3), p: [+V.x.toFixed(2), +V.y.toFixed(2), +V.z.toFixed(2)] });
           }
@@ -98,8 +98,7 @@ const OUTFITS = [
       });
     }
   }
-  const feet = {};
-  for (const [k, j] of Object.entries(PSXCC.character.joints)) {
+  const feet = {};  for (const [k, j] of Object.entries(PSXCC.character.joints)) {
     const w = new vproto();
     j.getWorldPosition(w);
     feet[k] = [+w.x.toFixed(2), +w.y.toFixed(2), +w.z.toFixed(2)];
@@ -134,7 +133,7 @@ for (const r of all) {
   console.log(`\n== ${r.outfit} / ${r.pose} ==`);
   for (const b of bad) {
     console.log(
-      `  ${b.label}: >12mm ${b.exposed}/${b.scanned} | >50mm ${b.deep50} | >150mm ${b.deep150} at`,
+      `  ${b.label}: >5mm ${b.exposed}/${b.scanned} | >20mm ${b.deep50} | >50mm ${b.deep150} at`,
       JSON.stringify(b.worst50)
     );
   }

@@ -13,7 +13,7 @@ Goal: a character creator in the style of the reference screenshots in /refs (cu
 
 ## 2. Character body
 - Chibi proportion: head ~ 1/3 of total height. Head is a rounded low-poly box (about 8-12 faces per side group), not a smooth sphere.
-- Parts (separate meshes): head, torso, armL, armR, handL, handR, legL, legR, footL, footR.
+- Parts (separate meshes): head, torso, armL, armR, handL, handR, legL, legR, footL, footR. Feet are carried by the shoe's sole slab: the foot skin spans y 0.02..0.15 (lifted inside every sole plate) so no pose can show skin through a sole; bare state reads the same from the fixed top-down camera.
 - Body triangle budget: <= 800 total (excluding hair/clothes/accessories).
 - Colouring: vertex-colour vertical gradient (lighter top -> darker bottom, ~15-25% darker) on skin, clothes, hair. Gradient strength is a uniform.
 - Default pose: slight A-pose, arms out ~25 degrees. No animation required except auto-rotation (turntable).

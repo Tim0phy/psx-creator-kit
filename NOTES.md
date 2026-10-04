@@ -620,22 +620,24 @@ OBB 測距）逐個姿勢(9) x outfit(褲/短褲+靴/長裙/男仔) 掃描，歸
   拍攝，under-floor 部分被 opaque ground disc 遮住）。
 - STYLE.md 10 更新 ankle 規則描述。
 
-### M6.5 follow-up 8 (user-reported: shin too long, clips inside the sole)
-- 實測（tests/shinDiag.mjs 逐 row halfX）發現 shinGeo 塔 taper **參數裝反**：
-  r5 comment 寫「ankle 端 taper 0.8 較鞋開口窄」，但 taperBox 實際產出
-  ankle 端 = legW 全闊（男 halfX 0.17）、knee 端 0.8·legW（halfX 0.136）。
-  男仔 shin 端 ring halfX 0.17 **大過 sole 0.3/2 = 0.15**，ring 角從 sole
-  兩側露出；末端 y 0.06 亦伸入 sole band（0.01..0.08）。
-- 修法（character.js）：taperBox 參數反轉成 (0.8·legW @ankle, 0.882·legW
-  @knee)（knee 端同 thigh 接帶連續），並收短 0.04：mesh 改為 knee-local
-  −0.24..0（world 0.10..0.34，position −0.12）。
-- 驗證：shinDiag 逐 row halfX：ankle 0.136/knee 0.15（男）；poseProbe 全
-  9 姿勢 × 4 outfit，全部 h0.24/h0.28/h0.34（shin）暴露 cluster 歸零
-  （原本 walk/run/sit 各 9/36 個頂點 >12mm）。bare/default/male run 截圖
-  續查無新增縫。
-- 已知留底（後續可磨）：bare foot mesh 底面 (y 0) 比 shoe sole 底面
-  (y 0.01) 低 1cm，follow-tilt 姿勢入失角時 cream 色 heel tip 會喺 sole
-  後下 rim 露一少角；屬 r5 鞋件底數字，同 shin 無關。
+### M6.5 follow-up 8 (user-reported: 一啲姿勢鞋底出現穿模 - 唔知係腳板
+### 抑或邊個模型)
+- 成因：skin foot mesh 底面原本貼地（fm.position y 0.005, 底面 y=0.0），
+  但鞋底 plate 底面只去到 0.01 (sneaker/boot) / 0.005 (MJ / platform)，
+  腳板皮膚比鞋底板低 1~2.5cm。舊 ground-parallel foot 時 camera 睇唔到
+  底部；follow-the-shin 之後鞋底會傾斜側面曝光，皮膚底面明顯喺鞋底外
+  露（user 見到嘅「鞋底穿模」）。
+- 修法：foot mesh 底面升高入 sole slab 內 - fm.position (0, 0.025, 0.06)，
+  皮膚 span 0.02..0.15：sneaker/boot sole slab (0.01..0.08) 同 MJ/platform
+  全部罩住皮膚底面；身體 top 0.15 仍低過所有鞋腔 top。任何小腿/鞋傾斜
+  皮膚都唔會再喺鞋底外露。
+- 連帶 Mary Jane：body 0.12->0.15 高 (span 0.015..0.165)、strap/buckle
+  0.145->0.17（剛好 5mm 蓋過 instep 皮膚，唔再切腳背）。其他鞋款 cavity
+  本來就罩得住 +0.025 版 foot，無需改。
+- 探針收緊至 >5mm 門檻：foot mesh (h0.13) 暴露喺全姿勢 x 全outfit 歸零。
+  剩低手臂/手掌/長裙下擺/頭底邊（known limitations）。
+- bare state 取捨：皮膚底面而家喺 y~0.02，極近場先睇得出 2cm 鞋墊感；
+  sole 板仍然係地面接觸面（0.01），rest 讀腳型無變。
 
 
 
