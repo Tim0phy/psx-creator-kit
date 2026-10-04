@@ -1,5 +1,6 @@
 import { chromium } from "playwright";
 import { mkdirSync } from "fs";
+import { readFile as fsRead } from "fs/promises";
 import { createServer } from "vite";
 
 // M7 state tests: reload persistence, invalid JSON, unknown IDs, missing
@@ -244,9 +245,19 @@ const sleep = (t) => new Promise((r) => setTimeout(r, t));
   await page.click("#btnRandom");
   await sleep(700);
   const saved = await page.evaluate(() => PSXCC.save());
-  // export
+  // export: real download event, content matches the STYLE format
+  // (register the listener BEFORE the click so the event can't be missed)
+  const dlPromise = page.waitForEvent("download", { timeout: 5000 });
   await page.click("#btnExport");
-  await sleep(300);
+  const dl = await dlPromise;
+  const path = await dl.path();
+  const exported = JSON.parse(await fsRead(path, "utf8"));
+  const exportedKeysOk = ["skin", "eyes", "mouth", "hair", "top", "pose"]
+    .every((k) => k in exported)
+    && Array.isArray(exported.top.colors)
+    && typeof exported.hair === "object" && "color" in exported.hair;
+  check("export download: STYLE format JSON", exportedKeysOk && dl.suggestedFilename().endsWith(".json"),
+    dl.suggestedFilename());
   // import a different config through the real file input
   const other = { hair: { id: "hair_06", color: "#c8f56b" }, top: { id: "top_polo", colors: ["#228844"] } };
   await page.setInputFiles("#fileImport", {
