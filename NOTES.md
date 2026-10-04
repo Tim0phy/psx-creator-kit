@@ -543,3 +543,18 @@ Root causes found with close-up renders + a magenta skin dye test:
 Deliberate silhouette change: sneakers/platforms read slightly chunkier at rest
 (collar higher) - required so the ankle opening stays closed at any pitch.
 BUILD bumped to r5 (tab title beacon) so a stale tab is detectable.
+
+### Agent-side incident + verification note (after r5)
+- Two parallel workstreams committed to this repo at the same time (user's r2..r5
+  rounds and this agent's fixes). This agent's `git add -A` snapshot (commit
+  6039524) accidentally OVERWROTE the r4/r5 leg-fix state and deleted
+  vite.config.js. It was reverted (commit 7f095ca) so the tree again equals r5 +
+  the revert; no r-round work was lost. Lesson: never `git add -A` when another
+  session may be committing - stage explicit paths only.
+- The restored r5 state was re-verified with the agent's magenta-skin probe
+  (skin #ff00ff, arm meshes hidden, side view) on run legs / knee 90 / fwd 60 +
+  knee 90 with denim shirt + long pants + sneakers: ZERO leg-region skin
+  exposure in all three (only the intended neck shows). The r5 approach
+  (foot-frame shoe body + knee-frame collar 0.10..0.26 wrapping the pitched
+  body, DoubleSide shoes, skin shin buried past the knee, pant hems 0.18,
+  ±45 deg foot pitch cap) is confirmed sound - no further changes needed.
