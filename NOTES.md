@@ -558,3 +558,45 @@ BUILD bumped to r5 (tab title beacon) so a stale tab is detectable.
   (foot-frame shoe body + knee-frame collar 0.10..0.26 wrapping the pitched
   body, DoubleSide shoes, skin shin buried past the knee, pant hems 0.18,
   ±45 deg foot pitch cap) is confirmed sound - no further changes needed.
+
+## 磁碟狀態還原（IMPORTANT for future sessions）
+- 開場時工作樹帶住未提交嘅過期修改（更舊嘅 M6 碼 + 刪走咗 vite.config.js），
+  係平行 session collision 嘅殘骸（檔案 mtime 8:42 AM，但 HEAD 已喺 20:31）
+  。已 `git checkout --` 還原到 HEAD（= r5 + revert fix3 狀態）再開始本輪
+  修正。教訓：任何肉身改動前先核對 git status 同 HEAD 內容。
+
+### M6.5 follow-up 6 (user-reported: run pose trunk pokes out of the pant
+### tube + foot pierces shoe; check other poses)
+以 vertex-level OBB 探針（tests/poseProbe.mjs，皮膚 mesh 每頂點對全部衣物
+OBB 測距）逐個姿勢(9) x outfit(褲/短褲+靴/長裙/男仔) 掃描，歸位三個真實
+成因並修好：
+1. TRUNK ANCHOR OFF: torso mesh `torso.position.y = -0.30` 令成條 torso
+   曲線下移 0.30（軀幹 span 0.28..0.88 vs 衣物殼 0.58..1.18）：同一世界行
+   高度，軀幹 row 對唔準殼 row - 膊頭行 (0.58) 落喺 y 0.88，喺 tee hem 下
+   成 0.3 誤差，所以骨盆 flare 的側角成為「從褲管穿出嘅長條」。修法：
+   position 歸零，軀幹 row span 0.58..1.18 同殼逐行對齊（bare 外形曲線
+   定義不變）。
+2. TORSO SHELL RODE NOTHING at twist: tee/jacket 壳層係 root 子件，扭腰
+   (waistTwist) 時唔跟 - 軀幹角 (hypot 0.33) 逆住固定殼牆穿出 12-50mm。
+   修法：top/outer group tag `clothPart:"waist"`（main.js applyCloth），
+   attach() 保留 rest 世界變換，rest 像素不變，扭腰後殼跟腰走。
+3. PELVIS BLOCK 唔夠罩: hipsMesh 舊式平面斜邊 (hipsW 0.5 -> hipsTopW
+   0.44) 留下頭先計到嘅 (x ±0.25..0.30) 軀幹 flank 帶，tube 一搖就露。
+   修法：hipsMesh 改為按 torsoW 曲線 (+0.03 margin) 逐行塑形（y<=0.58
+   hold 住 hips 寬），骨盆 block 從此係軀幹 silhouette 加 margin，任何
+   tube swing 都罩住。female/male 都由 profile 導出。
+- 連帶 shoe_knee_boots shaft 跟 kneePieces 統一 0.12 overlap（thigh band
+  0.22..0.62，shin band 0.2..0.46 nest 0.384/0.4），修復 boot shaft 喺膝彎
+  穿出嘅 wedge（原本只得 0.08 nest）。
+- 審查結論（user 問嘅「其他姿勢會唔會有類似情況」）：
+  - RUN/SIT/WALK 同 hands-on-hips（最大 twist）已由探針覆核：torso 行
+    零暴露；剩餘只有 (a) 手臂/手掌裸露（設計正常，sleeve 去到肘位）；
+    (b) 膝/踝 ring 角位 <=50mm（PSX canvas 上 <=2px，硬方盒關節物理極限，
+    列為 known-limitation）；(c) 長裙 run 時下擺擺動露出小腿（單件裙 stat
+    本性，non-follow 設計）。
+  - foot-through-shoe 由 r5 已修（foot-frame shoe + knee-frame collar +
+    DoubleSide + hem 0.18）；本輪無回歸。
+- 工具：tests/poseAudit.mjs（全姿勢 x outfit f/s/c 截圖，隱 UI 抓 #view
+  canvas）、tests/poseProbe.mjs（per-vertex OBB 暴露標尺 >12/>50/>150mm），
+  作為以後衣著改動嘅 regression 檢查。
+

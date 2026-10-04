@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
-import { bodyFit } from "../character.js";
+import { bodyFit, torsoW } from "../character.js";
 import { PatternTexture } from "../patterns.js";
 import { kneePieces } from "./geo.js";
 
@@ -16,19 +16,25 @@ const WAIST = 0.74;   // normal waistband top (long pants)
 const HIGH = 1.02;    // shorts/skirt waistband top (navel height)
 const HIP = 0.6;      // low-rise waistband top (on the hips)
 
-// hips/pelvis block from y=0.29 up to waistY: extending below the top-shell
-// hem lets it also fill the centre slit between two slim pant tubes and the
-// shell-hem overlap seam (hidden inside the tubes at every other facing).
-// Width/depth from the profile; shorts use 0.36 so the front face sits in
-// front of the tee hem and the waist reads continuously.
+// Bottoms hips block from y=0.29 up to waistY: width follows the BODY's own
+// torsoW curve (+0.03 margin) for rows at/above the trunk's hips line (0.58)
+// and holds that width below, so the block mirrors the trunk's hips flare
+// (0.6 female) instead of a flat 0.5 taper. A flat block left the trunk's
+// pelvis corners exposed whenever the pant tubes swung away in walk/run/sit;
+// mirroring the curve keeps those rows covered, and the skirt/top shells are
+// all built from the same curve (+1.06) so the seam reads continuously.
+// Depth: profile-based; shorts use 0.36 so the front face sits in front of
+// the tee hem and the waist reads continuously.
 function hipsMesh(mat, p, waistY, depth) {
   const d = depth ?? p.hipsDepth;
   const h = waistY - 0.29;
   const g = new THREE.BoxGeometry(p.hipsW, h, d).toNonIndexed();
   const q = g.attributes.position;
   for (let i = 0; i < q.count; i++) {
-    const t = (q.getY(i) + h / 2) / h; // 0 bottom -> 1 top
-    q.setX(i, q.getX(i) * ((p.hipsTopW + (p.hipsW - p.hipsTopW) * (1 - t)) / p.hipsW));
+    const t = (q.getY(i) + h / 2) / h;
+    const y = 0.29 + h * t;
+    const tb = Math.max(0, (y - 0.58) / 0.6);
+    q.setX(i, q.getX(i) * ((torsoW(tb, p) + 0.03) / p.hipsW));
   }
   g.translate(0, 0.29 + h / 2, 0);
   g.computeVertexNormals();

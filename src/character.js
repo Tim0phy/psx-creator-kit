@@ -197,9 +197,11 @@ export function createCharacter(bodyType = "female") {
   const neck = joint("neck", chest, 0, -0.02, 0, "ZXY");
   const head = joint("head", neck, 0, 0.32, 0);
 
-  // torso mesh: waist-local -0.30 -> world 0.88 exactly as before
+  // torso mesh: profile rows span world 0.58..1.18 exactly like every shell
+  // (tee hem / waistband / tube tops reference these same world rows, so
+  // off-tilting or rotating the waist can never slide the trunk out of its
+  // clothes' silhouette)
   const torso = new THREE.Mesh(torsoGeo(p), skinMat);
-  torso.position.y = -0.30;
   waist.add(torso);
 
   // head + anchor_head: rest world (0,1.48,0) unchanged; hair / face decals /

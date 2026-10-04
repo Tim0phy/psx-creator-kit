@@ -58,8 +58,10 @@ const SHOE_BUILDER = {
     }
   },
   // knee-high boots: sneaker foot + tall shaft wrapping the leg up to y 0.62;
-  // M6.5: the shaft is split at the true knee (thigh band + nested shin band)
-  // so bent knees don't rip the shaft off the thigh
+  // M6.5: the shaft is split at the true knee with the SAME 0.12 overlap
+  // RIG.kneeOver uses for pant tubes - the thigh band reaches past the knee
+  // (0.22..0.62) and the shin band nests inside it (0.2..0.46), so deep
+  // knee folds (up to 90 deg) never open a shaft wedge that shows leg.
   shoe_knee_boots(g, m, s) {
     for (const side of [-1, 1]) {
       bx(g, m, 0.36, 0.16, 0.47, side * 0.19, 0.09, 0.045);
@@ -67,16 +69,16 @@ const SHOE_BUILDER = {
       const tag = side < 0 ? "L" : "R";
       const thigh = new THREE.Group();
       thigh.userData = { clothPart: "thigh" + tag };
-      thigh.add(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.24, 0.4).toNonIndexed(), m));
-      thigh.children[0].position.set(side * 0.19, 0.5, 0); // spans 0.38..0.62
+      thigh.add(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4).toNonIndexed(), m));
+      thigh.children[0].position.set(side * 0.19, 0.42, 0); // spans 0.22..0.62
       thigh.add(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.42).toNonIndexed(), s));
       thigh.children[1].position.set(side * 0.19, 0.59, 0); // fold-over cuff
       const shin = new THREE.Group();
       shin.userData = { clothPart: "knee" + tag };
       shin.add(new THREE.Mesh(new THREE.BoxGeometry(0.384, 0.26, 0.384).toNonIndexed(), m));
       shin.children[0].position.set(side * 0.19, 0.33, 0); // spans 0.2..0.46
-      // (0.08 deep nest into the thigh band 0.38..0.62: a 38..58 deg knee
-      // fold never opens a shaft wedge that shows the leg)
+      // (0.24 belt nests into the thigh band 0.22..0.62: a 38..92 deg knee
+      // fold keeps the nest inside the band)
       g.add(thigh, shin);
     }
   },

@@ -181,6 +181,12 @@ function applyCloth(slot) {
     built = createTop(item.id, colors, flags, item.pattern, state.body);
     // top geometry is built around the torso centre (world y 0.88)
     built.group.position.y = 0.88;
+    // M6.5 follow-up: the torso shell rides the WAIST joint (tagged). It used
+    // to stay a static root child, so at any waistTwist != 0 the shell never
+    // followed the trunk and the trunk's hip/waist corners poked through the
+    // shirt walls. attach() preserves rest world transforms, so rest pixels
+    // are identical and twist/twist-following shells move with the upper body.
+    built.group.userData.clothPart = "waist";
   } else if (item.slot === "bottom") {
     built = createBottom(item.id, colors, flags, item.pattern, state.body);
   } else if (item.slot === "socks") {
