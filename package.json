@@ -1,8 +1,7 @@
 {
   "name": "psx-creator-kit",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "PSX-style low-poly character creator for the browser: data-driven catalogue, procedural parts, pose engine and .glb export",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,9 +9,9 @@
     "m8": "node tests/m8Capture.mjs",
     "m8glb": "node tests/m8GlbViewer.mjs"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["threejs", "psx", "low-poly", "character-creator", "retro", "webgl"],
+  "author": "Timophy Chan",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "devDependencies": {
     "playwright": "^1.63.0",

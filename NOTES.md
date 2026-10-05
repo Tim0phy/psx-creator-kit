@@ -810,3 +810,9 @@ OBB 測距）逐個姿勢(9) x outfit(褲/短褲+靴/長裙/男仔) 掃描，歸
 
 
 
+
+## Deploy / open-source prep (2026-10-05)
+- GitHub Pages via .github/workflows/deploy.yml: build with --base=/<repo-name>/ so Pages sub-path works; local dev & tests untouched (no base in vite.config.js).
+- refs/ + PROMPTS*.md excluded from the repo per user choice (.gitignore + git rm --cached; files stay on disk). AGENTS/PLAN/STYLE/NOTES stay public as project docs.
+- LICENSE = ISC + Commons Clause v1.0 (official text from commonsclause.com); package.json license field -> SEE LICENSE IN LICENSE.
+
