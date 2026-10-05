@@ -1,6 +1,5 @@
 # AGENTS.md — Rules for the coding agent
 
-(思考時，請使用英文思考。當回覆用戶及向用戶提問時，請使用繁體中文。)
 Project: PSX-style low-poly character creator (web). Stack: Three.js + Vite + vanilla JS (ES modules). No frameworks unless asked.
 
 ## Always do first
