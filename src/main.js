@@ -42,10 +42,12 @@ import {
 // onto their joints after every mount.
 
 const state = defaultState();
-// build beacon: the tab title carries the build tag so a stale tab (one that
-// missed HMR / kept old modules alive) is identifiable at a glance
+// build beacon: logged to the console so a stale tab (one that missed HMR /
+// kept old modules alive) is identifiable at a glance. The tab title stays
+// clean "PSX Character Creator" because the <title> is also the share-card
+// / search-result heading once deployed (e.g. GitHub Pages).
 const BUILD = "r7";
-document.title = `PSX Character Creator \u00B7 ${BUILD}`;
+console.info(`[psxcc] build ${BUILD}`);
 // M7: the previous restoreInto() copied saved values raw; the boot restore
 // now runs through the same validation as JSON import (unknown ids, bad
 // colours, corrupt JSON and shape errors all fall back via applySaveConfig)

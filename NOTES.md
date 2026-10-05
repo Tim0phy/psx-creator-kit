@@ -1,5 +1,18 @@
 # NOTES.md
 
+## Page title / share-card metadata (2026-10-05, pre-deploy tidy-up)
+- 用户要求分頁標題改做乾淨嘅 "PSX Character Creator"+ 為部署 siten(GitHub Pages
+  / Actions) 加正式描述。
+- r7 build beacon 由 tab title 搬咗去 console（`[psxcc] build r7`）：stale-tab
+  識別功能保留，但 `<title>` 保持乾淨 —— 因為搜尋結果／分享卡都係用 `<title>`。
+- index.html 加咗 SEO / Open Graph / Twitter Card meta：description、og:title、
+  og:description、og:image（`og-image.png`，用 shots/desktop.png 1024x768 截圖
+  經 `public/` 帶入 build）、twitter summary_large_image。相對路徑 `og-image.png`
+  同計劃中嘅 `base: "./"` 兼容。部署後可用
+  https://www.opengraph.xyz 或 social card validator 驗證。
+- 注意：og:image 係靜態截圖；如果想展示最新預設可以日後重生成。
+- Playwright `headless shell` 需要重新 install（chromium v1243 先消失）。
+
 ## M8 GLB 导出 v2 重设计（2026-10-05 用户回报：导出的 GLB 与网页模型大量不同）
 - **三个真根因（逐个用证据锤实）**：
   1. **色彩空间契约错误**：three 的 GLTFExporter 把 `baseColorFactor`/`COLOR_0`
