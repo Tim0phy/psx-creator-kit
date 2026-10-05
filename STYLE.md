@@ -113,11 +113,18 @@ Saved to localStorage key `psxcc.v1`. Export/import as JSON file.
   at 4096 with a pixel toast when reduced. Turnaround renders all three views
   at ONE shared distance (max of per-view fits) so the sheet keeps a
   consistent scale.
-- GLB export bakes a one-off flat clone: uniform colour x world-Y gradient x
-  Lambert lighting is written into vertex colours, materials become unlit
-  MeshBasicMaterial (KHR_materials_unlit), decal/pattern canvases ride along
-  as embedded textures (alphaMode BLEND), stage platform only when toggled.
-  The runtime pixel shader / post pipeline is NOT stored in the GLB (UI note).
+- GLB export (v2) bakes a one-off clone that keeps the FULL POSED JOINT
+  HIERARCHY: vertices stay in LOCAL space (matrixWorld is only sampled for the
+  per-vertex colour), local transforms are copied verbatim, and the colour
+  contract follows the glTF spec — COLOR_0 = srgbToLinear(screen colour),
+  screen colour = uniform x world-Y gradient x Lambert (map surfaces carry the
+  gradient x lighting scalar; embedded PNGs stay byte-perfect). Materials:
+  unlit MeshBasicMaterial, side/transparency carried from the source, missing
+  normals computed for paper strips. Stage platform only when toggled. The
+  runtime pixel shader / post pipeline is NOT stored in the GLB (UI note).
+  Fidelity gate: tests/m8GlbViewer.mjs (npm run m8glb) reloads the GLB with
+  DEFAULT colour management (standard-viewer behaviour) and pixel-compares
+  against the on-page capture: mean dRGB < 2.5/255, <1.5% pixels over 32.
 - Capture preferences live in localStorage psxcc.capture.v1 (background/solid/
   look/scale/aspect), sanitized with defaults; they never enter psxcc.v1.
 - Exports stay local: no upload, no clipboard network; blocked clipboard falls

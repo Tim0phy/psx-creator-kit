@@ -1,5 +1,34 @@
 # NOTES.md
 
+## M8 GLB 导出 v2 重设计（2026-10-05 用户回报：导出的 GLB 与网页模型大量不同）
+- **三个真根因（逐个用证据锤实）**：
+  1. **色彩空间契约错误**：three 的 GLTFExporter 把 `baseColorFactor`/`COLOR_0`
+     原样直写，而 glTF 规范这两个字段是 **线性** 值；app 存的是屏幕 sRGB 值 →
+     任何标准 viewer 按线性解释再转 sRGB 显示 = **整模变暗**。v2 烘焙改为
+     `COLOR_0 = srgbToLinear(屏幕目标色)`，显示端 linear→sRGB 恰好还原。
+  2. **双重变换**：初版 `bakeMesh` 把顶点乘了 `matrixWorld`（烘成世界坐标），
+     但克隆树又保留整条关节链的局部变换 → 双重变换：鞋叠在原点、blazer 飞出
+     画面、眼/嘴贴花埋进头内（没脸）。正确做法：**顶点保持局部空间**，
+     `matrixWorld` 只用于逐顶点计算世界Y/世界法线（决定渐变+光照标量 k），
+     层级与局部变换原样克隆（关节层级、姿势全保留）。
+  3. **烘焙 Mesh 丢失自身局部变换**：新建的 Mesh 未拷 position/quaternion/
+     scale → decal（y -0.094/z 0.368）、鞋、袖等带偏移的部件全部塌到父节点
+     原点。补齐三个 copy。
+- **其他 v2 修正**：材质 side 从源材质携带（不再一律 DoubleSide）；无 normal
+  的纸片条在导出克隆上 computeVertexNormals（lit viewer 不再破面）；
+  baseColorFactor 恒白（颜色全走 COLOR_0/纹理）；map 材质 k（渐变×光照）以
+  线性灰度乘进 COLOR_0（纹理 PNG 字节原样内嵌、sRGB 往返无损）。
+- **保真度闭环验证**：tests/m8GlbViewer.mjs（`npm run m8glb`）——导出 GLB →
+  GLTFLoader + **默认色彩管理**（CM 临时 on = 标准 viewer 行为）回读渲染 →
+  与页内采集逐像素对照：default meanΔ **1.78/255**、patterned（blazer+格裙+
+  玛丽珍+choker+wave）**1.48/255**，>32Δ 像素 <1.2%。前后对比图存
+  /shots/m8_glbref_*_app.png / _glb.png。
+- 教训：GLB 导出验证不能只数 mesh——必须**回读渲染逐像素对照**才能暴露
+  变换/色彩空间级别的错误。
+- 并行会话警示再触发：STYLE.md 工作树被外部删了 47 行（M6.5/M7/M8 勾选 +
+  §10/§11）；已从 HEAD 恢复后重放 §11 更新。PLAN.md / PROMPTS-GLM53.md 的
+  外部改动未动。
+
 ## M8 Photo Studio + GLB + polish (2026-10-05)
 - **M8 完成范围**：GLB 导出、Photo Studio（离屏截图 + 下载/复制/三视图）、
   psxcc.capture.v1 偏好、focus/hit-area/错误状态 polish。config 格式、catalog
