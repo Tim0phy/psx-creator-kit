@@ -44,6 +44,12 @@ const CAT_COLORS = {
   pose: "#8fc8e8", style: "#e8d860",
 };
 
+// mobile/compact layout flag — must stay in sync with the CSS media queries
+// in style.css. In portrait the bottom sheet scrolls instead of paging, so
+// every style stays previewable on small screens (visible pixel scrollbar).
+const PORTRAIT_MQ = "(max-aspect-ratio: 1/1)";
+const isPortrait = () => window.matchMedia(PORTRAIT_MQ).matches;
+
 export function createUI(state, uiHooks) {
   const onChange = uiHooks.onChange;
   const leftGrid = document.getElementById("leftGrid");
@@ -69,59 +75,70 @@ export function createUI(state, uiHooks) {
   }
 
   // ---- left 3-col grid ------------------------------------------------------
-  // Show all entries when they fit the available height; otherwise page with
-  // pixel prev/next arrows below (9 per page, 3x3). entries: [{ label, draw,
-  // isActive, pick }]
+  // Desktop: page with pixel prev/next arrows below (3xN). Portrait mobile:
+  // unroll EVERY entry into the scrollable sheet grid (no pagination) — small
+  // screens preview styles by scrolling, per the mobile support request.
+  // entries: [{ label, draw, isActive, pick }]
   function buildGrid(entries, state, refreshAll) {
     leftGrid.replaceChildren();
     gridDots.replaceChildren();
-    const rowH = 64 + 10; // cell + gap
-    const panel = leftGrid.parentElement; // #leftPanel
-    const pillH = panel.querySelector("#leftPill")?.offsetHeight ?? 40;
-    const avail = (panel.clientHeight || 400) - pillH - 10 - 40; // gaps + padding
-    const rows = Math.max(3, Math.floor(avail / rowH));
-    const perPage = rows * 3;
-    const pages = Math.max(1, Math.ceil(entries.length / perPage));
-    if (page >= pages) page = pages - 1;
-    const start = page * perPage;
-    entries.slice(start, start + perPage).forEach((ei) => {
+    let activeBtn = null;
+    const add = (ei) => {
       const btn = el("button", "gridBtn", leftGrid);
       btn.title = ei.label ?? "";
       const c = cell64();
       btn.appendChild(c);
       ei.draw(c);
-      btn.classList.toggle("active", !!ei.isActive());
+      const on = !!ei.isActive();
+      btn.classList.toggle("active", on);
+      if (on) activeBtn = btn;
       btn.addEventListener("click", () => {
         ei.pick();
         refreshAll();
         onChange();
       });
-    });
-    if (pages > 1) {
-      const prev = el("button", "gridArrow", gridDots);
-      prev.innerHTML = "&#9664;";
-      prev.disabled = page === 0;
-      prev.addEventListener("click", () => {
-        page = Math.max(0, page - 1);
-        rebuildCategory();
-      });
-      const dotWrap = el("span", "dotWrap", gridDots);
-      for (let p = 0; p < pages; p++) {
-        const dot = el("span", null, dotWrap);
-        dot.classList.toggle("on", p === page);
-        dot.addEventListener("click", () => {
-          page = p;
+    };
+    if (isPortrait()) {
+      entries.forEach(add);
+    } else {
+      const rowH = 64 + 10; // cell + gap
+      const panel = leftGrid.parentElement; // #leftPanel
+      const pillH = panel.querySelector("#leftPill")?.offsetHeight ?? 40;
+      const avail = (panel.clientHeight || 400) - pillH - 10 - 40; // gaps + padding
+      const rows = Math.max(3, Math.floor(avail / rowH));
+      const perPage = rows * 3;
+      const pages = Math.max(1, Math.ceil(entries.length / perPage));
+      if (page >= pages) page = pages - 1;
+      const start = page * perPage;
+      entries.slice(start, start + perPage).forEach(add);
+      if (pages > 1) {
+        const prev = el("button", "gridArrow", gridDots);
+        prev.innerHTML = "&#9664;";
+        prev.disabled = page === 0;
+        prev.addEventListener("click", () => {
+          page = Math.max(0, page - 1);
+          rebuildCategory();
+        });
+        const dotWrap = el("span", "dotWrap", gridDots);
+        for (let p = 0; p < pages; p++) {
+          const dot = el("span", null, dotWrap);
+          dot.classList.toggle("on", p === page);
+          dot.addEventListener("click", () => {
+            page = p;
+            rebuildCategory();
+          });
+        }
+        const next = el("button", "gridArrow", gridDots);
+        next.innerHTML = "&#9654;";
+        next.disabled = page === pages - 1;
+        next.addEventListener("click", () => {
+          page = Math.min(pages - 1, page + 1);
           rebuildCategory();
         });
       }
-      const next = el("button", "gridArrow", gridDots);
-      next.innerHTML = "&#9654;";
-      next.disabled = page === pages - 1;
-      next.addEventListener("click", () => {
-        page = Math.min(pages - 1, page + 1);
-        rebuildCategory();
-      });
     }
+    // keep the selected thumbnail in view inside the scrollable grid
+    activeBtn?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
   // ---- face panel -----------------------------------------------------------
@@ -463,6 +480,11 @@ export function createUI(state, uiHooks) {
   catBtns.forEach((b) =>
     b.addEventListener("click", () => switchCat(b.dataset.cat))
   );
+  // portrait <-> landscape flips: rebuild the current panel so the grid
+  // re-paginates (desktop) or unrolls into the scrollable sheet list (mobile)
+  const mq = window.matchMedia(PORTRAIT_MQ);
+  if (mq.addEventListener) mq.addEventListener("change", () => rebuildCategory());
+  else if (mq.addListener) mq.addListener(() => rebuildCategory());
   const startCat = new URLSearchParams(location.search).get("cat");
   switchCat(startCat && BUILDERS[startCat] ? startCat : "head");
 

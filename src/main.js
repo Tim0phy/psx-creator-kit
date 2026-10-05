@@ -496,7 +496,7 @@ if (dbgActive) applyDebugStep();
 
 const clock = new THREE.Clock();
 function tick() {
-  const dt = clock.getDelta();
+  const dt = Math.min(clock.getDelta(), 0.1); // clamp long tab-idle gaps (mobile resume)
   if (auto) controls.yaw += dt * 0.7;
   pose.update(dt); // stepped preset interpolation (12-15 fps, ~0.25 s)
   if (dbgActive && dbgAuto) {
