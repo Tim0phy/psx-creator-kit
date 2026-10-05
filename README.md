@@ -4,7 +4,7 @@ A PSX-style low-poly character creator that runs entirely in the browser —
 retro 32-bit look, vertex-colour rendering, pixelated upscale, hair / outfits /
 accessories / poses, and one-click `.glb` export.
 
-**Live demo:** `https://<your-username>.github.io/psx-creator-kit/` *(after first deploy)*
+**Live demo:** `[https://<your-username>.github.io/psx-creator-kit/](https://tim0phy.github.io/psx-creator-kit/)`
 
 ![og-image](public/og-image.png)
 
