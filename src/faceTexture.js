@@ -197,16 +197,22 @@ export function drawEyes(ctx, state) {
     px(ctx, 4, 17, 3, 2, P.blush);
     px(ctx, 25, 17, 3, 2, P.blush);
   }
+  // Dynamic lookup (js/unvalidated-dynamic-method-call): `state.eyes` can come
+  // from imported JSON / localStorage / URL params, so only invoke the entry
+  // once we know it resolved to an actual function.
   const ei = (state.eyes ?? 1) - 1;
-  if (ei >= 0) {
-    EYES[ei % 12](ctx, 10, -1);
-    EYES[ei % 12](ctx, 22, 1);
+  const drawEye = EYES[ei % EYES.length];
+  if (ei >= 0 && typeof drawEye === "function") {
+    drawEye(ctx, 10, -1);
+    drawEye(ctx, 22, 1);
   }
 }
 
 export function drawMouth(ctx, state) {
+  // Same guard as drawEyes: reject non-function lookups before calling.
   const mi = (state.mouth ?? 1) - 1;
-  if (mi >= 0) MOUTHS[mi % 6](ctx);
+  const drawMouthFn = MOUTHS[mi % MOUTHS.length];
+  if (mi >= 0 && typeof drawMouthFn === "function") drawMouthFn(ctx);
 }
 
 export function drawFace32(ctx, state) {
