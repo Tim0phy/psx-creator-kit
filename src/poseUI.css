@@ -152,11 +152,15 @@ input[type="range"].poseSlider::-moz-range-thumb {
 
 .poseDot.diff { background: var(--highlight); }
 
-/* mobile portrait: bigger touch targets */
+/* mobile portrait: bigger touch targets, narrower two-column sheet */
 @media (max-aspect-ratio: 1/1) {
+  .poseBtnRow { flex-wrap: wrap; }
+  .poseBtn { flex: 1 1 auto; font-size: 7px; padding: 10px 5px; }
   .poseRow {
-    grid-template-columns: 44px 1fr 36px 26px;
-    padding: 9px 9px;
+    /* fit the narrower right column of the two-column bottom sheet */
+    grid-template-columns: 44px 1fr 32px 22px;
+    gap: 6px;
+    padding: 8px 8px;
   }
   input[type="range"].poseSlider { height: 30px; }
   input[type="range"].poseSlider::-webkit-slider-thumb {
@@ -164,6 +168,5 @@ input[type="range"].poseSlider::-moz-range-thumb {
     height: 26px;
     margin-top: -10px;
   }
-  .poseBtn { font-size: 7px; padding: 10px 5px; }
-  .poseGrpHead { font-size: 10px; padding: 11px 10px; }
+  .poseGrpHead { font-size: 10px; padding: 11px 8px; }
 }

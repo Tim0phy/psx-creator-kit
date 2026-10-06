@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "shots": "node tests/shots.mjs",
+    "mobile": "node tests/mobileLayout.mjs",
     "m8": "node tests/m8Capture.mjs",
     "m8glb": "node tests/m8GlbViewer.mjs"
   },

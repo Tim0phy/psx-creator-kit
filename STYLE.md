@@ -57,6 +57,18 @@ Goal: a character creator in the style of the reference screenshots in /refs (cu
 - Colour picker for every selected item (swatch row + custom input).
 - Rotation: mouse drag, arrow keys, A/D, touch drag. Auto-rotation toggle.
 - Layout must work in portrait mobile (panel collapses to bottom sheet).
+  - Portrait phones: the 3D preview and the bottom sheet split the free height
+    below the top bar 50:50 (a small floor keeps the sheet usable on very short
+    screens). The sheet lays the thumbnail grid and the colour/pose column side
+    by side (Pose gets a wider right column) with CONFIRM / EXPORT / IMPORT /
+    GLB on a full-width bottom row.
+  - The category bar spans the full width and wraps to two rows.
+  - The AUTO ROTATION button stays visible/reachable in portrait.
+  - Touch hit-pockets (pointer: coarse) must be anchored to their own button.
+    Every button is `position: relative` so a pocket can never expand to a
+    parent and swallow its neighbours' taps.
+  - Covered by `npm run mobile` (tests/mobileLayout.mjs): hit targets, 50:50
+    ratio, no panel overlap, and tap routing on 390/360/320 phones.
 - Thumbnails: render each item once to an offscreen canvas at 64x64 (or draw procedural icons) and cache.
 - UI layout follows `ui-psx-mockup.png`
 

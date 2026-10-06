@@ -465,6 +465,9 @@ export function createUI(state, uiHooks) {
     const tint = CAT_COLORS[current] ?? "";
     for (const id of ["leftPill", "leftGrid"])
       document.getElementById(id).style.background = tint || "";
+    // M9 mobile: the Pose tab's sliders need a wider right column than the
+    // 1.15:1 default of the portrait two-column bottom sheet.
+    document.getElementById("sheet")?.classList.toggle("wideRight", current === "pose");
   }
 
   function switchCat(cat) {

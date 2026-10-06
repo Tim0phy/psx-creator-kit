@@ -62,7 +62,11 @@ canvas.image-rendering { image-rendering: pixelated; }
 #rightPanel { right: 22px; width: 285px; }
 
 /* ---- shared pixel button language ---------------------------------------- */
+/* position: relative anchors the coarse-pointer hit-pocket (::after below) to
+   the BUTTON, not to the nearest positioned ancestor. Without it every pocket
+   expanded to the whole top bar and the last button swallowed all taps. */
 .pixBtn, .topIconBtn, .catBtn, #btnConfirm {
+  position: relative;
   cursor: pointer;
   image-rendering: pixelated;
   font-family: var(--pixel-font);
@@ -178,12 +182,13 @@ canvas.image-rendering { image-rendering: pixelated; }
 }
 
 /* M8 polish: invisible +6px hit pocket so every small button clears the
-   >=44px touch target, without changing the visual size/layout */
+   >=44px touch target, without changing the visual size/layout. Each button is
+   position: relative so the pocket hugs its own box (see the shared rule). */
 @media (pointer: coarse) {
   .pixBtn::after, .catBtn::after, .topIconBtn::after, .gridArrow::after {
     content: "";
     position: absolute;
-    inset: -7px;
+    inset: -6px;
   }
   .gridBtn::after { content: ""; position: absolute; inset: -5px; }
   .gridBtn { position: relative; }
@@ -250,6 +255,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   align-items: center;
   justify-content: center;
   gap: 10px;
+  flex: 0 0 auto;
   background: var(--wood);
   border: 3px solid;
   border-color: #fff #b87830 #b87830 #fff;
@@ -333,6 +339,7 @@ canvas.image-rendering { image-rendering: pixelated; }
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  flex: 0 0 auto;
 }
 
 .subPill {
@@ -356,6 +363,7 @@ canvas.image-rendering { image-rendering: pixelated; }
 }
 
 .gridArrow {
+  position: relative;
   width: 26px;
   height: 26px;
   border: 3px solid;
@@ -617,28 +625,47 @@ canvas.image-rendering { image-rendering: pixelated; }
   :root {
     /* stacked height of the wrapped category bar (2 rows) + safe area */
     --bar-stack: calc(10px + env(safe-area-inset-bottom, 0px) + 108px);
-    --sheet-h: max(52vh, 260px);
-    --sheet-h: max(52dvh, 260px);
+    /* 50:50 split between the 3D preview (#stage) and the style sheet
+       (#sheet). Start from the frame's content height (100dvh minus the 12px
+       frame border top + bottom), take away the top-bar strip (50px) and the
+       category-bar stack, then halve what is left. */
+    --frame-ch: calc(100vh - 24px);
+    --frame-ch: calc(100dvh - 24px);
+    --split-region: calc(var(--frame-ch) - 50px - var(--bar-stack));
+    --split-gap: 20px;
+    /* exact half, but never smaller than 212px (or 60% of the region on a
+       very short phone) so the two-column sheet stays usable there */
+    --sheet-h: max(
+      calc((var(--split-region) - var(--split-gap)) / 2),
+      min(212px, calc(var(--split-region) * 0.6))
+    );
   }
 
   #stage {
     left: 0;
     right: 0;
     top: 50px;
-    bottom: calc(var(--bar-stack) + 18px + var(--sheet-h));
+    /* bar + sheet bottom gap (10) + sheet + gap above the sheet (10) */
+    bottom: calc(var(--bar-stack) + var(--sheet-h) + var(--split-gap));
   }
   #view { max-height: 100%; }
 
   #topBar {
     top: 10px;
-    width: calc(100% - 16px);
+    left: 8px;
+    right: 54px; /* keep clear of the auto-rotation button on the right */
+    width: auto;
+    transform: none;
     flex-wrap: nowrap;
   }
   #nameBox { min-width: 0; flex: 1 1 auto; }
   .topIconBtn, .pixBtn { width: 34px; height: 34px; }
-  #btnRotate { top: 10px; right: 10px; display: none; }
+  /* auto-rotation must stay reachable on phones (it used to be display:none) */
+  #btnRotate { top: 10px; right: 10px; }
 
-  /* bottom sheet: pill + grid + colour column + confirm, in flow */
+  /* bottom sheet: thumbnail grid (left) + colour column (right), with the
+     confirm row spanning the bottom. Two columns reuse the half-height sheet
+     far better than stacking, so the 3D preview can genuinely take its 50%. */
   #sheet {
     position: absolute;
     left: 10px;
@@ -646,8 +673,9 @@ canvas.image-rendering { image-rendering: pixelated; }
     bottom: calc(var(--bar-stack) + 10px);
     height: var(--sheet-h);
     z-index: 6;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
     gap: 8px;
     background: var(--wood);
     border: 3px solid;
@@ -657,41 +685,68 @@ canvas.image-rendering { image-rendering: pixelated; }
   }
 
   #leftPanel {
+    grid-column: 1;
+    grid-row: 1;
     position: static;
     width: auto;
     max-height: none;
-    flex: 1 1 auto;
-    min-height: 112px;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
+  /* Pose tab: give the slider column more of the sheet width */
+  #sheet.wideRight { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
   #leftGrid {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    grid-auto-rows: 52px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: auto;
+    gap: 8px;
     padding-right: 2px;
   }
-  .gridBtn { width: 52px; height: 52px; }
+  /* fluid square thumbnails: three columns always fit the narrower sheet */
+  .gridBtn {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    justify-self: stretch;
+  }
+  .gridBtn canvas { border-radius: 12px; }
   #gridDots { display: none; }
 
   #rightPanel {
+    grid-column: 2;
+    grid-row: 1;
     position: static;
     width: auto;
-    max-height: 46%;
-    flex: 0 1 auto;
+    min-width: 0;
     min-height: 0;
+    max-height: none;
     overflow-y: auto;
     overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
-  .swatchBtn, .customSkin { width: 44px; height: 44px; border-radius: 12px; }
+  .swatchBtn, .customSkin { width: 40px; height: 40px; border-radius: 12px; }
+  .swatchRow { gap: 8px; }
+
+  /* the two columns are narrow: compact the pills and drop the decorative
+     stars from the right-hand pill so long labels (POSE CONTROL, HAIR COLOR)
+     fit instead of spilling past the sheet edge */
+  #leftPill, .rightPill { padding: 7px 8px; font-size: 10px; gap: 6px; }
+  .pillStar { width: 10px; height: 10px; }
+  .rightPill .pillStar { display: none; }
 
   #centreCol {
+    grid-column: 1 / -1;
+    grid-row: 2;
     position: relative;
     left: auto;
     bottom: auto;
@@ -715,12 +770,16 @@ canvas.image-rendering { image-rendering: pixelated; }
     white-space: nowrap;
   }
 
-  /* category bar: wraps to two rows, sits above the notched safe area */
+  /* category bar: full width, wraps to two rows above the notched safe area.
+     (left:50% + width:auto made the shrink-to-fit bar collapse to ~half the
+     screen and wrap to three rows, overlapping the sheet.) */
   #categoryBar {
+    left: 10px;
+    right: 10px;
+    transform: none;
     bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     flex-wrap: wrap;
     justify-content: center;
-    max-width: calc(100% - 20px);
     gap: 6px;
     padding: 8px 10px;
   }
@@ -767,7 +826,13 @@ canvas.image-rendering { image-rendering: pixelated; }
   #centreCol { bottom: 78px; }
   #btnConfirm { font-size: 12px; padding: 8px 20px; }
   #glbNote { display: none; }
-  #categoryBar { gap: 10px; }
+  /* full-width bar so 9 buttons stay on one row (shrink-to-fit wrapped them) */
+  #categoryBar {
+    left: 12px;
+    right: 12px;
+    transform: none;
+    gap: 10px;
+  }
   .catBtn { width: 44px; height: 44px; }
 
   #leftGrid, #rightPanel {
