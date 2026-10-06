@@ -3,6 +3,7 @@ import { makePSXMaterial } from "../psxRenderer.js";
 import { bodyFit, torsoW } from "../character.js";
 import { PatternTexture } from "../patterns.js";
 import { kneePieces } from "./geo.js";
+import { resolveBuilder } from "./lookup.js";
 
 // M4 bottoms (base set) + M6 style packs: tapered pants, shorts, faceted
 // (low-poly 8-sided) skirts, pleats, denim/plaid/metallic maps. Dimensions
@@ -272,7 +273,8 @@ export function createBottom(id, colors, flags = {}, patternName = null, bodyTyp
       side: THREE.DoubleSide, gradient: 0.18,
     });
   }
-  if (BOTTOM_BUILDER[id]) BOTTOM_BUILDER[id](group, mat, flags, fit);
+  const build = resolveBuilder(BOTTOM_BUILDER, id);
+  if (build) build(group, mat, flags, fit);
   let tris = 0;
   group.traverse((o) => {
     if (o.isMesh) {

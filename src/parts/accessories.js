@@ -4,6 +4,7 @@ import { taperBox } from "../character.js";
 import { bx } from "./geo.js";
 import { BAG_BUILDER } from "./bags.js";
 import { DEFAULT_FIT as DF } from "./hair.js";
+import { resolveBuilder } from "./lookup.js";
 
 // M5 accessories: every item from catalog.json, original low-poly geometry.
 // Head-space builders (headwear/eyewear) use origin = head centre (y 1.48),
@@ -248,7 +249,8 @@ export function createAccessory(id, colors, fit) {
   const main = colors.main ?? "#ffffff";
   const mat = makePSXMaterial(main, { gradient: 0.12 });
   let secMat = null;
-  if (ALL[id]) {
+  const build = resolveBuilder(ALL, id);
+  if (build) {
     // secondary slot (watch strap): user-coloured; darker variant of main
     // otherwise as before for lenses/inner ears
     if (colors.secondary) {
@@ -257,7 +259,7 @@ export function createAccessory(id, colors, fit) {
       secMat = makePSXMaterial(main, { gradient: 0.08 });
       secMat.uniforms.color.value.multiplyScalar(0.45);
     }
-    ALL[id](group, mat, secMat, fit);
+    build(group, mat, secMat, fit);
   }
   let tris = 0;
   group.traverse((o) => {
@@ -266,6 +268,6 @@ export function createAccessory(id, colors, fit) {
       tris += o.geometry.attributes.position.count / 3;
     }
   });
-  if (ALL[id]) console.log(`[psxcc] ${id}: ${tris} tris (max 150)`);
+  if (build) console.log(`[psxcc] ${id}: ${tris} tris (max 150)`);
   return { group, mat, secMat };
 }

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
+import { resolveBuilder } from "./lookup.js";
 
 // M4 shoes (base sneaker) + M6 style packs. Shoes are compact boxes over the
 // base feet plus a sole plate and a slim ankle cuff.
@@ -97,11 +98,12 @@ export function createShoes(id, colors) {
   // the shoe); both faces make every shoe render as a solid volume
   const mat = makePSXMaterial(main, { gradient: 0.12, side: THREE.DoubleSide });
   let secMat = null;
-  if (SHOE_BUILDER[id]) {
+  const build = resolveBuilder(SHOE_BUILDER, id);
+  if (build) {
     if (colors.secondary) {
       secMat = makePSXMaterial(colors.secondary, { gradient: 0.12, side: THREE.DoubleSide });
     }
-    SHOE_BUILDER[id](raw, mat, secMat ?? mat);
+    build(raw, mat, secMat ?? mat);
   }
   // M6.5: split the pair into per-foot groups (every shoe piece is a
   // side-offset box). TWO frames per side: the shoe body/sole wraps the
@@ -135,6 +137,6 @@ export function createShoes(id, colors) {
       tris += o.geometry.attributes.position.count / 3;
     }
   });
-  if (SHOE_BUILDER[id]) console.log(`[psxcc] ${id}: ${tris} tris (max 150)`);
+  if (build) console.log(`[psxcc] ${id}: ${tris} tris (max 150)`);
   return { group, mat, secMat };
 }

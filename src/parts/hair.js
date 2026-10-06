@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
+import { resolveBuilder } from "./lookup.js";
 
 // M3 hair: flat double-sided "paper" strips with jagged lower edges,
 // flat shading, vertex gradient via the shared PSX material.
@@ -344,11 +345,12 @@ export const BARE_HEAD_FIT = { r: 0.42, top: 0.41, front: 0.4 };
 
 export function createHair(id, colorHex) {
   const group = new THREE.Group();
-  if (!HAIR_BUILDER[id]) return { group, mat: null };
+  const build = resolveBuilder(HAIR_BUILDER, id);
+  if (!build) return { group, mat: null };
   const mat = makePSXMaterial(colorHex, {
     side: THREE.DoubleSide, gradient: 0.2, ambient: 0.85, diffuse: 0.1,
   });
-  HAIR_BUILDER[id](group, mat);
+  build(group, mat);
 
   let tris = 0;
   group.traverse((o) => {

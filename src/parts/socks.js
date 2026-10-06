@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { makePSXMaterial } from "../psxRenderer.js";
 import { PatternTexture } from "../patterns.js";
 import { kneePieces } from "./geo.js";
+import { resolveBuilder } from "./lookup.js";
 
 // M6 socks: striped knee socks (catalog sock_knee_stripe). Knee tubes around
 // the legs, drawn under shoes and above bare skin. Sock wall half-w 0.19
@@ -43,7 +44,8 @@ export function createSocks(id, colors, patternName = null) {
   } else {
     mat = makePSXMaterial(main, { gradient: 0.14 });
   }
-  if (SOCK_BUILDER[id]) SOCK_BUILDER[id](group, mat);
+  const build = resolveBuilder(SOCK_BUILDER, id);
+  if (build) build(group, mat);
   let tris = 0;
   group.traverse((o) => {
     if (o.isMesh) {
@@ -51,6 +53,6 @@ export function createSocks(id, colors, patternName = null) {
       tris += o.geometry.attributes.position.count / 3;
     }
   });
-  if (SOCK_BUILDER[id]) console.log(`[psxcc] ${id}: ${tris} tris (max 150)`);
+  if (build) console.log(`[psxcc] ${id}: ${tris} tris (max 150)`);
   return { group, mat, pattern };
 }

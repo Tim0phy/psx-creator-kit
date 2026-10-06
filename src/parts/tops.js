@@ -4,6 +4,7 @@ import { bodyFit } from "../character.js";
 import { PatternTexture } from "../patterns.js";
 import { chestDecal, neckTrim, shellGeo, addSleeves } from "./fit.js";
 import { OUTER_BUILDER } from "./outer.js";
+import { resolveBuilder } from "./lookup.js";
 
 // Tops (M4 base set) + M6 style-pack tops, with outers in ./outer.js. All
 // geometry is a slightly enlarged tapered shell over the torso plus sleeves
@@ -140,7 +141,8 @@ export function createTop(id, colors, flags = {}, patternName = null, bodyType =
     secMat = makePSXMaterial(main, { gradient: 0.18 });
     secMat.uniforms.color.value.multiplyScalar(0.45);
   }
-  if (BUILDERS[id]) BUILDERS[id](group, mat, secMat, flags, fit);
+  const build = resolveBuilder(BUILDERS, id);
+  if (build) build(group, mat, secMat, flags, fit);
   count(group, id);
   return { group, mat, secMat, pattern };
 }
