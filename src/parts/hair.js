@@ -344,11 +344,14 @@ export const BARE_HEAD_FIT = { r: 0.42, top: 0.41, front: 0.4 };
 
 export function createHair(id, colorHex) {
   const group = new THREE.Group();
-  if (!HAIR_BUILDER[id]) return { group, mat: null };
+  if (!Object.prototype.hasOwnProperty.call(HAIR_BUILDER, id))
+    return { group, mat: null };
+  const builder = HAIR_BUILDER[id];
+  if (typeof builder !== "function") return { group, mat: null };
   const mat = makePSXMaterial(colorHex, {
     side: THREE.DoubleSide, gradient: 0.2, ambient: 0.85, diffuse: 0.1,
   });
-  HAIR_BUILDER[id](group, mat);
+  builder(group, mat);
 
   let tris = 0;
   group.traverse((o) => {
