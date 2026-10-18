@@ -34,6 +34,10 @@ import {
 import {
   exportCharacterGLB, glbFilename,
 } from "./exporter.js";
+import { FACE_RECT } from "./exportFace.js";
+import { initExportUI } from "./uiExport.js";
+import { exportDisplayOBJ } from "./objExport.js";
+import { exportPrintOBJ } from "./objPrint.js";
 
 // M8 body selector: `state.body` ("female" | "male") rebuilds the whole
 // character root (rig, face decals, hair and every clothing item re-mount).
@@ -86,7 +90,11 @@ const LONG_HAIR = new Set(["hair_02", "hair_03", "hair_04", "hair_07", "hair_09"
 
 // face decals: eyes and mouth are two separate transparent textures laid on
 // top of the head mesh; the head itself keeps its own skin material so the
-// skin colour/lighting can never mismatch the decal
+// skin colour/lighting can never mismatch the decal. M9: the live renderer
+// keeps these planes, but every EXPORT maps the face onto the head surface
+// instead (exportFace.js + exporter.js) — the planes are tagged so exporters
+// can skip them (exportRole "faceDecal"); rect constants come from
+// FACE_RECT so texture and geometry can never drift apart.
 function facePair() {
   const small = document.createElement("canvas");
   small.width = small.height = 32;
@@ -103,7 +111,7 @@ const mouthTex = makeFaceTexture(mouthPair.big);
 // 1.5x face feature scale: planes enlarged about each feature's centre so
 // eyes/mouth grow without drifting (anchor = eye-row centre / mouth centre)
 const eyesMesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.75, 0.66),
+  new THREE.PlaneGeometry(FACE_RECT.w, FACE_RECT.h),
   makePSXMaterial("#ffffff", {
     map: eyesTex, gradient: 0.05,
     // z-fight guard: the decal sits ~0.007 in front of the head shell but
@@ -113,15 +121,17 @@ const eyesMesh = new THREE.Mesh(
     polygonOffset: true, polygonOffsetFactor: -4,
   })
 );
-eyesMesh.position.set(0, -0.0941, 0.368); // extra -0.05: keeps brows clear of the fringe
+eyesMesh.position.set(FACE_RECT.cx, FACE_RECT.cy, 0.368); // extra -0.05: keeps brows clear of the fringe
+eyesMesh.userData.exportRole = "faceDecal";
 const mouthMesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.75, 0.66),
+  new THREE.PlaneGeometry(FACE_RECT.w, FACE_RECT.h),
   makePSXMaterial("#ffffff", {
     map: mouthTex, gradient: 0.05,
     polygonOffset: true, polygonOffsetFactor: -4,
   })
 );
-mouthMesh.position.set(0, -0.16, 0.371); // tiny offset: avoids vertex-snap shimmer
+mouthMesh.position.set(FACE_RECT.cx, -0.16, 0.371); // tiny offset: avoids vertex-snap shimmer
+mouthMesh.userData.exportRole = "faceDecal";
 character.hairAnchor.add(eyesMesh, mouthMesh);
 
 scene.add(ground, character.root);
@@ -169,10 +179,15 @@ function applyHair() {
     }
   }
   if (hairMat) hairMat.uniforms.color.value.set(color);
+  // M9: slot tag for the OBJ exporters (object naming per slot)
+  if (hairGroup) {
+    hairGroup.userData.slot = "hair";
+    hairGroup.userData.itemId = id;
+  }
   // M6.5: long hair shifts behind raised arms (rest look unchanged)
   pose.hairLong = LONG_HAIR.has(id);
   pose.applyPose(pose.current);
-}
+ }
 
 function catalogItem(slot) {
   if (!state[slot]) return null;
@@ -186,6 +201,8 @@ function mount(slot, built) {
   }
   CLOTH[slot] = built ? { ...built, parent } : null;
   if (built) {
+    // M9 slot tags: the OBJ/OBJ-print exporters name objects per slot
+    built.group.userData.slot = slot;
     parent.add(built.group);
     // layering draw order per STYLE.md sections 4/5
     const order = [...ALL_SLOTS];
@@ -274,6 +291,14 @@ const SLOT_ANCHOR = {
   bag: character.anchors.bag,
 };
 
+// M9: item id tag for OBJ object naming (accessory_<id> groups). Set on the
+// slot group after every (re)build; hair/id tagged in applyHair.
+function tagItemId(slot) {
+  const rec = CLOTH[slot];
+  const item = catalogItem(slot);
+  if (rec?.group) rec.group.userData.itemId = item?.id ?? null;
+}
+
 // M7: RANDOM/RESET via state.js
 function applyAfterChange() {
   sanitizePose(state);
@@ -319,7 +344,7 @@ const ui = createUI(state, {
   onImport: (cfg) => importConfig(cfg, { persist: true }),
 });
 
-// ---- M8 Photo Studio + GLB export -------------------------------------------
+// ---- M8 Photo Studio + M9 exports -------------------------------------------
 // capture refs are resolved lazily (character may be rebuilt on body switch)
 const captureSetup = () => ({
   scene,
@@ -339,27 +364,41 @@ function saveBlob(blob, filename) {
 
 initCaptureUI({ getSetup: captureSetup, openEl: document.getElementById("btnCamera") });
 
-document.getElementById("btnGlb").addEventListener("click", async () => {
-  const btn = document.getElementById("btnGlb");
-  btn.disabled = true;
-  try {
-    const res = await exportCharacterGLB(
-      { character, platform: ground },
-      { includePlatform: false, name: currentName() }
-    );
-    if (res.ok) {
-      saveBlob(res.blob, glbFilename(currentName()));
-      showSaved("GLB SAVED");
-    } else {
-      showSaved("GLB FAILED");
-      console.warn("[psxcc] GLB export:", res.errors);
+// M9: export callbacks for the Export panel (uiExport.js owns the button and
+// its modal). Every export stays local; nothing uploads.
+const exportHooks = {
+  glb: async () => {
+    try {
+      const res = await exportCharacterGLB(
+        {
+          character, platform: ground,
+          // M9: live decal canvases -> the face is remapped onto the head
+          face: { eyesBig: eyesPair.big, mouthBig: mouthPair.big },
+        },
+        { includePlatform: false, name: currentName() }
+      );
+      if (res.ok) return { ok: true, blob: res.blob, filename: res.filename };
+      return { ok: false, errors: res.errors };
+    } catch (err) {
+      console.warn("[psxcc] GLB export error:", err);
+      return { ok: false, errors: [String(err?.message ?? err)] };
     }
-  } catch (err) {
-    showSaved("GLB FAILED");
-    console.warn("[psxcc] GLB export error:", err);
-  } finally {
-    btn.disabled = false;
-  }
+  },
+  displayOBJ: async () => exportDisplayOBJ(
+    { character, face: { eyesBig: eyesPair.big, mouthBig: mouthPair.big } },
+    { name: currentName() }
+  ),
+  printOBJ: async (opts) => exportPrintOBJ(
+    { character, face: { eyesBig: eyesPair.big, mouthBig: mouthPair.big } },
+    { name: currentName(), ...opts }
+  ),
+};
+
+initExportUI({
+  hooks: exportHooks,
+  openEl: document.getElementById("btnGlb"),
+  download: saveBlob,
+  toast: showSaved,
 });
 
 // ?preset= applies a catalog preset on load (shot scripts / shareable links);
@@ -418,6 +457,7 @@ function applyAll() {
   for (const slot of ALL_SLOTS) {
     applyCloth(slot);
     recolor(slot);
+    tagItemId(slot); // M9: item id tag for OBJ object naming
   }
   // keep the engine's applied pose in step with state.pose on ANY rebuild
   // path (boot restore / body switch) — pose_preset exists only visually via
@@ -528,6 +568,31 @@ window.PSXCC = {
   captureTurnaround: (opts) => captureTurnaround(captureSetup(), opts),
   captureDims: (aspect, scale, raw) => scaledDims(aspect, scale, raw),
   captureMax: CAPTURE_MAX,
+  // M9: raw pipeline hooks for the Playwright export tests (no UI needed);
+  // identical code path as the Export panel's buttons
+  exports: {
+    glb: async () => {
+      const r = await exportHooks.glb();
+      return r.ok
+        ? { bytes: new Uint8Array(await r.blob.arrayBuffer()), filename: r.filename }
+        : { errors: r.errors };
+    },
+    displayOBJ: async () => {
+      const r = await exportHooks.displayOBJ();
+      return {
+        bytes: new Uint8Array(await r.blob.arrayBuffer()),
+        filename: r.filename, stats: r.stats,
+      };
+    },
+    printOBJ: async (opts) => {
+      const r = await exportHooks.printOBJ(opts);
+      return {
+        text: await r.blob.text(), filename: r.filename,
+        stats: r.stats, report: r.report, warnings: r.warnings,
+        minWallMm: r.minWallMm,
+      };
+    },
+  },
   get character() {
     return character;
   },

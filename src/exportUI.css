@@ -1,0 +1,104 @@
+/* M9 Export panel: positioning + report styling for the #exportModal frame.
+   The frame/pill/row/button classes are shared with the Photo Studio modal
+   (captureUI.css, imported app-wide); only the export-specific bits live here. */
+
+#exportModal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 34, 12, .45);
+}
+
+/* the flex rule above overrides the UA [hidden] style -> re-assert */
+#exportModal[hidden] { display: none; }
+
+.exNote {
+  font-size: 7px;
+  letter-spacing: 0px;
+  line-height: 1.7;
+  color: var(--ink);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, .35);
+  max-width: 100%;
+}
+
+.exRePill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  background: var(--wood);
+  border: 3px solid;
+  border-color: #fff #b87830 #b87830 #fff;
+  box-shadow: 3px 3px 0 rgba(56, 34, 12, .45);
+  padding: 6px 12px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--ink);
+}
+
+.exReportBox {
+  background: var(--wood);
+  border: 3px solid;
+  border-color: #906020 #fff #fff #906020;
+  box-shadow: 3px 3px 0 rgba(56, 34, 12, .3);
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  letter-spacing: 1px;
+  line-height: 2.1;
+  color: var(--ink);
+  padding: 10px 12px;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+#exWarnList {
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  line-height: 1.9;
+  letter-spacing: 1px;
+  color: #a03828;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, .5);
+  white-space: pre-line;
+}
+
+#exToast[hidden] { display: none; }
+
+#exToast {
+  margin: 0 auto;
+  background: var(--ink);
+  color: var(--highlight);
+  border: 2px solid #fff;
+  padding: 6px 12px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-family: var(--pixel-font);
+  max-width: 96%;
+}
+
+#exToast.psErr { color: #ff9aa8; }
+
+/* ---- mobile portrait: full-screen sheet (same behaviour as Photo Studio) -- */
+@media (max-aspect-ratio: 1/1) {
+  #exportModal {
+    align-items: stretch;
+    justify-content: stretch;
+    background: var(--frame-dark);
+    padding: 8px;
+  }
+  #exportModal .psFrame {
+    max-width: none;
+    max-height: none;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  #exportModal .psOpts { max-height: none; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  #exReport { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  #exReport[hidden] { display: none; }
+  .exReportBox { flex: 1 1 auto; }
+  #exportModal .psActions button { flex: 1 1 40%; }
+}

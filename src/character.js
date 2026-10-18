@@ -208,6 +208,11 @@ export function createCharacter(bodyType = "female") {
   // headwear / eyewear keep their head-centred coordinate space untouched
   const headMesh = new THREE.Mesh(roundedHead(), skinMat);
   head.add(headMesh);
+  // M9: headMesh is tagged exportRole "head" by main.js so the GLB/OBJ
+  // exporters can find it and remap the face onto its surface; the mesh and
+  // geometry themselves stay untouched at runtime
+  headMesh.name = "head";
+  headMesh.userData.exportRole = "head";
   const hairAnchor = new THREE.Group();
   hairAnchor.name = "anchor_head";
   head.add(hairAnchor);
@@ -301,6 +306,7 @@ export function createCharacter(bodyType = "female") {
 
   return {
     root, mats, setSkin, hairAnchor, profile: p, joints, resetRest,
+    headMesh, // M9 export target (face remap); not used by the live renderer
     anchors: {
       head: hairAnchor, neck: neckAnchor,
       wrist: wristAnchor, bag: bagAnchor,

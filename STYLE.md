@@ -104,6 +104,7 @@ Saved to localStorage key `psxcc.v1`. Export/import as JSON file.
 - [x] (M6.5) Rendering low-res/pixelated ✓; head ~1/3 ✓; gradients ✓; face crisp ✓; paper hair ✓; colour options ✓; UI layout ✓; mobile portrait ✓; triangle budgets unchanged (rig split +12 tris/leg, sleeves unchanged) ✓; no copied assets ✓.
 - [x] (M7) State: STYLE.md §8 save format (colour arrays indexed by colorSlots) in localStorage psxcc.v1; validated import (unknown id -> none / default hair, invalid hex -> default, eyes/mouth range-checked, pose sanitized); RANDOM fills every colour slot + skin palette + random pose preset; RESET restores defaults; selection (colours) preserved on item switch; JSON file export/import; dev-only state inspector (?debug=state). Verified by tests/m7State.mjs (34 checks) + desktop/mobile shots.
 - [x] (M8) Photo Studio + GLB export: PSX/Clean captures through a dedicated offscreen render pipeline (never the DOM); nearest upscale proven by pixel-identity test (4x ds == 1x); real alpha (corner 0); PSX/Clean/aspect/scale matrix exact; 4096 cap + clamp; turnaround with one shared scale; GLB = baked unlit vertex colours + embedded decal textures + posed joint hierarchy, loads back via GLTFLoader (36 meshes); capture prefs in psxcc.capture.v1; P/Esc; clipboard blocked -> toast + fallback download; 20 repeated captures heap-stable; mobile full-screen sheet. Verified by tests/m8Capture.mjs (34 checks) + shots.
+- [x] (M9) OBJ exports: display "OBJ + textures (.zip)" (per-slot objects, relative MTL refs, face mapped ON the head via face.png, decal planes dropped, Kd white + "v x y z r g b" screen-colour extension, zip members = obj/mtl/PNGs) and print "OBJ for 3D printing" (single merged mm mesh, Y-up, feet y=0, ±0.5mm height window, ceiling/geometry-only/single colours 0..1, mesh-check report shells/open/nm/flipped/winding/wall/bbox with no printability claim). Export modal behind the GLB button (FORMAT / HEIGHT / THICKNESS / COLOUR / ROUND BASE / CONNECT FEET), mobile sheet, pixel toasts, all local. Verified by tests/m9Export.mjs (23), m9Print.mjs (33), m9Characters.mjs (84) + export-panel shots; 6 representative characters incl. cat ears, plaid pleats, cargo+cap, raised-arm and tilt+twist poses.
 
 ## 11. M8 Photo Studio / captures / GLB (final state)
 - Camera button (#btnCamera) sits in the top bar beside RANDOM/RESET; the Photo
@@ -154,3 +155,48 @@ Saved to localStorage key `psxcc.v1`. Export/import as JSON file.
 - Trunk rows span 0.58..1.18 exactly like every clothing shell (torsoGeo rows profile-locked); waistTwist rotates trunk and shirt together, so no row can slide out of its shell silhouette. Regression tools: tests/poseProbe.mjs (per-vertex OBB exposure scan, all presets × outfits) and tests/poseAudit.mjs (canvas-only pose screenshots).
 - Sit preset folds legs within slider clamps + internal `drop` 0.12 (keeps feet on the ground; long skirt hides the fold).
 - Preset "custom" saved in config; old saves (no pose key) load as pose_default. RANDOM picks a random preset (not random sliders); RESET returns to pose_default.
+
+## 12. M9 exports — OBJ + 3D print (final state)
+- The GLB button (#btnGlb) is retitled "Export GLB / OBJ" and opens ONE Export
+  modal (PSX modal language, Esc/backdrop/X close, focus restored). Views:
+  FORMAT (GLB / OBJ+TEX / OBJ PRINT), HEIGHT 50/80/100/150 mm (default 80),
+  THICKNESS 0.8/1.2/2 (default 1.2), COLOUR FULL/SINGLE, ROUND BASE and
+  CONNECT FEET toggles (print rows hidden for GLB/OBJ+TEX), the slicer note,
+  and a print-only MESH CHECK report view (measured numbers + DOWNLOAD/BACK +
+  in-modal pixel toasts). Nothing uploads; downloads go through the shared
+  blob saver. Report honesty: measured shells/open/nm/flipped/wall/bbox only,
+  no printability claim; overlapping shells allowed and counted.
+- Face handling (all three formats): the UI keeps its two decal planes for
+  the live renderer, but every EXPORT drops them and maps the combined face
+  canvas (skin + blush + eyes + mouth, 128px opaque) ONTO the head surface
+  via an export-only head rebuild (exportFace.js: front-face triangles get
+  decal-rect UVs, triangles re-grouped [face|skin]). FACE_RECT is the shared
+  constant, so geometry and pixels can never drift apart.
+- Display OBJ zip: one object per slot tag (head/hair/top/... in SLOT_ORDER
+  order, body items merged per slot), baked world transforms (turntable yaw
+  included), vt+vn present, "v x y z r g b" carries the raw screen colour
+  (base x gradient x Lambert), Kd stays pure WHITE so viewers tint nothing
+  twice, map_Kd + `-clamp on` with RELATIVE paths only, textures kept at
+  their ORIGINAL canvas resolution (nearest look preserved). Filenames
+  `psx-character-<name>-display-<YYYYMMDD-HHMM>.zip`.
+- Print OBJ: bakeClone(raw + neutral yaw) -> mm scale to the requested height
+  -> per-shell manufacture: open sheets rim-solidified (outer surface exact,
+  thickness inward), closed thin boxes thinnest-axis scaled, closed solids
+  kept — the head too, but its FACE region samples the canvas, so a uniform
+  k-lattice runs on ALL head tris (T-junction-free) within a 20k triangle
+  budget. Optional 3mm base disc (top = y0) + foot bridge, feet plane y=0,
+  origin at base centre. Colour = canvas/pattern sample x baked ramp;
+  SINGLE prints plain "v x y z" (no colour). Filenames
+  `psx-character-<name>-print-<height>mm-<YYYYMMDD-HHMM>.obj`.
+- Mesh-check contract: analyseMeshes welds with the same 1e-4 mm buckets the
+  printed file carries (the report measures the delivered topology, not a
+  pre-rounding fiction), reports tris/verts/shells/open/nm/flipped/winding/
+  bbox/min-wall and pose-aware support warnings (BODY TILT / RAISED ARM /
+  BENT KNEE / SIT POSE). One known list entry: two hair strand slabs share an
+  exact edge (PSX slab style) — reads as 1 non-manifold edge, harmless to
+  slicers' repair steps.
+- Regression gates: tests/m9Export.mjs (zip contract + OBJLoader re-import
+  bbox vs the live scene), tests/m9Print.mjs (mm/height/topology/colour/
+  warnings/determinism), tests/m9Characters.mjs (6 characters through both
+  formats). Probe scripts from development are removed.
+
