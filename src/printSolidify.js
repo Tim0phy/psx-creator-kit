@@ -80,7 +80,8 @@ export function shellSplit(tris) {
 
 // facts about one welded shell: boundary edges (as oriented welded-id pairs
 // [a,b] where a->b follows the owning triangle's winding), non-manifold edge
-// count, bbox, thin-axis extents and signed volume (+ = outward faces, +Y up)
+// count, bbox (the SHELL's own vertices only), thin-axis extents and signed
+// volume (+ = outward faces, +Y up)
 export function shellFacts(pos, tris) {
   const edge = new Map();
   let nonManifold = 0;
@@ -99,8 +100,9 @@ export function shellFacts(pos, tris) {
     else if (e.count > 2) nonManifold++;
   }
   const bb = { x0: 1e9, y0: 1e9, z0: 1e9, x1: -1e9, y1: -1e9, z1: -1e9 };
-  for (let i = 0; i < pos.length / 3; i++) {
-    const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
+  for (let i = 0; i < tris.length; i++) {
+    const v = tris[i] * 3;
+    const x = pos[v], y = pos[v + 1], z = pos[v + 2];
     if (x < bb.x0) bb.x0 = x; if (x > bb.x1) bb.x1 = x;
     if (y < bb.y0) bb.y0 = y; if (y > bb.y1) bb.y1 = y;
     if (z < bb.z0) bb.z0 = z; if (z > bb.z1) bb.z1 = z;
@@ -192,10 +194,13 @@ export function rewindShell(tris) {
   return out;
 }
 
-// closed shell thinnest-axis scale: about the centre of its thinnest world
-// axis, scale that axis so the shell's extent becomes `t` mm. A linear axis
-// scale maps confined boxes to confined boxes (faces stay planar), so the
-// closed shell MANIFOLD is preserved.
+// closed shell thinnest-axis scale: about the centre of the shell's OWN
+// thinnest world axis, scale that axis so the shell's extent becomes `t` mm.
+// A linear axis scale maps confined boxes to confined boxes (faces stay
+// planar), so the closed shell MANIFOLD is preserved. Emits ONLY this shell's
+// triangles (one corner per original corner), so the appended soup stays a
+// whole number of triangles — the old version returned the WHOLE piece's
+// vertex array, which fed its other shells' corners into the face list.
 export function thickenShell(pos, col, tris, t) {
   const facts = shellFacts(pos, tris);
   const ex = facts.extents;
@@ -204,13 +209,15 @@ export function thickenShell(pos, col, tris, t) {
   const ext = [ex.x, ex.y, ex.z][axis];
   const centre = axis === 0 ? (bb.x0 + bb.x1) / 2 : axis === 1 ? (bb.y0 + bb.y1) / 2 : (bb.z0 + bb.z1) / 2;
   const f = ext > 1e-9 ? t / ext : 1;
-  const out = new Float32Array(pos.length);
-  const oCol = col ? new Float32Array(col.length) : null;
-  for (let i = 0, n = pos.length / 3; i < n; i++) {
-    const src = [pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]];
-    const d = src[axis] - centre;
-    for (let k = 0; k < 3; k++) out[i * 3 + k] = k === axis ? centre + d * f : src[k];
-    if (oCol) for (let k = 0; k < 3; k++) oCol[i * 3 + k] = col[i * 3 + k];
+  const out = new Float32Array(tris.length * 3);
+  const oCol = col ? new Float32Array(tris.length * 3) : null;
+  for (let i = 0; i < tris.length; i++) {
+    const v = tris[i] * 3;
+    for (let k = 0; k < 3; k++) {
+      const s = pos[v + k];
+      out[i * 3 + k] = k === axis ? centre + (s - centre) * f : s;
+      if (oCol) oCol[i * 3 + k] = col[v + k];
+    }
   }
   return { pos: out, col: oCol, axis, from: ext, note: `thickened (t=${t}mm)` };
 }

@@ -1,9 +1,12 @@
-// M9 six-character sweep — every representative character must produce a
+// M9 character sweep — every representative character must produce a
 // valid display zip AND a seal-clean 80mm coloured print with height inside
 // ±0.5 mm. Characters:
 //   1 default                 2 long hair + cat ears
 //   3 plaid pleated skirt     4 wide cargo + cap
 //   5 custom pose: raised arm  6 custom pose: tilt + waist twist
+//   7 bag flap + glasses (closed thin shells -> the thicken path; used to
+//     crash the print export / emit half triangles)
+//   8 blazer + white sneakers (two more thin closed shells through thicken)
 // Run: node tests/m9Characters.mjs
 import { chromium } from "playwright";
 import { createServer } from "vite";
@@ -28,6 +31,10 @@ const CHARS = [
     pose: null, warn: null },
   { label: "raised arm", url: "", pose: { armL: { raise: 150 } }, warn: "RAISED ARM" },
   { label: "tilt+twist", url: "", pose: { tilt: 25, waistTwist: 35 }, warn: "BODY TILT" },
+  { label: "bag+glasses", url: "?bag=acc_baguette_bag&eyewear=acc_glasses",
+    pose: null, warn: null },
+  { label: "blazer+white sneakers", url: "?outer=outer_blazer&shoes=shoe_white_sneaker",
+    pose: null, warn: null },
 ];
 
 const browser = await chromium.launch({ channel: "msedge" });

@@ -24,6 +24,11 @@ export function analyseMeshes(meshes) {
   // merge all pieces into one vertex soup for a single report topology
   let total = 0;
   for (const m of meshes) total += m.positions.length / 3;
+  // whole triangles only: a half-triangle corner count must fail LOUDLY here
+  // (the shell BFS below hangs on out-of-range triangle ids)
+  if (!Number.isInteger(total / 3)) {
+    throw new Error(`mesh soup is not whole triangles (${total} corners)`);
+  }
   const pos = new Float32Array(total * 3);
   let off = 0;
   for (const m of meshes) {
