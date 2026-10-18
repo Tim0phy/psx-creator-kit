@@ -24,6 +24,19 @@ export const FACE_CANVAS_SIZE = 128;
 
 // build the opaque combined face canvas from the live decal layers:
 // skin base fill -> eyes(+blush) layer -> mouth layer, nearest-upscaled.
+//
+// CSS needs "#rrggbb": THREE.Color.getHexString() returns "rrggbb" WITHOUT the
+// '#', and canvas silently IGNORES an invalid fillStyle (keeping its default
+// BLACK). That was the M9 export bug where the whole face rect came out dark
+// with only the eye whites left visible. Accepts either form; anything else
+// warns and falls back to white.
+function cssHex(hex) {
+  const s = String(hex ?? "").replace(/^#/, "");
+  if (/^[0-9a-f]{6}$/i.test(s)) return "#" + s;
+  console.warn("[psxcc] combineFaceCanvas: invalid skin colour", hex);
+  return "#ffffff";
+}
+
 export function combineFaceCanvas(skinHex, bigEyes, bigMouth) {
   const big = document.createElement("canvas");
   big.width = big.height = FACE_CANVAS_SIZE;
@@ -31,7 +44,7 @@ export function combineFaceCanvas(skinHex, bigEyes, bigMouth) {
   ctx.imageSmoothingEnabled = false;
   // skin base: the decal canvases are transparent, the head version repaints
   // the background so the whole face rect is opaque skin
-  ctx.fillStyle = skinHex;
+  ctx.fillStyle = cssHex(skinHex);
   ctx.fillRect(0, 0, FACE_CANVAS_SIZE, FACE_CANVAS_SIZE);
   ctx.drawImage(bigEyes, 0, 0);
   ctx.drawImage(bigMouth, 0, 0);
