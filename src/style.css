@@ -161,10 +161,9 @@ canvas.image-rendering { image-rendering: pixelated; }
   border-color: #208060 #fff #fff #208060;
 }
 
-/* M8 GLB note next to GLB in the transfer row (pixel small print) */
+/* M8 GLB note under the EXPORT/IMPORT/GLB/OBJ row (pixel small print) */
 #glbNote {
-  align-self: center;
-  align-self: center;
+  margin-top: 4px;
   font-size: 7px;
   letter-spacing: 0px;
   color: #fffdfa;
