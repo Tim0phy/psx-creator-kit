@@ -1,29 +1,37 @@
 # PSX Character Creator
 
-A PSX-style low-poly character creator that runs entirely in the browser —
-retro 32-bit look, vertex-colour rendering, pixelated upscale, hair / outfits /
-accessories / poses, and one-click `.glb` export.
+<p align="center">
+  <a href="https://tim0phy.github.io/psx-creator-kit/">
+    <img src="public/og-image.png" alt="PSX Character Creator screenshot" width="640">
+  </a>
+</p>
 
-**Live demo:** https://tim0phy.github.io/psx-creator-kit/
+<p align="center">
+  <a href="https://tim0phy.github.io/psx-creator-kit/"><strong>Live Demo</strong></a> ·
+  <a href="#features">Features</a> ·
+  <a href="#getting-started">Getting Started</a> ·
+  <a href="#project-layout">Project Layout</a>
+</p>
 
-![og-image](public/og-image.png)
+<p align="center">
+  <img src="https://img.shields.io/badge/three.js-0.186-black" alt="Three.js 0.186">
+  <img src="https://img.shields.io/badge/vite-8.3.1-646CFF?logo=vite" alt="Vite">
+  <img src="https://img.shields.io/badge/license-ISC%20%2B%20Commons%20Clause-blue" alt="License">
+</p>
+
+A PSX-style low-poly character creator that runs entirely in the browser — retro 32-bit look, vertex-colour rendering, pixelated upscale, hair / outfits / accessories / poses, and one-click `.glb` export.
 
 ## Features
 
-- **PSX aesthetic** — low-resolution render target upscaled with nearest-neighbour,
-  vertex snapping, affine-map feel, flat shading; no PBR / no `MeshStandardMaterial`
-  on the character (vertex colours + custom shaders / Lambert flat).
-- **Fully procedural** — all geometry, face textures and fabric patterns
-  (plaid, stripes, star, denim…) are generated in code/canvas. No external assets.
-- **Data-driven catalogue** — every hair, top, bottom, shoe, bag and accessory
-  item comes from `catalog.json`; the UI is generated from it, nothing hardcoded.
-- **Pose engine** — pose presets, saved poses, photo studio with turnaround
-  captures.
-- **Export** — config as JSON (import/export), or the posed character as a
-  spec-correct `.glb` (unlit vertex colours; note: the PSX shader FX are not
-  baked into the file).
-- **Persistence** — your character is saved to `localStorage`, plus randomise
-  and reset.
+- **PSX aesthetic** — low-resolution render target upscaled with nearest-neighbour, vertex snapping, affine-map feel, flat shading; no PBR / no `MeshStandardMaterial` on the character (vertex colours + custom shaders / Lambert flat).
+- **Fully procedural** — all geometry, face textures and fabric patterns (plaid, stripes, star, denim…) are generated in code/canvas. No external assets.
+- **Data-driven catalogue** — every hair, top, bottom, shoe, bag and accessory item comes from `catalog.json`; the UI is generated from it, nothing hardcoded.
+- **Pose engine** — joint hierarchy with presets, manual sliders, mirror/symmetry, and collision guards. Photo studio with turnaround captures.
+- **Export** — config as JSON (import/export), or the posed character as a spec-correct `.glb` (unlit vertex colours). OBJ export with textures or 3D-print-ready geometry is also available.
+- **Persistence** — your character is saved to `localStorage`, plus randomise and reset.
+
+> [!NOTE]
+> The exported GLB keeps flat unlit colours. The live PSX pixel shader / post pipeline effects are **not** stored in the exported file.
 
 ## Tech stack
 
@@ -60,21 +68,16 @@ src/patterns.js     procedural canvas patterns
 src/catalog.js      loads catalog.json + helpers
 src/pose.js         pose engine
 src/ui*.js          panels, category bar, pickers, presets
-src/exporter.js     GLB export
+src/exporter.js     GLB / OBJ export
 catalog.json        the item/pose/colour catalogue (single source of truth)
 ```
 
 ## Deployment
 
-Deploys to **GitHub Pages** automatically on every push to `main`
-via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
-(build with the repo-name base path, upload the Pages artifact, deploy).
+Deploys to **GitHub Pages** automatically on every push to `main` via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) (build with the repo-name base path, upload the Pages artifact, deploy).
 
-To host it yourself anywhere else: `npm run build` and serve `dist/` as static
-files.
+To host it yourself anywhere else: `npm run build` and serve `dist/` as static files.
 
 ## License
 
-Distributed under the **ISC licence with the Commons Clause v1.0** condition —
-free to use, modify and redistribute, but you may not sell the software itself.
-See [LICENSE](LICENSE) for the full text.
+Distributed under the **ISC licence with the Commons Clause v1.0** condition — free to use, modify and redistribute, but you may not sell the software itself. See [LICENSE](LICENSE) for the full text.
